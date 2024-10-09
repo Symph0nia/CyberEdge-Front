@@ -1,9 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import store from '../store'
 import Home from '@/components/HomePage.vue'
-import AttackerProfileTracking from '@/components/AttackerProfileTracking.vue'
-import CustomRuleManagement from '@/components/CustomRuleManagement.vue'
-import LogAnalysis from '@/components/LogAnalysis.vue'
 import LoginPage from '@/components/LoginPage.vue'
 import SystemConfiguration from '@/components/SystemConfiguration.vue'
 import UserManagement from '@/components/UserManagement.vue'
@@ -15,21 +12,6 @@ const routes = [
         path: '/',
         name: 'Home',
         component: Home
-    },
-    {
-        path: '/attacker-profile',
-        name: 'AttackerProfileTracking',
-        component: AttackerProfileTracking
-    },
-    {
-        path: '/custom-rule',
-        name: 'CustomRuleManagement',
-        component: CustomRuleManagement
-    },
-    {
-        path: '/log-analysis',
-        name: 'LogAnalysis',
-        component: LogAnalysis
     },
     {
         path: '/login',
