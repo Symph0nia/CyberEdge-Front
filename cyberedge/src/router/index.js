@@ -6,6 +6,7 @@ import SystemConfiguration from '@/components/SystemConfiguration.vue'
 import UserManagement from '@/components/UserManagement.vue'
 import WAFDashboard from '@/components/WAFDashboard.vue'
 import GoogleAuthQRCode from "@/components/GoogleAuthQRCode.vue";
+import TaskManagement from "@/components/TaskManagement.vue";
 
 const routes = [
     {
@@ -37,6 +38,11 @@ const routes = [
         path: '/dashboard',
         name: 'WAFDashboard',
         component: WAFDashboard
+    },
+    {
+        path: '/task-management', // 新增的任务管理路由
+        name: 'TaskManagement',
+        component: TaskManagement // 确保已导入 TaskManagement 组件
     }
 ]
 
