@@ -10,6 +10,7 @@
           :tasks="tasks"
           @toggle-task="toggleTask"
           @confirm-delete="confirmDelete"
+          @refresh-tasks="handleRefreshTasks"
       />
 
       <!-- 使用 TaskForm 子组件 -->
@@ -104,17 +105,21 @@ export default {
       }
     }
 
-    // 切换任务状态
+    // 切换任务状态（启动或停止）
     const toggleTask = async (task) => {
       try {
         if (task.status === 'running') {
-          await api.post(`/tasks/${task.id}/stop`)
+          await api.post(`/tasks/${task.id}/start`, { action: 'stop' }) // 假设同一个接口可以处理停止逻辑，传递 action 参数
         } else {
-          await api.post(`/tasks/${task.id}/start`)
+          await api.post(`/tasks/${task.id}/start`, { action: 'start' }) // 启动任务
         }
         fetchTasks()
       } catch (error) {
         console.error('切换任务状态失败:', error)
+        showNotification.value = true
+        notificationMessage.value = `切换任务状态失败: ${task.id}`
+        notificationEmoji.value = '❌'
+        notificationType.value = 'error'
       }
     }
 
@@ -150,9 +155,29 @@ export default {
       }
     }
 
+    // 刷新任务列表并显示通知
+    const handleRefreshTasks = async () => {
+      try {
+        await fetchTasks(); // 刷新数据
+
+        // 显示刷新成功的通知消息
+        showNotification.value = true;
+        notificationMessage.value = "已刷新任务列表";
+        notificationEmoji.value = "🔄";
+        notificationType.value = "success";
+
+      } catch (error) {
+        console.error("刷新任务列表失败:", error);
+        showNotification.value = true;
+        notificationMessage.value = "刷新任务列表失败";
+        notificationEmoji.value = "❌";
+        notificationType.value = "error";
+      }
+    };
+
     onMounted(() => {
-      fetchTasks() // 页面加载时获取任务列表
-    })
+      fetchTasks(); // 页面加载时获取任务列表
+    });
 
     return {
       tasks,
@@ -164,14 +189,11 @@ export default {
       confirmDialogTitle,
       confirmDialogMessage,
       createTask,
-      toggleTask, // 切换状态功能
+      toggleTask,
       confirmDelete,
       handleConfirmDelete,
-    }
+      handleRefreshTasks, // 添加 handleRefreshTasks 到返回值中，以便监听 refresh-tasks 事件时调用该方法。
+    };
   }
 }
 </script>
-
-<style scoped>
-/* 在这里添加任何特定于该组件的样式 */
-</style>

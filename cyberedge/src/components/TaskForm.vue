@@ -1,44 +1,32 @@
 <template>
-  <div class="mt-[20px]">
-    <h3 class="text-xl font-bold mb-[10px]">创建新任务 ✨</h3>
-
-    <!-- 输入描述 -->
-    <input
-        v-model="newTaskDescription"
-        type="text"
-        placeholder="输入任务描述"
-        class="p-3 rounded bg-gray-700 text-white w-full mb-4 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-    />
-
-    <!-- 输入执行间隔 -->
-    <input
-        v-model.number="newTaskInterval"
-        type="number"
-        placeholder="输入执行间隔（分钟）"
-        class="p-3 rounded bg-gray-700 text-white w-full mb-4 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-    />
+  <div class="task-form-container mt-6">
+    <h3 class="text-2xl font-bold mb-6">创建新任务 ✨</h3>
 
     <!-- 选择任务类型 -->
-    <select v-model="newTaskType" class="p-3 rounded bg-gray-700 text-white w-full mb-4 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+    <select
+        v-model="newTaskType"
+        class="p-3 rounded-md bg-gray-700 text-white w-full mb-4 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+    >
       <option value="" disabled>选择任务类型</option>
-      <option value="normal">普通任务</option>
       <option value="ping">Ping 任务</option>
+      <option value="httpx">Httpx 任务</option>
+      <option value="subfinder">Subfinder 任务</option>
+      <option value="naabu">Naabu 任务</option>
     </select>
 
-    <!-- 输入地址 -->
+    <!-- 输入目标地址 -->
     <input
-        v-if="newTaskType === 'ping'"
         v-model="newTaskAddress"
         type="text"
-        placeholder="输入目标地址（仅用于Ping任务）"
-        class="p-3 rounded bg-gray-700 text-white w-full mb-4 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+        placeholder="输入目标地址"
+        class="p-3 rounded-md bg-gray-700 text-white w-full mb-4 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
     />
 
     <!-- 创建按钮 -->
     <button
-        @click="$emit('create-task', { type: newTaskType, description: newTaskDescription, interval: newTaskInterval, address: newTaskAddress })"
+        @click="createTask"
         :disabled="!isValidInput"
-        class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded hover:bg-blue-600 transform hover:scale-[1.05] transition duration=300 shadow-md">
+        class="bg-gradient-to-r from-blue500 to-blue700 text-white px-[12px] py-[8px] rounded-md hover:bg-blue600 transform hover:scale-[1.05] transition duration=300 shadow-md w-full">
       创建任务
     </button>
   </div>
@@ -49,34 +37,53 @@ export default {
   name: 'TaskForm',
   data() {
     return {
-      newTaskDescription: '',
-      newTaskInterval: 0,
-      newTaskAddress: '',
-      newTaskType: ''
+      newTaskAddress: '', // 目标地址
+      newTaskType: '' // 任务类型
     };
   },
   computed: {
     isValidInput() {
-      // 确保描述和执行间隔始终有效
-      const hasDescription = this.newTaskDescription.trim() !== '';
-      const hasInterval = this.newTaskInterval > 0;
+      // 确保任务类型和目标地址始终有效
+      const hasType = this.newTaskType.trim() !== '';
+      const hasAddress = this.newTaskAddress.trim() !== '';
 
-      // 所有任务类型都需要描述和间隔
-      return hasDescription && hasInterval;
+      return hasType && hasAddress;
+    }
+  },
+  methods: {
+    createTask() {
+      // 发出 'create-task' 事件，并传递符合 API 要求的数据格式
+      this.$emit('create-task', {
+        type: this.newTaskType,
+        payload: this.newTaskAddress // 使用目标地址作为 payload
+      });
+
+      // 清空表单字段
+      this.newTaskAddress = '';
+      this.newTaskType = '';
     }
   }
 }
 </script>
 
 <style scoped>
-/* 在这里添加任何特定于该组件的样式 */
-.switch input:checked + .slider {
-  background-color: #4caf50;
+.task-form-container {
+  padding: 20px;
 }
-.slider.round {
-  border-radius: 34px;
+
+input, select {
+  width: 100%;
 }
-.slider.round:before {
-  border-radius: 50%;
+
+button.bg-blue500 {
+  background-color: #3b82f6; /* 蓝色按钮 */
+}
+
+button.bg-blue600:hover {
+  background-color: #2563eb; /* 深蓝色按钮悬停效果 */
+}
+
+button.bg-gradient-to-r.from-blue500.to-blue700 {
+  background-image: linear-gradient(to right, #3b82f6, #2563eb); /* 渐变背景 */
 }
 </style>
