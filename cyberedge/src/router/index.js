@@ -7,6 +7,8 @@ import UserManagement from '@/components/UserManagement.vue'
 import WAFDashboard from '@/components/WAFDashboard.vue'
 import GoogleAuthQRCode from "@/components/GoogleAuthQRCode.vue";
 import TaskManagement from "@/components/TaskManagement.vue";
+import PortScanResults from "@/components/PortScanResults.vue";
+import PortScanDetail from "@/components/PortScanDetail.vue";
 
 const routes = [
     {
@@ -43,6 +45,17 @@ const routes = [
         path: '/task-management', // 新增的任务管理路由
         name: 'TaskManagement',
         component: TaskManagement // 确保已导入 TaskManagement 组件
+    },
+    {
+        path: '/port-scan-results',
+        name: 'PortScanResults',
+        component: PortScanResults
+    },
+    {
+        path: '/port-scan-results/:id', // 新增详情页的路由
+        name: 'PortScanDetail',
+        component: PortScanDetail,
+        props: true // 将路由参数作为 props 传递给组件
     }
 ]
 
