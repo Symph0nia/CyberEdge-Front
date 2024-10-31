@@ -9,6 +9,8 @@ import GoogleAuthQRCode from "@/components/GoogleAuthQRCode.vue";
 import TaskManagement from "@/components/TaskManagement.vue";
 import PortScanResults from "@/components/PortScanResults.vue";
 import PortScanDetail from "@/components/PortScanDetail.vue";
+import SubdomainScanResults from "@/components/SubdomainScanResults.vue";
+import SubdomainScanDetail from "@/components/SubdomainScanDetail.vue";
 
 const routes = [
     {
@@ -55,6 +57,17 @@ const routes = [
         path: '/port-scan-results/:id', // 新增详情页的路由
         name: 'PortScanDetail',
         component: PortScanDetail,
+        props: true // 将路由参数作为 props 传递给组件
+    },
+    {
+        path: '/subdomain-scan-results',
+        name: 'SubdomainScanResults',
+        component: SubdomainScanResults
+    },
+    {
+        path: '/subdomain-scan-results/:id', // 新增详情页的路由
+        name: 'SubdomainScanDetail',
+        component: SubdomainScanDetail,
         props: true // 将路由参数作为 props 传递给组件
     }
 ]
