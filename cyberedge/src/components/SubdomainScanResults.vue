@@ -11,7 +11,7 @@
 
         <!-- 刷新按钮 -->
         <button @click="handleRefreshTasks"
-                class="bg-blue500 text-white w-full text-left px-[12px] py-[12px] rounded-md hover:bg-blue600 transform hover:scale-[1.02] transition duration=300 shadow-md mb-4">
+                class="bg-blue-500 text-white w-full text-left px-[12px] py-[12px] rounded-md hover:bg-blue-600 transform hover:scale-[1.02] transition duration-300 shadow-md mb-4">
           刷新子域名扫描结果 🔄
         </button>
 
@@ -20,15 +20,16 @@
             :subdomainScanResults="subdomainScanResults"
             @view-details="viewDetails"
             @delete-result="deleteResult"
+            @delete-selected="deleteSelectedResults"
+            @toggle-read-status="toggleReadStatus"
+            @mark-selected-read="markSelectedAsRead"
         />
 
         <!-- 错误提示 -->
-        <div v-if="errorMessage" class="text-red500 mt-[20px]">
+        <div v-if="errorMessage" class="text-red-500 mt-[20px]">
           {{ errorMessage }}
         </div>
-
       </div>
-
     </div>
 
     <!-- 页脚 -->
@@ -42,29 +43,18 @@
         :type="notificationType"
         @close="showNotification = false"
     />
-
-    <!-- 确认对话框 -->
-    <ConfirmDialog
-        :show="showConfirmDialog"
-        :title="confirmDialogTitle"
-        :message="confirmDialogMessage"
-        type="danger"
-        @confirm="handleConfirmDelete"
-        @cancel="showConfirmDialog = false"
-    />
   </div>
 </template>
 
 <script>
-// 引入子组件
 import { ref, onMounted } from 'vue'
 import PopupNotification from './PopupNotification.vue'
-import ConfirmDialog from './ConfirmDialog.vue'
 import HeaderPage from './HeaderPage.vue'
 import FooterPage from './FooterPage.vue'
-import SubdomainScanTable from './SubdomainScanTable.vue' // 引入 SubdomainScanTable 子组件
+import SubdomainScanTable from './SubdomainScanTable.vue'
 import api from '../api/axiosInstance'
 import { useRouter } from 'vue-router'
+import { useNotification } from '../composables/useNotification.js'
 
 export default {
   name: 'SubdomainScanResults',
@@ -72,76 +62,81 @@ export default {
     HeaderPage,
     FooterPage,
     PopupNotification,
-    ConfirmDialog,
-    SubdomainScanTable // 注册 SubdomainScanTable 子组件
+    SubdomainScanTable
   },
   setup() {
-    const router = useRouter(); // 使用 Vue Router
+    const router = useRouter();
+    const { showNotification, notificationMessage, notificationEmoji, notificationType, showNotificationMessage } = useNotification();
 
-    const subdomainScanResults = ref([]) // 存储子域名扫描结果
-    const showNotification = ref(false) // 控制通知的显示
-    const notificationMessage = ref('') // 通知消息
-    const notificationEmoji = ref('') // 通知表情
-    const notificationType = ref('success') // 通知类型
-
-    const showConfirmDialog = ref(false)
-    const confirmDialogTitle = ref('')
-    const confirmDialogMessage = ref('')
-
-    const errorMessage = ref('') // 错误信息
+    const subdomainScanResults = ref([]);
+    const errorMessage = ref('');
 
     // 获取所有 Type 为 Subdomain 的扫描结果
     const fetchSubdomainScanResults = async () => {
       try {
-        const response = await api.get('/results/type/Subdomain'); // 调用后端API获取数据
-        subdomainScanResults.value = response.data; // 将获取到的数据存储到 subdomainScanResults 中
-        errorMessage.value = ''; // 清空错误信息
-
-        // 显示成功通知
-        showNotification.value = true;
-        notificationMessage.value = "成功刷新子域名扫描结果";
-        notificationEmoji.value = "🔄";
-        notificationType.value = "success";
-
+        const response = await api.get('/results/type/Subdomain');
+        subdomainScanResults.value = response.data;
+        errorMessage.value = '';
+        showNotificationMessage("成功刷新子域名扫描结果", "🔄", "success");
       } catch (error) {
         console.error('获取子域名扫描结果失败:', error);
         errorMessage.value = '获取子域名扫描结果失败';
-
-        // 显示错误通知
-        showNotification.value = true;
-        notificationMessage.value = "获取子域名扫描结果失败";
-        notificationEmoji.value = "❌";
-        notificationType.value = "error";
+        showNotificationMessage("获取子域名扫描结果失败", "❌", "error");
       }
     };
 
-    // 查看详情逻辑，跳转到 /results/{id} 页面
+    // 查看详情逻辑
     const viewDetails = (id) => {
       router.push({ name: 'SubdomainScanDetail', params: { id } });
     };
 
-    // 删除逻辑，调用 DELETE /results/{id} 接口
+    // 删除逻辑
     const deleteResult = async (id) => {
       try {
         await api.delete(`/results/${id}`);
-        fetchSubdomainScanResults(); // 删除成功后刷新数据
-
-        // 显示成功通知
-        showNotification.value = true;
-        notificationMessage.value = `成功删除任务 ${id}`;
-        notificationEmoji.value = "🗑️";
-        notificationType.value = "success";
-
+        fetchSubdomainScanResults();
+        showNotificationMessage(`成功删除任务 ${id}`, "🗑️", "success");
       } catch (error) {
-        console.error(`删除任务失败 (ID: ${id}):`, error);
-        showNotification.value = true;
-        notificationMessage.value = `删除任务失败 (ID: ${id})`;
-        notificationEmoji.value = "❌";
-        notificationType.value = "error";
+        showNotificationMessage(`删除任务失败 (ID: ${id})`, "❌", "error");
       }
     };
 
-    onMounted(() => { fetchSubdomainScanResults(); });
+    // 切换已读状态
+    const toggleReadStatus = async (id, isRead) => {
+      try {
+        await api.put(`/results/${id}/read`, { isRead });
+        fetchSubdomainScanResults();
+        showNotificationMessage(`成功更新已读状态`, "✅", "success");
+      } catch (error) {
+        showNotificationMessage("更新已读状态失败", "❌", "error");
+      }
+    };
+
+    // 批量标记为已读
+    const markSelectedAsRead = async (selectedIds) => {
+      try {
+        await Promise.all(selectedIds.map(id => api.put(`/results/${id}/read`, { isRead: true })));
+        fetchSubdomainScanResults();
+        showNotificationMessage("成功标记选中的任务为已读", "✅", "success");
+      } catch (error) {
+        showNotificationMessage("批量标记为已读失败", "❌", "error");
+      }
+    };
+
+    // 批量删除
+    const deleteSelectedResults = async (selectedIds) => {
+      try {
+        await Promise.all(selectedIds.map(id => api.delete(`/results/${id}`)));
+        fetchSubdomainScanResults();
+        showNotificationMessage("成功删除选中的任务", "🗑️", "success");
+      } catch (error) {
+        showNotificationMessage("批量删除任务失败", "❌", "error");
+      }
+    };
+
+    onMounted(() => {
+      fetchSubdomainScanResults();
+    });
 
     return {
       subdomainScanResults,
@@ -149,15 +144,14 @@ export default {
       notificationMessage,
       notificationEmoji,
       notificationType,
-      showConfirmDialog,
-      confirmDialogTitle,
-      confirmDialogMessage,
       errorMessage,
-
       fetchSubdomainScanResults,
-      handleRefreshTasks() { fetchSubdomainScanResults(); },
+      handleRefreshTasks: fetchSubdomainScanResults,
       viewDetails,
-      deleteResult
+      deleteResult,
+      deleteSelectedResults,
+      toggleReadStatus,
+      markSelectedAsRead
     };
   }
 };
@@ -165,6 +159,5 @@ export default {
 
 <style scoped>
 .container { padding: 20px; }
-
-.text-red500 { color: #ef4444; /* 错误提示的红色 */ }
+.text-red-500 { color: #ef4444; }
 </style>

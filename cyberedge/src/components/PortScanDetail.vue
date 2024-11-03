@@ -57,20 +57,6 @@
           </tbody>
         </table>
 
-        <!-- 批量操作按钮 -->
-        <div class="mt-4 flex space-x-4">
-          <button @click="batchMarkAsRead(true)"
-                  :disabled="selectedPorts.length === 0"
-                  class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-            批量标记为已读
-          </button>
-          <button @click="batchMarkAsRead(false)"
-                  :disabled="selectedPorts.length === 0"
-                  class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-            批量标记为未读
-          </button>
-        </div>
-
         <!-- 错误提示 -->
         <div v-if="errorMessage" class="text-red-500 mt-[20px]">
           {{ errorMessage }}
@@ -145,20 +131,6 @@ export default {
       }
     };
 
-    const batchMarkAsRead = async (isRead) => {
-      try {
-        await Promise.all(selectedPorts.value.map(portId =>
-            api.put(`/results/${route.params.id}/entries/${portId}/read`, { isRead })
-        ));
-        fetchScanResult(route.params.id);
-        selectedPorts.value = [];
-        selectAll.value = false;
-      } catch (error) {
-        console.error('批量更新端口已读状态失败:', error);
-        errorMessage.value = '批量更新端口已读状态失败';
-      }
-    };
-
     onMounted(() => {
       const id = route.params.id;
       fetchScanResult(id);
@@ -172,8 +144,7 @@ export default {
       toggleReadStatus,
       selectedPorts,
       selectAll,
-      toggleSelectAll,
-      batchMarkAsRead
+      toggleSelectAll
     };
   }
 }
