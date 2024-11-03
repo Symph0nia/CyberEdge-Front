@@ -23,6 +23,7 @@
             </th>
             <th class="py-4 px-6 border-b-2 border-gray-600 text-left">子域名ID</th>
             <th class="py-4 px-6 border-b-2 border-gray-600 text-left">子域名</th>
+            <th class="py-4 px-6 border-b-2 border-gray-600 text-left">解析IP</th> <!-- 新增IP列 -->
             <th class="py-4 px-6 border-b-2 border-gray-600 text-left">已读状态</th>
             <th class="py-4 px-6 border-b-2 border-gray-600 text-left">操作</th>
           </tr>
@@ -35,6 +36,13 @@
             </td>
             <td class="py-5 px-6 border-b border-gray-600">{{ subdomain.id }}</td>
             <td class="py-5 px-6 border-b border-gray-600">{{ subdomain.domain }}</td>
+            <!-- 显示IP，如果IP为空则显示解析按钮 -->
+            <td class="py-5 px-6 border-b border-gray-600">
+              <span v-if="subdomain.ip">{{ subdomain.ip }}</span>
+              <button v-else @click="resolveIP(subdomain)" class="bg-blue-500 text-white px-[8px] py-[4px] rounded-md hover:bg-blue-600 transition duration-300 shadow-md">
+                解析IP
+              </button>
+            </td>
             <td class="py-5 px-6 border-b border-gray-600">
               {{ subdomain.is_read ? '✅ 已读' : '📖 未读' }}
             </td>
@@ -57,6 +65,15 @@
 
     <!-- 页脚 -->
     <FooterPage />
+
+    <!-- 弹窗通知 -->
+    <PopupNotification
+        v-if="showNotification"
+        :message="notificationMessage"
+        :emoji="notificationEmoji"
+        :type="notificationType"
+        @close="showNotification = false"
+    />
   </div>
 </template>
 
@@ -65,13 +82,16 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import HeaderPage from './HeaderPage.vue'
 import FooterPage from './FooterPage.vue'
+import PopupNotification from './PopupNotification.vue' // 引入 PopupNotification
 import api from '../api/axiosInstance'
+import { useNotification } from '../composables/useNotification' // 引入使用 useNotification
 
 export default {
   name: 'SubdomainScanDetail',
   components: {
     HeaderPage,
-    FooterPage
+    FooterPage,
+    PopupNotification // 注册 PopupNotification 组件
   },
   setup() {
     const route = useRoute();
@@ -79,6 +99,15 @@ export default {
     const errorMessage = ref('');
     const selectedSubdomains = ref([]);
     const selectAll = ref(false);
+
+    // 使用 useNotification 逻辑
+    const {
+      showNotification,
+      notificationMessage,
+      notificationEmoji,
+      notificationType,
+      showNotificationMessage
+    } = useNotification();
 
     const fetchScanResult = async (id) => {
       try {
@@ -99,11 +128,13 @@ export default {
         const idItem = subdomainData.find(item => item.Key === "_id");
         const domainItem = subdomainData.find(item => item.Key === "domain");
         const isReadItem = subdomainData.find(item => item.Key === "is_read");
+        const ipItem = subdomainData.find(item => item.Key === "ip");
 
         return {
           id: idItem ? idItem.Value : '',
           domain: domainItem ? domainItem.Value : '',
-          is_read: isReadItem ? isReadItem.Value : false
+          is_read: isReadItem ? isReadItem.Value : false,
+          ip: ipItem ? ipItem.Value : ''
         };
       });
     });
@@ -120,9 +151,21 @@ export default {
       try {
         await api.put(`/results/${route.params.id}/entries/${subdomain.id}/read`, { isRead: !subdomain.is_read });
         await fetchScanResult(route.params.id);
+        showNotificationMessage('成功更新已读状态', '✅', 'success');
       } catch (error) {
         console.error('更新子域名已读状态失败:', error);
-        errorMessage.value = '更新子域名已读状态失败';
+        showNotificationMessage('更新子域名已读状态失败', '❌', 'error');
+      }
+    };
+
+    const resolveIP = async (subdomain) => {
+      try {
+        await api.put(`/results/${route.params.id}/entries/${subdomain.id}/resolve`);
+        await fetchScanResult(route.params.id);  // 解析完成后刷新数据
+        showNotificationMessage('成功解析子域名 IP', '🌐', 'success');
+      } catch (error) {
+        console.error('解析IP失败:', error);
+        showNotificationMessage('解析IP失败', '❌', 'error');
       }
     };
 
@@ -138,7 +181,12 @@ export default {
       selectedSubdomains,
       selectAll,
       toggleSelectAll,
-      toggleReadStatus
+      toggleReadStatus,
+      resolveIP,
+      showNotification,
+      notificationMessage,
+      notificationEmoji,
+      notificationType
     };
   }
 }
