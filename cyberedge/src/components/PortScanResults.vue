@@ -92,6 +92,11 @@ export default {
       }
     };
 
+    // 处理刷新任务的方法
+    const handleRefreshTasks = () => {
+      fetchPortScanResults();
+    };
+
     // 查看详情逻辑
     const viewDetails = (id) => {
       router.push({ name: 'PortScanDetail', params: { id } });
@@ -152,6 +157,7 @@ export default {
       notificationType,
       errorMessage,
       fetchPortScanResults,
+      handleRefreshTasks,
       viewDetails,
       deleteResult,
       deleteSelectedResults,
