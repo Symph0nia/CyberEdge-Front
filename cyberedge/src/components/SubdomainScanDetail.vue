@@ -13,6 +13,16 @@
         <p><strong>目标地址:</strong> {{ scanResult?.Target }}</p>
         <p><strong>时间戳:</strong> {{ scanResult ? new Date(scanResult.Timestamp).toLocaleString() : '' }}</p>
 
+        <div class="mb-4 mt-4">
+          <button
+              @click="resolveSelectedIPs"
+              class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300 shadow-md"
+              :disabled="selectedSubdomains.length === 0"
+          >
+            解析选中的子域名 IP
+          </button>
+        </div>
+
         <!-- 子域名信息表格 -->
         <h3 class="text-xl font-bold mt-6">子域名列表</h3>
         <table v-if="subdomains.length" class="min-w-full bg-gray-800 shadow-lg rounded-md overflow-hidden mt-4">
@@ -99,6 +109,7 @@ export default {
     const errorMessage = ref('');
     const selectedSubdomains = ref([]);
     const selectAll = ref(false);
+    const isResolving = ref(false);
 
     // 使用 useNotification 逻辑
     const {
@@ -168,6 +179,57 @@ export default {
         showNotificationMessage('解析IP失败', '❌', 'error');
       }
     };
+    
+    const resolveSelectedIPs = async () => {
+      if (selectedSubdomains.value.length === 0) {
+        showNotificationMessage('请先选择子域名', '⚠️', 'warning');
+        return;
+      }
+
+      isResolving.value = true;
+      let successCount = 0;
+      let failureCount = 0;
+      let skippedCount = 0;
+
+      try {
+        for (const id of selectedSubdomains.value) {
+          const subdomain = subdomains.value.find(s => s.id === id);
+          if (!subdomain) continue;
+
+          if (subdomain.ip) {
+            skippedCount++;
+            continue; // 跳过已有 IP 的子域名
+          }
+
+          try {
+            await api.put(`/results/${route.params.id}/entries/${id}/resolve`);
+            successCount++;
+          } catch (error) {
+            console.error(`解析子域名 ID ${id} 失败:`, error);
+            failureCount++;
+          }
+        }
+
+        await fetchScanResult(route.params.id);  // 解析完成后刷新数据
+
+        let message = `解析完成。成功: ${successCount}`;
+        if (failureCount > 0) {
+          message += `, 失败: ${failureCount}`;
+        }
+        if (skippedCount > 0) {
+          message += `, 已跳过: ${skippedCount}`;
+        }
+        showNotificationMessage(message, '🌐', failureCount > 0 ? 'warning' : 'success');
+
+        selectedSubdomains.value = []; // 清空选择
+        selectAll.value = false; // 重置全选状态
+      } catch (error) {
+        console.error('批量解析过程中发生错误:', error);
+        showNotificationMessage('批量解析过程中发生错误', '❌', 'error');
+      } finally {
+        isResolving.value = false;
+      }
+    };
 
     onMounted(() => {
       const id = route.params.id;
@@ -183,6 +245,8 @@ export default {
       toggleSelectAll,
       toggleReadStatus,
       resolveIP,
+      resolveSelectedIPs,
+      isResolving,
       showNotification,
       notificationMessage,
       notificationEmoji,
