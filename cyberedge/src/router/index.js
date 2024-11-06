@@ -11,6 +11,8 @@ import PortScanResults from "@/components/Port/PortScanResults.vue";
 import PortScanDetail from "@/components/Port/PortScanDetail.vue";
 import SubdomainScanResults from "@/components/Subdomain/SubdomainScanResults.vue";
 import SubdomainScanDetail from "@/components/Subdomain/SubdomainScanDetail.vue";
+import PathScanResults from "@/components/Path/PathScanResults.vue";
+import PathScanDetail from "@/components/Path/PathScanDetail.vue";
 
 const routes = [
     {
@@ -68,6 +70,17 @@ const routes = [
         path: '/subdomain-scan-results/:id', // 新增详情页的路由
         name: 'SubdomainScanDetail',
         component: SubdomainScanDetail,
+        props: true // 将路由参数作为 props 传递给组件
+    },
+    {
+        path: '/path-scan-results',
+        name: 'PathScanResults',
+        component: PathScanResults // 确保导入了 PathScanResults 组件
+    },
+    {
+        path: '/path-scan-results/:id', // 新增详情页的路由
+        name: 'PathScanDetail',
+        component: PathScanDetail, // 确保导入了 PathScanDetail 组件
         props: true // 将路由参数作为 props 传递给组件
     }
 ]
