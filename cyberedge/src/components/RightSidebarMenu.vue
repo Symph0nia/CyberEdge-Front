@@ -1,25 +1,25 @@
 <template>
   <div
       v-if="localVisible || isExiting"
-      class="fixed top-0 left-0 h-full w-96 bg-transparent transition-transform duration-300"
+      class="fixed top-0 right-0 h-full w-96 bg-transparent transition-transform duration-300"
       :class="{
-        'animate-fade-in-left': localVisible,
-        'animate-fade-out-left': isExiting
+        'animate-fade-in-right': localVisible,
+        'animate-fade-out-right': isExiting
       }"
   >
     <div class="h-[60%] bg-transparent p-6 mx-auto my-32">
-      <CryptoTools />
+      <HttpRequestTool /> <!-- 引入网络请求工具组件 -->
     </div>
   </div>
 </template>
 
 <script>
-import CryptoTools from './CryptoTools.vue'; // 引入新的组件
+import HttpRequestTool from './HttpRequestTool.vue'; // 引入网络请求工具组件
 
 export default {
-  name: 'PopupMenu',
+  name: 'RightSidebarMenu', // 右侧菜单组件名称
   components: {
-    CryptoTools // 注册新组件
+    HttpRequestTool // 注册网络请求工具组件
   },
   props: {
     isVisible: {
@@ -58,10 +58,10 @@ export default {
 }
 
 /* 动画效果 */
-@keyframes fade-in-left {
+@keyframes fade-in-right {
   0% {
     opacity: 0;
-    transform: translateX(-100%); /* 从左侧滑入 */
+    transform: translateX(100%); /* 从右侧滑入 */
   }
   100% {
     opacity: 1;
@@ -69,22 +69,22 @@ export default {
   }
 }
 
-@keyframes fade-out-left {
+@keyframes fade-out-right {
   0% {
     opacity: 1;
     transform: translateX(0);
   }
   100% {
     opacity: 0;
-    transform: translateX(-100%); /* 从左侧滑出 */
+    transform: translateX(100%); /* 从右侧滑出 */
   }
 }
 
-.animate-fade-in-left {
-  animation: fade-in-left 0.3s forwards; /* 菜单显示时的动画 */
+.animate-fade-in-right {
+  animation: fade-in-right 0.3s forwards; /* 菜单显示时的动画 */
 }
 
-.animate-fade-out-left {
-  animation: fade-out-left 0.3s forwards; /* 菜单隐藏时的动画 */
+.animate-fade-out-right {
+  animation: fade-out-right 0.3s forwards; /* 菜单隐藏时的动画 */
 }
 </style>
