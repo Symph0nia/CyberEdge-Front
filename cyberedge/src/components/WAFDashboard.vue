@@ -81,7 +81,7 @@
 import { ref, onMounted, computed } from 'vue'
 import HeaderPage from './HeaderPage.vue'
 import FooterPage from './FooterPage.vue'
-import BarChart from './BarChart.vue'
+import BarChart from './Utils/BarChart.vue'
 import api from '../api/axiosInstance'
 
 export default {

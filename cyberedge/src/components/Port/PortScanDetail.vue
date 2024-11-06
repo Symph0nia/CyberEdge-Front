@@ -73,9 +73,9 @@
 <script>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import HeaderPage from './HeaderPage.vue'
-import FooterPage from './FooterPage.vue'
-import api from '../api/axiosInstance'
+import HeaderPage from '../HeaderPage.vue'
+import FooterPage from '../FooterPage.vue'
+import api from '../../api/axiosInstance'
 
 export default {
   name: 'PortScanDetail',

@@ -17,9 +17,9 @@
           <button
               @click="resolveSelectedIPs"
               class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300 shadow-md"
-              :disabled="selectedSubdomains.length === 0"
+              :disabled="selectedSubdomains.length === 0 || isResolving"
           >
-            解析选中的子域名 IP
+            {{ isResolving ? '正在解析...' : '解析选中的子域名 IP' }}
           </button>
         </div>
 
@@ -90,11 +90,11 @@
 <script>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import HeaderPage from './HeaderPage.vue'
-import FooterPage from './FooterPage.vue'
-import PopupNotification from './PopupNotification.vue' // 引入 PopupNotification
-import api from '../api/axiosInstance'
-import { useNotification } from '../composables/useNotification' // 引入使用 useNotification
+import HeaderPage from '../HeaderPage.vue'
+import FooterPage from '../FooterPage.vue'
+import PopupNotification from '../Utils/PopupNotification.vue' // 引入 PopupNotification
+import api from '../../api/axiosInstance'
+import { useNotification } from '../../composables/useNotification' // 引入使用 useNotification
 
 export default {
   name: 'SubdomainScanDetail',
@@ -179,14 +179,14 @@ export default {
         showNotificationMessage('解析IP失败', '❌', 'error');
       }
     };
-    
+
     const resolveSelectedIPs = async () => {
       if (selectedSubdomains.value.length === 0) {
         showNotificationMessage('请先选择子域名', '⚠️', 'warning');
         return;
       }
 
-      isResolving.value = true;
+      isResolving.value = true; // 设置解析状态为 true
       let successCount = 0;
       let failureCount = 0;
       let skippedCount = 0;
@@ -227,7 +227,7 @@ export default {
         console.error('批量解析过程中发生错误:', error);
         showNotificationMessage('批量解析过程中发生错误', '❌', 'error');
       } finally {
-        isResolving.value = false;
+        isResolving.value = false; // 重置解析状态为 false
       }
     };
 

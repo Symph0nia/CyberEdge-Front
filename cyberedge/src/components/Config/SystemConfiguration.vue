@@ -79,11 +79,11 @@
 
 <script>
 import { ref, onMounted } from 'vue';
-import api from '../api/axiosInstance';
-import HeaderPage from './HeaderPage.vue';
-import FooterPage from './FooterPage.vue';
-import PopupNotification from './PopupNotification.vue';
-import StatusCard from './StatusCard.vue';
+import api from '../../api/axiosInstance';
+import HeaderPage from '../HeaderPage.vue';
+import FooterPage from '../FooterPage.vue';
+import PopupNotification from '../Utils/PopupNotification.vue';
+import StatusCard from '../Utils/StatusCard.vue';
 
 export default {
   name: 'SystemStatus',

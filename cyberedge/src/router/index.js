@@ -1,16 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import store from '../store'
 import Home from '@/components/HomePage.vue'
-import LoginPage from '@/components/LoginPage.vue'
-import SystemConfiguration from '@/components/SystemConfiguration.vue'
-import UserManagement from '@/components/UserManagement.vue'
+import LoginPage from '@/components/Login/LoginPage.vue'
+import SystemConfiguration from '@/components/Config/SystemConfiguration.vue'
+import UserManagement from '@/components/User/UserManagement.vue'
 import WAFDashboard from '@/components/WAFDashboard.vue'
-import GoogleAuthQRCode from "@/components/GoogleAuthQRCode.vue";
-import TaskManagement from "@/components/TaskManagement.vue";
-import PortScanResults from "@/components/PortScanResults.vue";
-import PortScanDetail from "@/components/PortScanDetail.vue";
-import SubdomainScanResults from "@/components/SubdomainScanResults.vue";
-import SubdomainScanDetail from "@/components/SubdomainScanDetail.vue";
+import GoogleAuthQRCode from "@/components/Login/GoogleAuthQRCode.vue";
+import TaskManagement from "@/components/Task/TaskManagement.vue";
+import PortScanResults from "@/components/Port/PortScanResults.vue";
+import PortScanDetail from "@/components/Port/PortScanDetail.vue";
+import SubdomainScanResults from "@/components/Subdomain/SubdomainScanResults.vue";
+import SubdomainScanDetail from "@/components/Subdomain/SubdomainScanDetail.vue";
 
 const routes = [
     {

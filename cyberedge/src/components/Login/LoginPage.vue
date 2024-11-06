@@ -57,7 +57,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import PopupNotification from './PopupNotification.vue'
+import PopupNotification from '../Utils/PopupNotification.vue'
 
 export default {
   name: 'LoginPage',

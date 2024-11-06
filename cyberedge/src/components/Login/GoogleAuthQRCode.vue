@@ -54,8 +54,8 @@
 <script>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import api from '../api/axiosInstance';
-import PopupNotification from './PopupNotification.vue';
+import api from '../../api/axiosInstance';
+import PopupNotification from '../Utils/PopupNotification.vue';
 
 export default {
   name: 'GoogleAuthQRCode',

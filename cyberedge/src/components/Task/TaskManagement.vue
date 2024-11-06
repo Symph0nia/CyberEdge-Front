@@ -46,11 +46,11 @@
 import { ref, onMounted } from 'vue'
 import TaskList from './TaskList.vue'
 import TaskForm from './TaskForm.vue'
-import PopupNotification from './PopupNotification.vue'
-import ConfirmDialog from './ConfirmDialog.vue'
-import HeaderPage from './HeaderPage.vue'
-import FooterPage from './FooterPage.vue'
-import api from '../api/axiosInstance'
+import PopupNotification from '../Utils/PopupNotification.vue'
+import ConfirmDialog from '../Utils/ConfirmDialog.vue'
+import HeaderPage from '../HeaderPage.vue'
+import FooterPage from '../FooterPage.vue'
+import api from '../../api/axiosInstance'
 
 export default {
   name: 'TaskManagement',
