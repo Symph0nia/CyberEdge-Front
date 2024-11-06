@@ -13,13 +13,22 @@
         <p><strong>目标地址:</strong> {{ scanResult?.Target }}</p>
         <p><strong>时间戳:</strong> {{ scanResult ? new Date(scanResult.Timestamp).toLocaleString() : '' }}</p>
 
-        <div class="mb-4 mt-4">
+        <!-- 解析选中的子域名 IP 和批量发送到端口扫描按钮，水平排列 -->
+        <div class="mb-4 mt-4 flex space-x-4"> <!-- 使用 flex 和 space-x-4 实现水平排列和间距 -->
           <button
               @click="resolveSelectedIPs"
               class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300 shadow-md"
               :disabled="selectedSubdomains.length === 0 || isResolving"
           >
             {{ isResolving ? '正在解析...' : '解析选中的子域名 IP' }}
+          </button>
+
+          <button
+              @click="sendSelectedToPortScan"
+              class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition duration-300 shadow-md"
+              :disabled="selectedSubdomains.length === 0"
+          >
+            批量发送到端口扫描
           </button>
         </div>
 
@@ -33,20 +42,18 @@
             </th>
             <th class="py-4 px-6 border-b-2 border-gray-600 text-left">子域名ID</th>
             <th class="py-4 px-6 border-b-2 border-gray-600 text-left">子域名</th>
-            <th class="py-4 px-6 border-b-2 border-gray-600 text-left">解析IP</th> <!-- 新增IP列 -->
+            <th class="py-4 px-6 border-b-2 border-gray-600 text-left">解析IP</th>
             <th class="py-4 px-6 border-b-2 border-gray-600 text-left">已读状态</th>
             <th class="py-4 px-6 border-b-2 border-gray-600 text-left">操作</th>
           </tr>
           </thead>
           <tbody>
-          <!-- 遍历每个子域名 -->
           <tr v-for="subdomain in subdomains" :key="subdomain.id" class="hover:bg-gray-700 transition duration-300">
             <td class="py-5 px-6 border-b border-gray-600">
               <input type="checkbox" v-model="selectedSubdomains" :value="subdomain.id">
             </td>
             <td class="py-5 px-6 border-b border-gray-600">{{ subdomain.id }}</td>
             <td class="py-5 px-6 border-b border-gray-600">{{ subdomain.domain }}</td>
-            <!-- 显示IP，如果IP为空则显示解析按钮 -->
             <td class="py-5 px-6 border-b border-gray-600">
               <span v-if="subdomain.ip">{{ subdomain.ip }}</span>
               <button v-else @click="resolveIP(subdomain)" class="bg-blue-500 text-white px-[8px] py-[4px] rounded-md hover:bg-blue-600 transition duration-300 shadow-md">
@@ -57,10 +64,20 @@
               {{ subdomain.is_read ? '✅ 已读' : '📖 未读' }}
             </td>
             <td class="py-5 px-6 border-b border-gray-600">
-              <button @click="toggleReadStatus(subdomain)"
-                      class="bg-green-500 text-white px-[8px] py-[4px] rounded-md hover:bg-green-600 transition duration-300 shadow-md">
-                {{ subdomain.is_read ? '标记为未读' : '标记为已读' }}
-              </button>
+              <div class="flex space-x-4"> <!-- 使用 space-x-4 来增加按钮之间的间距 -->
+                <button @click="toggleReadStatus(subdomain)"
+                        class="bg-green-500 text-white px-[8px] py-[4px] rounded-md hover:bg-green-600 transition duration-300 shadow-md">
+                  {{ subdomain.is_read ? '标记为未读' : '标记为已读' }}
+                </button>
+                <button
+                    @click="sendToPortScan(subdomain)"
+                    :disabled="!subdomain.ip"
+                    class="px-[8px] py-[4px] rounded-md transition duration-300 shadow-md"
+                    :class="subdomain.ip ? 'bg-yellow-500 text-white hover:bg-yellow-600' : 'bg-gray-500 text-white cursor-not-allowed'"
+                >
+                  发送到端口扫描
+                </button>
+              </div>
             </td>
           </tr>
           </tbody>
@@ -88,13 +105,13 @@
 </template>
 
 <script>
-import { onMounted } from 'vue' // 导入 onMounted
-import { useRoute } from 'vue-router' // 导入 useRoute
+import { onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import HeaderPage from '../HeaderPage.vue'
 import FooterPage from '../FooterPage.vue'
 import PopupNotification from '../Utils/PopupNotification.vue'
 import { useNotification } from '../../composables/useNotification'
-import { useSubdomainScan } from '../../composables/useSubdomainScan' // 引入封装逻辑
+import { useSubdomainScan } from '../../composables/useSubdomainScan'
 
 export default {
   name: 'SubdomainScanDetail',
@@ -104,10 +121,10 @@ export default {
     PopupNotification
   },
   setup() {
-    // 使用 useRoute 逻辑
-    const route = useRoute(); // 定义 route
+    // 获取路由参数
+    const route = useRoute();
 
-    // 使用 useNotification 逻辑
+    // 使用通知逻辑
     const {
       showNotification,
       notificationMessage,
@@ -116,7 +133,7 @@ export default {
       showNotificationMessage
     } = useNotification();
 
-    // 使用 useSubdomainScan 逻辑
+    // 使用子域名扫描逻辑
     const {
       scanResult,
       errorMessage,
@@ -128,11 +145,14 @@ export default {
       toggleSelectAll,
       toggleReadStatus,
       resolveIP,
-      resolveSelectedIPs
+      resolveSelectedIPs,
+      sendToPortScan,
+      sendSelectedToPortScan
     } = useSubdomainScan();
 
+    // 页面挂载时获取扫描结果
     onMounted(() => {
-      const id = route.params.id; // 使用 route 参数获取扫描结果
+      const id = route.params.id;
       fetchScanResult(id);
     });
 
@@ -145,7 +165,9 @@ export default {
       toggleSelectAll,
       toggleReadStatus,
       resolveIP,
-      resolveSelectedIPs: () => resolveSelectedIPs(showNotificationMessage), // 传递通知逻辑
+      resolveSelectedIPs: () => resolveSelectedIPs(showNotificationMessage),
+      sendToPortScan: (subdomain) => sendToPortScan(subdomain, showNotificationMessage),
+      sendSelectedToPortScan: () => sendSelectedToPortScan(showNotificationMessage), // 绑定批量发送方法
       isResolving,
       showNotification,
       notificationMessage,

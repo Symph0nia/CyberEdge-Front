@@ -11,7 +11,7 @@
       <option value="ping">Ping 任务</option>
       <option value="httpx">Httpx 任务</option>
       <option value="subfinder">Subfinder 任务</option>
-      <option value="naabu">Naabu 任务</option>
+      <option value="nmap">Nmap 任务</option>
     </select>
 
     <!-- 输入目标地址 -->

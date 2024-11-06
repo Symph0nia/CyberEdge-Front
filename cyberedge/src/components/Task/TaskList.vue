@@ -81,7 +81,7 @@ export default {
         ping: "Ping 检查",
         httpx: "HTTPX 扫描",
         subfinder: "子域名扫描",
-        naabu: "端口扫描"
+        nmap: "端口扫描"
       };
       return descriptions[type] || "未知任务";
     }
