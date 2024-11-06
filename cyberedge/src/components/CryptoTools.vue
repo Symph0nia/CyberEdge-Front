@@ -48,7 +48,7 @@
       <button @click="closeModal" class="mt-2 w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200">关闭</button>
 
       <div v-if="outputText" class="mt-4 text-white flex flex-col">
-        <div class="bg-gray-800 rounded-lg p-3 break-words">
+        <div class="bg-gray-800 rounded-lg p-3 break-words overflow-auto" style="max-height: 150px;">
           <strong>结果:</strong> {{ outputText }}
         </div>
         <button @click="copyToClipboard" class="mt-2 bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600 transition duration-200">复制</button>
