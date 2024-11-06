@@ -4,7 +4,7 @@ import Home from '@/components/HomePage.vue'
 import LoginPage from '@/components/Login/LoginPage.vue'
 import SystemConfiguration from '@/components/Config/SystemConfiguration.vue'
 import UserManagement from '@/components/User/UserManagement.vue'
-import WAFDashboard from '@/components/WAFDashboard.vue'
+import WAFDashboard from '@/components/Dashboard.vue'
 import GoogleAuthQRCode from "@/components/Login/GoogleAuthQRCode.vue";
 import TaskManagement from "@/components/Task/TaskManagement.vue";
 import PortScanResults from "@/components/Port/PortScanResults.vue";

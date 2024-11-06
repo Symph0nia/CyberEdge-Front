@@ -37,12 +37,12 @@
               攻击面搜集 🔍
             </button>
             <div class="absolute left-0 hidden group-hover:block bg-gray-800 text-white rounded shadow-lg mt-1 transition-all duration-300 transform scale-y-0 group-hover:scale-y-100 origin-top">
-              <router-link to="/subdomain-discovery" v-slot="{ navigate }">
+              <router-link to="/subdomain-scan-results" v-slot="{ navigate }">
                 <button @click="navigate" class="block px-4 py-2 hover:bg-gray-700 flex items-center">
                   子域名发现 🌐
                 </button>
               </router-link>
-              <router-link to="/port-scanning" v-slot="{ navigate }">
+              <router-link to="/port-scan-results" v-slot="{ navigate }">
                 <button @click="navigate" class="block px-4 py-2 hover:bg-gray-700 flex items-center">
                   端口扫描 ⚓
                 </button>
@@ -56,7 +56,7 @@
               攻击面刻画 📂
             </button>
             <div class="absolute left-0 hidden group-hover:block bg-gray-800 text-white rounded shadow-lg mt-1 transition-all duration-300 transform scale-y-0 group-hover:scale-y-100 origin-top">
-              <router-link to="/path-scanning" v-slot="{ navigate }">
+              <router-link to="/path-scan-results" v-slot="{ navigate }">
                 <button @click="navigate" class="block px-4 py-2 hover:bg-gray-700 flex items-center">
                   路径扫描 🛤️
                 </button>
@@ -89,7 +89,7 @@
           </div>
 
           <!-- 系统管理 -->
-          <router-link to="/system-config" v-slot="{ navigate }">
+          <router-link to="/system-configuration" v-slot="{ navigate }">
             <button
                 @click="navigate"
                 class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105"
