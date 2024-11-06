@@ -54,7 +54,7 @@ export function usePortScanDetail() {
     const sendToPathScan = async (port, showNotificationMessage) => {
         try {
             const payload = {
-                type: 'path_scan',
+                type: 'ffuf',
                 payload: `${scanResult.value.Target}:${getPortValue(port, 'number')}`,
                 parent_id: scanResult.value.id
             };
@@ -80,7 +80,7 @@ export function usePortScanDetail() {
         for (const port of selectedPortDetails) {
             try {
                 const payload = {
-                    type: 'path_scan',
+                    type: 'ffuf',
                     payload: `${scanResult.value.Target}:${getPortValue(port, 'number')}`,
                     parent_id: scanResult.value.id
                 };

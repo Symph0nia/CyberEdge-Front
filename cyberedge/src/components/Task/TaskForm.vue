@@ -12,6 +12,7 @@
       <option value="httpx">Httpx 任务</option>
       <option value="subfinder">Subfinder 任务</option>
       <option value="nmap">Nmap 任务</option>
+      <option value="ffuf">Ffuf 任务</option>
     </select>
 
     <!-- 输入目标地址 -->
