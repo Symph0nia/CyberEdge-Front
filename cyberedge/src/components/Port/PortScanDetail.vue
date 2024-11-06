@@ -13,6 +13,17 @@
         <p><strong>目标地址:</strong> {{ scanResult?.Target }}</p>
         <p><strong>时间戳:</strong> {{ scanResult ? new Date(scanResult.Timestamp).toLocaleString() : '' }}</p>
 
+
+        <div class="mb-4 mt-4 flex space-x-4"> <!-- 使用 flex 和 space-x-4 实现水平排列和间距 -->
+          <button
+              @click="sendSelectedToPathScan(showNotificationMessage)"
+              class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition duration-300 shadow-md mr-4 mb-4"
+              :disabled="selectedPorts.length === 0"
+          >
+            批量发送到路径扫描
+          </button>
+        </div>
+
         <!-- 端口信息表格 -->
         <h3 class="text-xl font-bold mt-6">端口信息</h3>
         <table v-if="filteredPorts.length" class="min-w-full bg-gray-800 shadow-lg rounded-md overflow-hidden mt-4">
@@ -49,8 +60,12 @@
               {{ getPortValue(port, 'is_read') ? '✅ 已读' : '📖 未读' }}
             </td>
             <td class="py-5 px-6 border-b border-gray-600">
-              <button @click="toggleReadStatus(port)" class="bg-green-500 text-white px-[8px] py-[4px] rounded-md hover:bg-green-600 transition duration-300 shadow-md">
+              <button @click="toggleReadStatus(port)" class="bg-green-500 text-white px-[8px] py-[4px] rounded-md hover:bg-green-600 transition duration-300 shadow-md mr-2">
                 {{ getPortValue(port, 'is_read') ? '标记为未读' : '标记为已读' }}
+              </button>
+              <!-- 添加发送到路径扫描的按钮 -->
+              <button @click="sendToPathScan(port, showNotificationMessage)" class="bg-blue-500 text-white px-[8px] py-[4px] rounded-md hover:bg-blue-600 transition duration-300 shadow-md">
+                发送到路径扫描
               </button>
             </td>
           </tr>
@@ -67,85 +82,52 @@
 
     <!-- 页脚 -->
     <FooterPage />
+
+    <!-- 弹窗通知 -->
+    <PopupNotification
+        v-if="showNotification"
+        :message="notificationMessage"
+        :emoji="notificationEmoji"
+        :type="notificationType"
+        @close="showNotification = false"
+    />
   </div>
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { usePortScanDetail } from '../../composables/usePortScanDetail'
+import { useNotification } from '../../composables/useNotification'
+import PopupNotification from '../Utils/PopupNotification.vue'
 import HeaderPage from '../HeaderPage.vue'
 import FooterPage from '../FooterPage.vue'
-import api from '../../api/axiosInstance'
 
 export default {
   name: 'PortScanDetail',
   components: {
     HeaderPage,
-    FooterPage
+    FooterPage,
+    PopupNotification
   },
   setup() {
-    const route = useRoute();
-    const scanResult = ref(null);
-    const errorMessage = ref('');
-    const selectedPorts = ref([]);
-    const selectAll = ref(false);
+    const { ...rest } = usePortScanDetail()
 
-    const fetchScanResult = async (id) => {
-      try {
-        const response = await api.get(`/results/${id}`);
-        scanResult.value = response.data;
-      } catch (error) {
-        console.error('获取扫描结果详情失败:', error);
-        errorMessage.value = '获取扫描结果详情失败';
-      }
-    };
-
-    const getPortValue = (port, key) => {
-      const item = port.find(i => i.Key === key);
-      return item ? item.Value : '-';
-    };
-
-    const toggleReadStatus = async (port) => {
-      const portID = getPortValue(port, '_id');
-      const currentStatus = getPortValue(port, 'is_read');
-      try {
-        await api.put(`/results/${route.params.id}/entries/${portID}/read`, { isRead: !currentStatus });
-        fetchScanResult(route.params.id);
-      } catch (error) {
-        console.error('更新端口已读状态失败:', error);
-        errorMessage.value = '更新端口已读状态失败';
-      }
-    };
-
-    const filteredPorts = computed(() => {
-      if (!scanResult.value || !scanResult.value.Data) return [];
-      const portGroup = scanResult.value.Data.find(group => group.Key === 'ports');
-      return portGroup ? portGroup.Value : [];
-    });
-
-    const toggleSelectAll = () => {
-      if (selectAll.value) {
-        selectedPorts.value = filteredPorts.value.map(port => getPortValue(port, '_id'));
-      } else {
-        selectedPorts.value = [];
-      }
-    };
-
-    onMounted(() => {
-      const id = route.params.id;
-      fetchScanResult(id);
-    });
+    // 使用通知逻辑
+    const {
+      showNotification,
+      notificationMessage,
+      notificationEmoji,
+      notificationType,
+      showNotificationMessage
+    } = useNotification();
 
     return {
-      scanResult,
-      errorMessage,
-      getPortValue,
-      filteredPorts,
-      toggleReadStatus,
-      selectedPorts,
-      selectAll,
-      toggleSelectAll
-    };
+      ...rest,
+      showNotification,
+      notificationMessage,
+      notificationEmoji,
+      notificationType,
+      showNotificationMessage
+    }
   }
 }
 </script>
