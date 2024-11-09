@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import CryptoTools from './CryptoTools.vue'; // 引入新的组件
+import CryptoTools from './Tools/CryptoTools.vue'; // 引入新的组件
 
 export default {
   name: 'LeftSidebarMenu', // 修改组件名称

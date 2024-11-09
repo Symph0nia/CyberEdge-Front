@@ -6,60 +6,25 @@
       <!-- 系统运行信息 -->
       <div class="bg-gray-800 p-6 rounded-lg shadow-md mb-8">
         <h2 class="text-2xl font-bold mb-6">系统运行信息 📊</h2>
-        <div v-if="statusInfo" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatusCard v-for="(value, key) in statusInfo" :key="key" :title="formatTitle(key)" :value="formatValue(key, value)" />
+        <div v-if="systemInfo" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StatusCard title="程序运行目录" :value="systemInfo.currentDirectory" />
+          <StatusCard title="本机IP" :value="systemInfo.localIP" />
+          <StatusCard title="外网IP" :value="systemInfo.publicIP" />
+          <StatusCard title="系统内核版本" :value="systemInfo.kernelVersion" />
+          <StatusCard title="系统发行版" :value="systemInfo.osDistribution" />
+          <StatusCard title="程序运行权限" :value="systemInfo.privileges" />
         </div>
         <div v-else class="text-center py-8">
           <p class="text-xl">加载中... ⏳</p>
         </div>
       </div>
 
-      <!-- 扫描设置 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <!-- 子域名发现设置 -->
-        <div class="bg-gray-800 p-6 rounded-lg shadow-md">
-          <h3 class="text-xl font-bold mb-4">子域名发现设置 🔍</h3>
-          <button @click="configureSubdomainDiscovery" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
-            配置设置
-          </button>
-        </div>
-
-        <!-- 端口扫描设置 -->
-        <div class="bg-gray-800 p-6 rounded-lg shadow-md">
-          <h3 class="text-xl font-bold mb-4">端口扫描设置 🌐</h3>
-          <button @click="configurePortScanning" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
-            配置设置
-          </button>
-        </div>
-
-        <!-- 路径扫描设置 -->
-        <div class="bg-gray-800 p-6 rounded-lg shadow-md">
-          <h3 class="text-xl font-bold mb-4">路径扫描设置 📂</h3>
-          <button @click="configurePathScanning" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
-            配置设置
-          </button>
-        </div>
-
-        <!-- 指纹识别设置 -->
-        <div class="bg-gray-800 p-6 rounded-lg shadow-md">
-          <h3 class="text-xl font-bold mb-4">指纹识别设置 🧩</h3>
-          <button @click="configureFingerprintRecognition" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
-            配置设置
-          </button>
-        </div>
-
-        <!-- 漏洞扫描设置 -->
-        <div class="bg-gray-800 p-6 rounded-lg shadow-md">
-          <h3 class="text-xl font-bold mb-4">漏洞扫描设置 🔒</h3>
-          <button @click="configureVulnerabilityScanning" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
-            配置设置
-          </button>
-        </div>
-      </div>
-
       <!-- 刷新按钮 -->
       <div class="text-center">
-        <button @click="fetchStatus" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105">
+        <button
+            @click="fetchSystemInfo"
+            class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105"
+        >
           刷新系统信息 🔄
         </button>
       </div>
@@ -94,7 +59,7 @@ export default {
     StatusCard
   },
   setup() {
-    const statusInfo = ref(null);
+    const systemInfo = ref(null);
     const showNotification = ref(false);
     const notificationMessage = ref('');
     const notificationEmoji = ref('');
@@ -107,54 +72,26 @@ export default {
       showNotification.value = true;
     };
 
-    const fetchStatus = async () => {
+    const fetchSystemInfo = async () => {
       try {
-        const response = await api.get('/status');
-        statusInfo.value = response.data;
-        showPopup('系统信息已更新', '✅', 'success');
+        const response = await api.get('/system/info');
+        if (response.data && response.data.data) {
+          systemInfo.value = response.data.data.systemInfo;
+          showPopup('系统信息已更新', '✅', 'success');
+        }
       } catch (error) {
-        console.error('获取系统状态失败:', error);
-        showPopup('获取系统状态失败', '❌', 'error');
+        console.error('获取系统信息失败:', error);
+        showPopup('获取系统信息失败', '❌', 'error');
       }
     };
 
-    const configureSubdomainDiscovery = () => {
-      // TODO: 实现子域名发现配置逻辑
-      showPopup('子域名发现配置功能尚未实现', '⚙️', 'info');
-    };
-
-    const configurePortScanning = () => {
-      // TODO: 实现端口扫描配置逻辑
-      showPopup('端口扫描配置功能尚未实现', '⚙️', 'info');
-    };
-
-    const configurePathScanning = () => {
-      // TODO: 实现路径扫描配置逻辑
-      showPopup('路径扫描配置功能尚未实现', '⚙️', 'info');
-    };
-
-    const configureFingerprintRecognition = () => {
-      // TODO: 实现指纹识别配置逻辑
-      showPopup('指纹识别配置功能尚未实现', '⚙️', 'info');
-    };
-
-    const configureVulnerabilityScanning = () => {
-      // TODO: 实现漏洞扫描配置逻辑
-      showPopup('漏洞扫描配置功能尚未实现', '⚙️', 'info');
-    };
-
     onMounted(() => {
-      fetchStatus();
+      fetchSystemInfo();
     });
 
     return {
-      statusInfo,
-      fetchStatus,
-      configureSubdomainDiscovery,
-      configurePortScanning,
-      configurePathScanning,
-      configureFingerprintRecognition,
-      configureVulnerabilityScanning,
+      systemInfo,
+      fetchSystemInfo,
       showNotification,
       notificationMessage,
       notificationEmoji,
@@ -163,7 +100,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-/* 添加自定义样式（如果需要） */
-</style>

@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import HttpRequestTool from './HttpRequestTool.vue'; // 引入网络请求工具组件
+import HttpRequestTool from './Tools/HttpRequestTool.vue'; // 引入网络请求工具组件
 
 export default {
   name: 'RightSidebarMenu', // 右侧菜单组件名称
