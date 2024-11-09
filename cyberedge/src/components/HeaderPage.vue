@@ -31,6 +31,16 @@
             </button>
           </router-link>
 
+          <!-- 新增：目标管理 -->
+          <router-link to="/under-development" v-slot="{ navigate }">
+            <button
+                @click="navigate"
+                class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105"
+            >
+              目标管理 🎯
+            </button>
+          </router-link>
+
           <!-- 攻击面搜集 -->
           <div class="relative group inline-block">
             <button class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105 flex items-center">
@@ -50,7 +60,6 @@
             </div>
           </div>
 
-          <!-- 攻击面刻画 -->
           <div class="relative group inline-block">
             <button class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105 flex items-center">
               攻击面刻画 📂
@@ -61,7 +70,7 @@
                   路径扫描 🛤️
                 </button>
               </router-link>
-              <router-link to="/fingerprint-recognition" v-slot="{ navigate }">
+              <router-link to="/under-development" v-slot="{ navigate }">
                 <button @click="navigate" class="block px-4 py-2 hover:bg-gray-700 flex items-center">
                   指纹识别 🧩
                 </button>
@@ -75,12 +84,12 @@
               攻击面渗透 🔒
             </button>
             <div class="absolute left-0 hidden group-hover:block bg-gray-800 text-white rounded shadow-lg mt-1 transition-all duration-300 transform scale-y-0 group-hover:scale-y-100 origin-top">
-              <router-link to="/vulnerability-scanning" v-slot="{ navigate }">
+              <router-link to="/under-development" v-slot="{ navigate }">
                 <button @click="navigate" class="block px-4 py-2 hover:bg-gray-700 flex items-center">
                   漏洞扫描 🔍
                 </button>
               </router-link>
-              <router-link to="/exploitation" v-slot="{ navigate }">
+              <router-link to="/under-development" v-slot="{ navigate }">
                 <button @click="navigate" class="block px-4 py-2 hover:bg-gray-700 flex items-center">
                   漏洞利用 ⚠️
                 </button>
@@ -108,7 +117,7 @@
           </router-link>
 
           <!-- 综合扫描 -->
-          <router-link to="/comprehensive-scan" v-slot="{ navigate }">
+          <router-link to="/under-development" v-slot="{ navigate }">
             <button
                 @click="navigate"
                 class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105"

@@ -13,6 +13,7 @@ import SubdomainScanResults from "@/components/Subdomain/SubdomainScanResults.vu
 import SubdomainScanDetail from "@/components/Subdomain/SubdomainScanDetail.vue";
 import PathScanResults from "@/components/Path/PathScanResults.vue";
 import PathScanDetail from "@/components/Path/PathScanDetail.vue";
+import UnderDevelopment from "@/components/UnderDevelopment.vue";
 
 const routes = [
     {
@@ -82,6 +83,11 @@ const routes = [
         name: 'PathScanDetail',
         component: PathScanDetail, // 确保导入了 PathScanDetail 组件
         props: true // 将路由参数作为 props 传递给组件
+    },
+    {
+        path: '/under-development',
+        name: 'UnderDevelopment',
+        component: UnderDevelopment
     }
 ]
 
