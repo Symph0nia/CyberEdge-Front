@@ -1,114 +1,187 @@
 // usePortScanDetail.js
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../api/axiosInstance'
+import { useNotification } from './useNotification'
+import { useConfirmDialog } from './useConfirmDialog'
 
 export function usePortScanDetail() {
-    const route = useRoute();
-    const scanResult = ref(null);
-    const errorMessage = ref('');
-    const selectedPorts = ref([]);
-    const selectAll = ref(false);
+    const route = useRoute()
 
+    // 使用通知和确认对话框钩子
+    const {
+        showSuccess,
+        showError,
+        showWarning,
+        showNotification,
+        notificationMessage,
+        notificationType
+    } = useNotification()
+
+    const {
+        confirm,
+        showDialog,
+        dialogTitle,
+        dialogMessage,
+        dialogType,
+        handleConfirm,
+        handleCancel
+    } = useConfirmDialog()
+
+    // 状态管理
+    const scanResult = ref(null)
+    const errorMessage = ref('')
+    const selectedPorts = ref([])
+    const selectAll = ref(false)
+
+    // 获取扫描结果
     const fetchScanResult = async (id) => {
         try {
-            const response = await api.get(`/results/${id}`);
-            scanResult.value = response.data;
+            const response = await api.get(`/results/${id}`)
+            scanResult.value = response.data
+            errorMessage.value = ''
         } catch (error) {
-            console.error('获取扫描结果详情失败:', error);
-            errorMessage.value = '获取扫描结果详情失败';
+            errorMessage.value = '获取扫描结果详情失败'
+            showError('获取扫描结果详情失败')
         }
-    };
+    }
 
+    // 工具方法
     const getPortValue = (port, key) => {
-        const item = port.find(i => i.Key === key);
-        return item ? item.Value : '-';
-    };
+        const item = port.find(i => i.Key === key)
+        return item ? item.Value : '-'
+    }
 
-    const toggleReadStatus = async (port) => {
-        const portID = getPortValue(port, '_id');
-        const currentStatus = getPortValue(port, 'is_read');
-        try {
-            await api.put(`/results/${route.params.id}/entries/${portID}/read`, { isRead: !currentStatus });
-            fetchScanResult(route.params.id);
-        } catch (error) {
-            console.error('更新端口已读状态失败:', error);
-            errorMessage.value = '更新端口已读状态失败';
-        }
-    };
-
+    // 处理端口数据
     const filteredPorts = computed(() => {
-        if (!scanResult.value || !scanResult.value.Data) return [];
-        const portGroup = scanResult.value.Data.find(group => group.Key === 'ports');
-        return portGroup ? portGroup.Value : [];
-    });
+        if (!scanResult.value?.Data) return []
+        const portGroup = scanResult.value.Data.find(group => group.Key === 'ports')
+        return portGroup?.Value || []
+    })
 
-    const toggleSelectAll = () => {
-        if (selectAll.value) {
-            selectedPorts.value = filteredPorts.value.map(port => getPortValue(port, '_id'));
-        } else {
-            selectedPorts.value = [];
-        }
-    };
-
-    const sendToPathScan = async (port, showNotificationMessage) => {
+    // 切换已读状态
+    const toggleReadStatus = async (port) => {
+        const portID = getPortValue(port, '_id')
+        const currentStatus = getPortValue(port, 'is_read')
         try {
-            const payload = {
-                type: 'ffuf',
-                payload: `${scanResult.value.Target}:${getPortValue(port, 'number')}`,
-                parent_id: scanResult.value.id
-            };
-
-            await api.post('/tasks', payload);
-            showNotificationMessage(`成功发送端口 ${getPortValue(port, 'number')} 到路径扫描`, '🔍', 'success');
+            await api.put(
+                `/results/${route.params.id}/entries/${portID}/read`,
+                { isRead: !currentStatus }
+            )
+            await fetchScanResult(route.params.id)
+            showSuccess(`已${currentStatus ? '标记为未读' : '标记为已读'}`)
         } catch (error) {
-            console.error('发送到路径扫描失败:', error);
-            showNotificationMessage('发送到路径扫描失败', '❌', 'error');
+            showError('更新状态失败')
         }
-    };
+    }
 
-    const sendSelectedToPathScan = async (showNotificationMessage) => {
+    // 切换全选
+    const toggleSelectAll = () => {
+        selectedPorts.value = selectAll.value
+            ? filteredPorts.value.map(port => getPortValue(port, '_id'))
+            : []
+    }
+
+    // 发送到路径扫描
+    const sendToPathScan = async (port) => {
+        const portNumber = getPortValue(port, 'number')
+
+        try {
+            const confirmed = await confirm({
+                title: '发送到路径扫描',
+                message: `是否将端口 ${portNumber} 发送到路径扫描？`,
+                type: 'info'
+            })
+
+            if (!confirmed) return
+
+            await api.post('/tasks', {
+                type: 'ffuf',
+                payload: `${scanResult.value.Target}:${portNumber}`,
+                parent_id: scanResult.value.id
+            })
+            showSuccess(`已发送端口 ${portNumber} 到路径扫描`)
+        } catch (error) {
+            showError('发送失败')
+        }
+    }
+
+    // 批量发送到路径扫描
+    const sendSelectedToPathScan = async () => {
         const selectedPortDetails = selectedPorts.value
             .map(id => filteredPorts.value.find(port => getPortValue(port, '_id') === id))
-            .filter(port => port);
+            .filter(port => port)
 
-        if (selectedPortDetails.length === 0) {
-            showNotificationMessage('没有选中的端口进行路径扫描', '⚠️', 'warning');
-            return;
+        if (!selectedPortDetails.length) {
+            showWarning('请先选择要扫描的端口')
+            return
         }
 
-        for (const port of selectedPortDetails) {
-            try {
-                const payload = {
-                    type: 'ffuf',
-                    payload: `${scanResult.value.Target}:${getPortValue(port, 'number')}`,
-                    parent_id: scanResult.value.id
-                };
+        try {
+            const confirmed = await confirm({
+                title: '批量发送到路径扫描',
+                message: `是否将选中的 ${selectedPortDetails.length} 个端口发送到路径扫描？`,
+                type: 'info'
+            })
 
-                await api.post('/tasks', payload);
-            } catch (error) {
-                console.error(`发送到路径扫描失败 (端口: ${getPortValue(port, 'number')}):`, error);
+            if (!confirmed) return
+
+            let successCount = 0
+            let failureCount = 0
+
+            for (const port of selectedPortDetails) {
+                try {
+                    await api.post('/tasks', {
+                        type: 'ffuf',
+                        payload: `${scanResult.value.Target}:${getPortValue(port, 'number')}`,
+                        parent_id: scanResult.value.id
+                    })
+                    successCount++
+                } catch {
+                    failureCount++
+                }
             }
+
+            let message = `发送完成。成功: ${successCount}`
+            if (failureCount > 0) message += `, 失败: ${failureCount}`
+
+            failureCount > 0 ? showWarning(message) : showSuccess(message)
+
+            // 清空选择
+            selectedPorts.value = []
+            selectAll.value = false
+        } catch (error) {
+            showError('批量发送失败')
         }
-
-        showNotificationMessage(`成功发送 ${selectedPortDetails.length} 个端口到路径扫描`, '🔍', 'success');
-    };
-
-    onMounted(() => {
-        const id = route.params.id;
-        fetchScanResult(id);
-    });
+    }
 
     return {
+        // 状态
         scanResult,
         errorMessage,
-        getPortValue,
-        filteredPorts,
-        toggleReadStatus,
         selectedPorts,
         selectAll,
+        filteredPorts,
+
+        // 方法
+        fetchScanResult,
+        getPortValue,
+        toggleReadStatus,
         toggleSelectAll,
         sendToPathScan,
-        sendSelectedToPathScan
-    };
+        sendSelectedToPathScan,
+
+        // 通知相关
+        showNotification,
+        notificationMessage,
+        notificationType,
+
+        // 确认对话框相关
+        showDialog,
+        dialogTitle,
+        dialogMessage,
+        dialogType,
+        handleConfirm,
+        handleCancel
+    }
 }

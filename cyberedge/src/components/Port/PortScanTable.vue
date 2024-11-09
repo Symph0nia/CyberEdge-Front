@@ -1,80 +1,102 @@
 <template>
-  <div>
+  <div class="space-y-6">
     <!-- 表格 -->
-    <table class="min-w-full bg-gray-800 shadow-lg rounded-md overflow-hidden">
-      <thead class="bg-gray-700">
-      <tr>
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">
-          <input type="checkbox" @change="toggleSelectAll" /> <!-- 全选复选框 -->
-        </th>
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">扫描ID</th>
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">目标地址</th>
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">时间戳</th>
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">端口数量</th>
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">已读状态</th> <!-- 使用任务级别的 IsRead 字段 -->
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">操作</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr v-for="result in portScanResults" :key="result.id" class="hover:bg-gray-700 transition duration-300">
-        <td class="py-5 px-6 border-b border-gray-600">
-          <input type="checkbox" v-model="selectedResults" :value="result.id" /> <!-- 每行的复选框 -->
-        </td>
-        <td class="py-5 px-6 border-b border-gray-600">{{ result.id }}</td>
-        <td class="py-5 px-6 border-b border-gray-600">{{ result.Target }}</td>
-        <td class="py-5 px-6 border-b border-gray-600">{{ new Date(result.Timestamp).toLocaleString() }}</td>
-        <!-- 计算端口数量 -->
-        <td class="py-5 px-6 border-b border-gray-600">
-          {{ getPortCount(result) }} 个端口
-        </td>
-        <!-- 显示任务级别的已读状态 -->
-        <td class="py-5 px-6 border-b border-gray-600">
-          {{ result.IsRead ? '✅ 已读' : '📖 未读' }} <!-- 使用任务级别的 IsRead 字段 -->
-        </td>
-        <!-- 操作按钮 -->
-        <td class="py-5 px-6 border-b border-gray-600 flex space-x-[10px]">
-          <!-- 查看详情按钮 -->
-          <button @click="$emit('view-details', result.id)"
-                  class="bg-blue500 text-white px-[12px] py-[8px] rounded-md hover:bg-blue600 transform hover:scale-[1.05] transition duration=300 shadow-md">
-            查看详情 🔍
-          </button>
-
-          <!-- 已读/未读切换按钮 -->
-          <button @click="toggleReadStatus(result)"
-                  class="bg-green500 text-white px-[12px] py-[8px] rounded-md hover:bg-green600 transform hover:scale-[1.05] transition duration=300 shadow-md">
-            {{ result.IsRead ? '标记为未读' : '标记为已读' }}
-          </button>
-
-          <!-- 删除按钮 -->
-          <button @click="$emit('delete-result', result.id)"
-                  class="bg-red500 text-white px-[12px] py-[8px] rounded-md hover:bg-red600 transform hover:scale-[1.05] transition duration=300 shadow-md">
-            删除 🗑️
-          </button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+    <div class="relative overflow-x-auto rounded-xl">
+      <table class="w-full">
+        <thead>
+        <tr class="border-b border-gray-700/50">
+          <th class="py-4 px-6 text-left">
+            <input
+                type="checkbox"
+                @change="toggleSelectAll"
+                :checked="isAllSelected"
+                class="rounded border-gray-700/50 bg-gray-900/50
+                       text-blue-500/50 focus:ring-blue-500/30"
+            />
+          </th>
+          <th v-for="header in tableHeaders"
+              :key="header"
+              class="py-4 px-6 text-left text-sm font-medium text-gray-400">
+            {{ header }}
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="result in portScanResults"
+            :key="result.id"
+            class="border-b border-gray-700/30 hover:bg-gray-700/20 transition-colors duration-200">
+          <td class="py-4 px-6">
+            <input
+                type="checkbox"
+                v-model="selectedResults"
+                :value="result.id"
+                class="rounded border-gray-700/50 bg-gray-900/50
+                       text-blue-500/50 focus:ring-blue-500/30"
+            />
+          </td>
+          <td class="py-4 px-6 text-sm text-gray-200">{{ result.id }}</td>
+          <td class="py-4 px-6 text-sm text-gray-200">{{ result.Target }}</td>
+          <td class="py-4 px-6 text-sm text-gray-200">{{ formatDate(result.Timestamp) }}</td>
+          <td class="py-4 px-6 text-sm text-gray-200">{{ getPortCount(result) }} 个端口</td>
+          <td class="py-4 px-6">
+              <span
+                  class="px-2 py-1 rounded-full text-xs font-medium"
+                  :class="result.IsRead ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'"
+              >
+                {{ result.IsRead ? '已读' : '未读' }}
+              </span>
+          </td>
+          <td class="py-4 px-6">
+            <div class="flex space-x-2">
+              <button
+                  @click="handleViewDetails(result.id)"
+                  class="table-action-button bg-blue-500/50 text-blue-100"
+              >
+                查看
+              </button>
+              <button
+                  @click="handleToggleRead(result)"
+                  class="table-action-button"
+                  :class="result.IsRead ? 'bg-gray-700/50 text-gray-300' : 'bg-green-500/50 text-green-100'"
+              >
+                {{ result.IsRead ? '标为未读' : '标为已读' }}
+              </button>
+              <button
+                  @click="handleDelete(result)"
+                  class="table-action-button bg-red-500/50 text-red-100"
+              >
+                删除
+              </button>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- 批量操作按钮 -->
-    <div class="mt-4">
-      <!-- 批量删除按钮 -->
-      <button @click="deleteSelectedResults"
-              :disabled="selectedResults.length === 0"
-              class="bg-red500 text-white px-[12px] py-[8px] rounded-md hover:bg-red600 transform hover:scale-[1.05] transition duration=300 shadow-md">
-        批量删除 🗑️
+    <div class="flex space-x-3">
+      <button
+          @click="handleBatchDelete"
+          :disabled="!hasSelected"
+          class="batch-button bg-red-500/50 hover:bg-red-600/50 text-red-100"
+      >
+        批量删除
       </button>
-
-      <!-- 批量标记为已读按钮 -->
-      <button @click="markSelectedAsRead"
-              :disabled="selectedResults.length === 0"
-              class="bg-green500 text-white px-[12px] py-[8px] rounded-md hover:bg-green600 transform hover:scale-[1.05] transition duration=300 shadow-md ml-4">
-        批量标记为已读 ✅
+      <button
+          @click="handleBatchRead"
+          :disabled="!hasSelected"
+          class="batch-button bg-green-500/50 hover:bg-green-600/50 text-green-100"
+      >
+        标记选中为已读
       </button>
     </div>
   </div>
 </template>
 
 <script>
+import { ref, computed } from 'vue'
+
 export default {
   name: 'PortScanTable',
   props: {
@@ -83,92 +105,122 @@ export default {
       required: true
     }
   },
-  data() {
-    return {
-      selectedResults: [] // 存储选中的扫描结果ID
-    };
-  },
-  methods: {
-    // 计算每个扫描结果中的端口数量
-    getPortCount(result) {
-      let portCount = 0;
+  emits: ['view-details', 'delete-result', 'delete-selected', 'toggle-read-status', 'mark-selected-read'],
+  setup(props, { emit }) {
+    const tableHeaders = [
+      '扫描ID',
+      '目标地址',
+      '时间戳',
+      '端口数量',
+      '状态',
+      '操作'
+    ]
+
+    const selectedResults = ref([])
+
+    const hasSelected = computed(() => selectedResults.value.length > 0)
+    const isAllSelected = computed(() => {
+      return props.portScanResults.length > 0 &&
+          selectedResults.value.length === props.portScanResults.length
+    })
+
+    const formatDate = (timestamp) => {
+      return new Date(timestamp).toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+
+    const getPortCount = (result) => {
+      let portCount = 0
       result.Data.forEach(portGroup => {
         if (portGroup.Key === 'ports') {
-          portCount += portGroup.Value.length;
+          portCount += portGroup.Value.length
         }
-      });
-      return portCount;
-    },
-    // 切换全选复选框的状态
-    toggleSelectAll(event) {
-      if (event.target.checked) {
-        this.selectedResults = this.portScanResults.map(result => result.id);
-      } else {
-        this.selectedResults = [];
-      }
-    },
-    // 触发批量删除事件
-    deleteSelectedResults() {
-      this.$emit('delete-selected', this.selectedResults); // 向父组件发出删除选中的结果
-      this.selectedResults = []; // 清空选中的结果
-    },
-    // 切换单个扫描结果的已读/未读状态
-    toggleReadStatus(result) {
-      const updatedReadStatus = !result.IsRead; // 切换已读状态
-      this.$emit('toggle-read-status', result.id, updatedReadStatus); // 向父组件发出已读状态切换的事件
-    },
-    // 批量标记已读
-    markSelectedAsRead() {
-      this.$emit('mark-selected-read', this.selectedResults); // 向父组件发出批量标记为已读的事件
-      this.selectedResults = []; // 清空选中的结果
+      })
+      return portCount
+    }
+
+    const toggleSelectAll = () => {
+      selectedResults.value = isAllSelected.value
+          ? []
+          : props.portScanResults.map(result => result.id)
+    }
+
+    const handleViewDetails = (id) => emit('view-details', id)
+    const handleDelete = (result) => emit('delete-result', result.id)
+    const handleToggleRead = (result) => emit('toggle-read-status', result.id, !result.IsRead)
+    const handleBatchDelete = () => {
+      emit('delete-selected', selectedResults.value)
+      selectedResults.value = []
+    }
+    const handleBatchRead = () => {
+      emit('mark-selected-read', selectedResults.value)
+      selectedResults.value = []
+    }
+
+    return {
+      selectedResults,
+      tableHeaders,
+      hasSelected,
+      isAllSelected,
+      formatDate,
+      getPortCount,
+      toggleSelectAll,
+      handleViewDetails,
+      handleDelete,
+      handleToggleRead,
+      handleBatchDelete,
+      handleBatchRead
     }
   }
 }
 </script>
 
 <style scoped>
-table {
-  width: 100%;
+.table-action-button {
+  @apply px-3 py-1.5 rounded-xl text-xs font-medium
+  transition-all duration-200
+  focus:outline-none focus:ring-2 focus:ring-opacity-50
+  disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
-thead th {
-  padding-bottom: 12px;
+.batch-button {
+  @apply px-4 py-2.5 rounded-xl text-sm font-medium
+  transition-all duration-200
+  focus:outline-none focus:ring-2
+  disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
-tbody tr:nth-child(even) {
-  background-color: #1f2937; /* 偶数行背景色 */
+/* 自定义滚动条 */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
 }
 
-tbody tr:hover {
-  background-color: #374151; /* 悬停时的背景色 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-button.bg-blue500 {
-  background-color: #3b82f6; /* 蓝色按钮 */
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-button.bg-blue600:hover {
-  background-color: #2563eb; /* 悬停时的深蓝色 */
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 3px;
 }
 
-button.bg-green500 {
-  background-color: #10b981; /* 绿色按钮 */
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
 }
 
-button.bg-green600:hover {
-  background-color: #059669; /* 悬停时的深绿色 */
-}
-
-button.bg-red500 {
-  background-color: #ef4444; /* 红色按钮 */
-}
-
-button.bg-red600:hover {
-  background-color: #dc2626; /* 悬停时的深红色 */
-}
-
-button[disabled] {
-  background-color: #9ca3af; /* 禁用时的按钮背景 */
-  cursor: not-allowed; /* 禁用时的鼠标样式 */
+/* 优化按钮点击效果 */
+button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 </style>

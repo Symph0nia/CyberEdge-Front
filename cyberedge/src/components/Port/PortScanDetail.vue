@@ -1,144 +1,305 @@
 <template>
   <div class="bg-gray-900 text-white flex flex-col min-h-screen">
-    <!-- 顶部导航栏 -->
     <HeaderPage />
 
-    <!-- 主体内容 -->
-    <div class="container mx-auto px-4 py-8 flex-1 mt-16">
-      <div class="bg-gray-800 p-6 rounded-lg shadow-md mb-8">
-        <h2 class="text-2xl font-bold mb-4">端口扫描详情 🔍</h2>
+    <div class="container mx-auto px-6 py-8 flex-1 mt-16">
+      <!-- 主要内容卡片 -->
+      <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl
+                  border border-gray-700/30">
+        <!-- 标题和基本信息 -->
+        <div class="space-y-6 mb-8">
+          <h2 class="text-xl font-medium tracking-wide text-gray-200">端口扫描详情</h2>
 
-        <!-- 扫描ID和目标地址 -->
-        <p><strong>扫描ID:</strong> {{ scanResult?.id }}</p>
-        <p><strong>目标地址:</strong> {{ scanResult?.Target }}</p>
-        <p><strong>时间戳:</strong> {{ scanResult ? new Date(scanResult.Timestamp).toLocaleString() : '' }}</p>
-
-
-        <div class="mb-4 mt-4 flex space-x-4"> <!-- 使用 flex 和 space-x-4 实现水平排列和间距 -->
-          <button
-              @click="sendSelectedToPathScan(showNotificationMessage)"
-              class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition duration-300 shadow-md mr-4 mb-4"
-              :disabled="selectedPorts.length === 0"
-          >
-            批量发送到路径扫描
-          </button>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="space-y-1">
+              <p class="text-sm text-gray-400">扫描ID</p>
+              <p class="text-sm text-gray-200">{{ scanResult?.id }}</p>
+            </div>
+            <div class="space-y-1">
+              <p class="text-sm text-gray-400">目标地址</p>
+              <p class="text-sm text-gray-200">{{ scanResult?.Target }}</p>
+            </div>
+            <div class="space-y-1">
+              <p class="text-sm text-gray-400">扫描时间</p>
+              <p class="text-sm text-gray-200">
+                {{ scanResult ? formatDate(scanResult.Timestamp) : '' }}
+              </p>
+            </div>
+          </div>
         </div>
+
+        <!-- 批量操作按钮 -->
+        <button
+            @click="sendSelectedToPathScan"
+            :disabled="selectedPorts.length === 0"
+            class="px-4 py-2.5 rounded-xl text-sm font-medium
+                 transition-all duration-200
+                 focus:outline-none focus:ring-2
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+            :class="[
+            selectedPorts.length === 0
+              ? 'bg-gray-700/50 text-gray-400'
+              : 'bg-purple-500/50 hover:bg-purple-600/50 text-purple-100'
+          ]"
+        >
+          发送选中端口到路径扫描
+        </button>
 
         <!-- 端口信息表格 -->
-        <h3 class="text-xl font-bold mt-6">端口信息</h3>
-        <table v-if="filteredPorts.length" class="min-w-full bg-gray-800 shadow-lg rounded-md overflow-hidden mt-4">
-          <thead class="bg-gray-700">
-          <tr>
-            <th class="py-4 px-6 border-b-2 border-gray-600 text-left">
-              <input type="checkbox" @change="toggleSelectAll" v-model="selectAll">
-            </th>
-            <th class="py-4 px-6 border-b-2 border-gray-600 text-left">端口ID</th>
-            <th class="py-4 px-6 border-b-2 border-gray-600 text-left">端口号</th>
-            <th class="py-4 px-6 border-b-2 border-gray-600 text-left">协议</th>
-            <th class="py-4 px-6 border-b-2 border-gray-600 text-left">服务</th>
-            <th class="py-4 px-6 border-b-2 border-gray-600 text-left">Banner</th>
-            <th class="py-4 px-6 border-b-2 border-gray-600 text-left">指纹</th>
-            <th class="py-4 px-6 border-b-2 border-gray-600 text-left">路径</th>
-            <th class="py-4 px-6 border-b-2 border-gray-600 text-left">已读状态</th>
-            <th class="py-4 px-6 border-b-2 border-gray-600 text-left">操作</th>
-          </tr>
-          </thead>
-          <tbody>
-          <!-- 遍历每个端口信息 -->
-          <tr v-for="port in filteredPorts" :key="getPortValue(port, '_id')" class="hover:bg-gray-700 transition duration-300">
-            <td class="py-5 px-6 border-b border-gray-600">
-              <input type="checkbox" v-model="selectedPorts" :value="getPortValue(port, '_id')">
-            </td>
-            <td class="py-5 px-6 border-b border-gray-600">{{ getPortValue(port, '_id') }}</td>
-            <td class="py-5 px-6 border-b border-gray-600">{{ getPortValue(port, 'number') }}</td>
-            <td class="py-5 px-6 border-b border-gray-600">{{ getPortValue(port, 'protocol') }}</td>
-            <td class="py-5 px-6 border-b border-gray-600">{{ getPortValue(port, 'service') }}</td>
-            <td class="py-5 px-6 border-b border-gray-600">{{ getPortValue(port, 'banner') }}</td>
-            <td class="py-5 px-6 border-b border-gray-600">{{ getPortValue(port, 'fingerprints') || '-' }}</td>
-            <td class="py-5 px-6 border-b border-gray-600">{{ getPortValue(port, 'paths') || '-' }}</td>
-            <td class="py-5 px-6 border-b border-gray-600">
-              {{ getPortValue(port, 'is_read') ? '✅ 已读' : '📖 未读' }}
-            </td>
-            <td class="py-5 px-6 border-b border-gray-600">
-              <button @click="toggleReadStatus(port)" class="bg-green-500 text-white px-[8px] py-[4px] rounded-md hover:bg-green-600 transition duration-300 shadow-md mr-2">
-                {{ getPortValue(port, 'is_read') ? '标记为未读' : '标记为已读' }}
-              </button>
-              <!-- 添加发送到路径扫描的按钮 -->
-              <button @click="sendToPathScan(port, showNotificationMessage)" class="bg-blue-500 text-white px-[8px] py-[4px] rounded-md hover:bg-blue-600 transition duration-300 shadow-md">
-                发送到路径扫描
-              </button>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-
-        <!-- 错误提示 -->
-        <div v-if="errorMessage" class="text-red-500 mt-[20px]">
-          {{ errorMessage }}
+        <div class="mt-8">
+          <div class="relative overflow-x-auto rounded-xl">
+            <table class="w-full">
+              <thead>
+              <tr class="border-b border-gray-700/50">
+                <th class="py-4 px-6 text-left">
+                  <input
+                      type="checkbox"
+                      @change="toggleSelectAll"
+                      v-model="selectAll"
+                      class="rounded border-gray-700/50 bg-gray-900/50
+                             text-blue-500/50 focus:ring-blue-500/30"
+                  />
+                </th>
+                <th v-for="header in tableHeaders"
+                    :key="header"
+                    class="py-4 px-6 text-left text-sm font-medium text-gray-400">
+                  {{ header }}
+                </th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="port in filteredPorts"
+                  :key="getPortValue(port, '_id')"
+                  class="border-b border-gray-700/30 hover:bg-gray-700/20 transition-colors duration-200">
+                <td class="py-4 px-6">
+                  <input
+                      type="checkbox"
+                      v-model="selectedPorts"
+                      :value="getPortValue(port, '_id')"
+                      class="rounded border-gray-700/50 bg-gray-900/50
+                             text-blue-500/50 focus:ring-blue-500/30"
+                  />
+                </td>
+                <td class="py-4 px-6 text-sm text-gray-200">{{ getPortValue(port, '_id') }}</td>
+                <td class="py-4 px-6 text-sm text-gray-200">{{ getPortValue(port, 'number') }}</td>
+                <td class="py-4 px-6 text-sm text-gray-200">{{ getPortValue(port, 'protocol') }}</td>
+                <td class="py-4 px-6 text-sm text-gray-200">{{ getPortValue(port, 'service') }}</td>
+                <td class="py-4 px-6 text-sm text-gray-200">{{ getPortValue(port, 'banner') }}</td>
+                <td class="py-4 px-6 text-sm text-gray-200">{{ getPortValue(port, 'fingerprints') || '-' }}</td>
+                <td class="py-4 px-6 text-sm text-gray-200">{{ getPortValue(port, 'paths') || '-' }}</td>
+                <td class="py-4 px-6">
+                    <span
+                        class="px-2 py-1 rounded-full text-xs font-medium"
+                        :class="getPortValue(port, 'is_read') ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'"
+                    >
+                      {{ getPortValue(port, 'is_read') ? '已读' : '未读' }}
+                    </span>
+                </td>
+                <td class="py-4 px-6">
+                  <div class="flex space-x-2">
+                    <button
+                        @click="toggleReadStatus(port)"
+                        class="table-action-button"
+                        :class="getPortValue(port, 'is_read') ? 'bg-gray-700/50 text-gray-300' : 'bg-green-500/50 text-green-100'"
+                    >
+                      {{ getPortValue(port, 'is_read') ? '标为未读' : '标为已读' }}
+                    </button>
+                    <button
+                        @click="sendToPathScan(port)"
+                        class="table-action-button bg-blue-500/50 text-blue-100"
+                    >
+                      路径扫描
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
+        <!-- 错误提示 -->
+        <div v-if="errorMessage"
+             class="mt-4 px-4 py-2 rounded-xl
+                    bg-red-500/20 border border-red-500/30">
+          <p class="text-sm text-red-400">{{ errorMessage }}</p>
+        </div>
       </div>
     </div>
 
-    <!-- 页脚 -->
     <FooterPage />
 
-    <!-- 弹窗通知 -->
+    <!-- 通知和确认对话框 -->
     <PopupNotification
         v-if="showNotification"
         :message="notificationMessage"
-        :emoji="notificationEmoji"
         :type="notificationType"
         @close="showNotification = false"
+    />
+
+    <ConfirmDialog
+        :show="showDialog"
+        :title="dialogTitle"
+        :message="dialogMessage"
+        :type="dialogType"
+        @confirm="handleConfirm"
+        @cancel="handleCancel"
     />
   </div>
 </template>
 
 <script>
+import { onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { usePortScanDetail } from '../../composables/usePortScanDetail'
-import { useNotification } from '../../composables/useNotification'
-import PopupNotification from '../Utils/PopupNotification.vue'
 import HeaderPage from '../HeaderPage.vue'
 import FooterPage from '../FooterPage.vue'
+import PopupNotification from '../Utils/PopupNotification.vue'
+import ConfirmDialog from '../Utils/ConfirmDialog.vue'
 
 export default {
   name: 'PortScanDetail',
   components: {
     HeaderPage,
     FooterPage,
-    PopupNotification
+    PopupNotification,
+    ConfirmDialog
   },
   setup() {
-    const { ...rest } = usePortScanDetail()
+    const route = useRoute()
 
-    // 使用通知逻辑
+    const tableHeaders = [
+      '端口ID',
+      '端口号',
+      '协议',
+      '服务',
+      'Banner',
+      '指纹',
+      '路径',
+      '状态',
+      '操作'
+    ]
+
+    const formatDate = (timestamp) => {
+      return new Date(timestamp).toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+
+    // 使用 usePortScanDetail 中的所有功能
     const {
+      // 基础数据
+      scanResult,
+      errorMessage,
+      selectedPorts,
+      selectAll,
+      filteredPorts,
+
+      // 方法
+      getPortValue,
+      toggleReadStatus,
+      toggleSelectAll,
+      sendToPathScan,
+      sendSelectedToPathScan,
+      fetchScanResult,
+
+      // 通知状态和方法
       showNotification,
       notificationMessage,
-      notificationEmoji,
       notificationType,
-      showNotificationMessage
-    } = useNotification();
+
+      // 确认对话框状态和方法
+      showDialog,
+      dialogTitle,
+      dialogMessage,
+      dialogType,
+      handleConfirm,
+      handleCancel
+    } = usePortScanDetail()
+
+    // 在组件挂载时获取数据
+    onMounted(() => {
+      fetchScanResult(route.params.id)
+    })
 
     return {
-      ...rest,
+      // 基础数据
+      scanResult,
+      errorMessage,
+      selectedPorts,
+      selectAll,
+      filteredPorts,
+      tableHeaders,
+
+      // 工具方法
+      formatDate,
+      getPortValue,
+
+      // 操作方法
+      toggleReadStatus,
+      toggleSelectAll,
+      sendToPathScan,
+      sendSelectedToPathScan,
+
+      // 通知相关
       showNotification,
       notificationMessage,
-      notificationEmoji,
       notificationType,
-      showNotificationMessage
+
+      // 确认对话框相关
+      showDialog,
+      dialogTitle,
+      dialogMessage,
+      dialogType,
+      handleConfirm,
+      handleCancel
     }
   }
 }
 </script>
 
 <style scoped>
-.container { padding: 20px; }
-.text-red-500 { color: #ef4444; }
-table { width: 100%; }
-thead th { padding-bottom: 12px; }
-tbody tr:nth-child(even) { background-color: #1f2937; }
-tbody tr:hover { background-color: #374151; }
-button.bg-green-500 { background-color: #10b981; }
-button.bg-green-600:hover { background-color: #059669; }
+.table-action-button {
+  @apply px-3 py-1.5 rounded-xl text-xs font-medium
+  transition-all duration-200
+  focus:outline-none focus:ring-2 focus:ring-opacity-50;
+}
+
+/* 自定义滚动条 */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+/* 优化按钮点击效果 */
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.backdrop-blur-xl {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
 </style>
