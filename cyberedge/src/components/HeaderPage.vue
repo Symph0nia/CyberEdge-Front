@@ -1,13 +1,19 @@
 <template>
-  <nav class="bg-gradient-to-r from-gray-700 via-gray-800 to-gray-900 p-4 shadow-md fixed w-full z-10 transition-all duration-500">
+  <nav class="bg-gradient-to-r from-gray-700 via-gray-800 to-gray-900 backdrop-blur-md p-4 shadow-lg fixed w-full z-10 transition-all duration-500">
     <div class="container mx-auto flex justify-between items-center">
-      <div class="text-3xl font-bold text-white">🌐 CyberEdge 综合扫描器</div>
-      <div class="space-x-6 relative">
+      <!-- Logo区域 -->
+      <div class="text-2xl font-medium text-white tracking-tight">
+        🌐 CyberEdge 综合扫描器
+      </div>
+
+      <!-- 导航按钮区域 -->
+      <div class="space-x-8 relative">
+        <!-- 未登录状态 -->
         <template v-if="!isAuthenticated">
           <router-link to="/login" v-slot="{ navigate }">
             <button
                 @click="navigate"
-                class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105"
+                class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
               登录 🔐
             </button>
@@ -15,102 +21,107 @@
           <router-link to="/setup-2fa" v-slot="{ navigate }">
             <button
                 @click="navigate"
-                class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105"
+                class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
               注册 📱
             </button>
           </router-link>
         </template>
+
+        <!-- 登录状态 -->
         <template v-else>
+          <!-- 主页按钮 -->
           <router-link to="/" v-slot="{ navigate }">
             <button
                 @click="navigate"
-                class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105"
+                class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
               主页 🏠
             </button>
           </router-link>
 
-          <!-- 新增：目标管理 -->
+          <!-- 目标管理 -->
           <router-link to="/under-development" v-slot="{ navigate }">
             <button
                 @click="navigate"
-                class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105"
+                class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
               目标管理 🎯
             </button>
           </router-link>
 
-          <!-- 攻击面搜集 -->
+          <!-- 攻击面搜集下拉菜单 -->
           <div class="relative group inline-block">
-            <button class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105 flex items-center">
+            <button class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 flex items-center">
               攻击面搜集 🔍
             </button>
-            <div class="absolute left-0 hidden group-hover:block bg-gray-800 text-white rounded shadow-lg mt-1 transition-all duration-300 transform scale-y-0 group-hover:scale-y-100 origin-top">
+            <div class="absolute left-0 hidden group-hover:block bg-gray-800/90 backdrop-blur-md text-white rounded-lg shadow-xl mt-2 transition-all duration-200 transform opacity-0 group-hover:opacity-100">
               <router-link to="/subdomain-scan-results" v-slot="{ navigate }">
-                <button @click="navigate" class="block px-4 py-2 hover:bg-gray-700 flex items-center">
+                <button @click="navigate" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-t-lg transition-colors duration-200">
                   子域名发现 🌐
                 </button>
               </router-link>
               <router-link to="/port-scan-results" v-slot="{ navigate }">
-                <button @click="navigate" class="block px-4 py-2 hover:bg-gray-700 flex items-center">
+                <button @click="navigate" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-b-lg transition-colors duration-200">
                   端口扫描 ⚓
                 </button>
               </router-link>
             </div>
           </div>
 
+          <!-- 攻击面刻画下拉菜单 -->
           <div class="relative group inline-block">
-            <button class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105 flex items-center">
+            <button class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 flex items-center">
               攻击面刻画 📂
             </button>
-            <div class="absolute left-0 hidden group-hover:block bg-gray-800 text-white rounded shadow-lg mt-1 transition-all duration-300 transform scale-y-0 group-hover:scale-y-100 origin-top">
+            <div class="absolute left-0 hidden group-hover:block bg-gray-800/90 backdrop-blur-md text-white rounded-lg shadow-xl mt-2 transition-all duration-200 transform opacity-0 group-hover:opacity-100">
               <router-link to="/path-scan-results" v-slot="{ navigate }">
-                <button @click="navigate" class="block px-4 py-2 hover:bg-gray-700 flex items-center">
+                <button @click="navigate" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-t-lg transition-colors duration-200">
                   路径扫描 🛤️
                 </button>
               </router-link>
               <router-link to="/under-development" v-slot="{ navigate }">
-                <button @click="navigate" class="block px-4 py-2 hover:bg-gray-700 flex items-center">
+                <button @click="navigate" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-b-lg transition-colors duration-200">
                   指纹识别 🧩
                 </button>
               </router-link>
             </div>
           </div>
 
-          <!-- 攻击面渗透 -->
+          <!-- 攻击面渗透下拉菜单 -->
           <div class="relative group inline-block">
-            <button class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105 flex items-center">
+            <button class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 flex items-center">
               攻击面渗透 🔒
             </button>
-            <div class="absolute left-0 hidden group-hover:block bg-gray-800 text-white rounded shadow-lg mt-1 transition-all duration-300 transform scale-y-0 group-hover:scale-y-100 origin-top">
+            <div class="absolute left-0 hidden group-hover:block bg-gray-800/90 backdrop-blur-md text-white rounded-lg shadow-xl mt-2 transition-all duration-200 transform opacity-0 group-hover:opacity-100">
               <router-link to="/under-development" v-slot="{ navigate }">
-                <button @click="navigate" class="block px-4 py-2 hover:bg-gray-700 flex items-center">
+                <button @click="navigate" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-t-lg transition-colors duration-200">
                   漏洞扫描 🔍
                 </button>
               </router-link>
               <router-link to="/under-development" v-slot="{ navigate }">
-                <button @click="navigate" class="block px-4 py-2 hover:bg-gray-700 flex items-center">
+                <button @click="navigate" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-b-lg transition-colors duration-200">
                   漏洞利用 ⚠️
                 </button>
               </router-link>
             </div>
           </div>
 
-          <!-- 系统管理 -->
+          <!-- 系统配置 -->
           <router-link to="/system-configuration" v-slot="{ navigate }">
             <button
                 @click="navigate"
-                class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105"
+                class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
               系统配置 ⚙️
             </button>
           </router-link>
 
+          <!-- 用户管理 -->
           <router-link to="/user-management" v-slot="{ navigate }">
             <button
                 @click="navigate"
-                class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105"
+                class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
               用户管理 👤
             </button>
@@ -120,16 +131,16 @@
           <router-link to="/under-development" v-slot="{ navigate }">
             <button
                 @click="navigate"
-                class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105"
+                class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
               综合扫描 ⚡
             </button>
           </router-link>
 
-          <!-- 登出 -->
+          <!-- 登出按钮 -->
           <button
               @click="handleLogout"
-              class="text-white hover:text-yellow-400 transition duration-300 transform hover:scale-105"
+              class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
           >
             登出 🚪
           </button>
@@ -137,7 +148,7 @@
       </div>
     </div>
 
-    <!-- 添加 PopupNotification 组件 -->
+    <!-- 通知组件 -->
     <PopupNotification
         v-if="showNotification"
         :message="notificationMessage"

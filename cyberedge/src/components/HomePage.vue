@@ -1,33 +1,36 @@
 <template>
-  <div class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 animate-gradient-x text-white flex flex-col min-h-screen">
+  <div class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white flex flex-col min-h-screen">
     <HeaderPage />
-    <div class="container mx-auto px-4 py-24 flex-1">
+    <div class="container mx-auto px-6 pt-28 pb-20 flex-1"> <!-- 修改了这里的上内边距 -->
       <!-- 欢迎信息 -->
-      <div class="text-center mb-12">
-        <h1 class="text-5xl font-bold mb-4 animate-pulse">欢迎使用 CyberEdge 🌐 综合扫描器 🚀</h1>
-        <p class="text-xl text-gray-300">全面扫描互联网资产，确保安全无忧 🔐。</p>
+      <div class="text-center mb-16">
+        <h1 class="text-4xl font-medium mb-4 tracking-tight">CyberEdge 综合扫描器</h1>
+        <p class="text-lg text-gray-300 font-light tracking-wide max-w-2xl mx-auto">
+          简单、高效、专业的资产扫描工具
+        </p>
       </div>
 
-      <!-- 功能卡片 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- 功能卡片网格 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- 卡片内容保持不变 -->
         <div
             v-for="(card, index) in cards"
             :key="index"
-            :class="card.bgClass"
-            class="p-6 rounded-lg shadow-lg transform hover:scale-110 hover:rotate-6 hover:shadow-2xl transition-all duration-700 ease-in-out"
+            class="bg-gray-800/40 backdrop-blur-lg p-6 rounded-2xl shadow-lg
+                 hover:shadow-xl hover:bg-gray-800/50 transition-all duration-300 ease-out
+                 border border-gray-700/30"
         >
-          <div class="flex items-center mb-4">
-            <span class="text-4xl animate-bounce">{{ card.icon }}</span>
-            <h3 class="text-2xl font-bold ml-3">{{ card.title }}</h3>
+          <div class="flex items-center mb-4 space-x-3">
+            <span class="text-2xl">{{ card.icon }}</span>
+            <h3 class="text-base font-medium tracking-wide">{{ card.title }}</h3>
           </div>
-          <p class="text-gray-100">{{ card.description }}</p>
+          <p class="text-gray-400 text-sm leading-relaxed">{{ card.description }}</p>
         </div>
       </div>
     </div>
     <FooterPage />
   </div>
 </template>
-
 <script>
 import HeaderPage from './HeaderPage.vue'
 import FooterPage from './FooterPage.vue'
@@ -43,93 +46,78 @@ export default {
       cards: [
         {
           icon: '🔍',
-          title: '子域名发现',
-          description: '快速识别并列出所有子域名，确保全面覆盖。',
-          bgClass: 'bg-gradient-to-r from-green-400 to-blue-500'
+          title: '资产发现',
+          description: '快速准确的子域名扫描，全面掌握数字资产。'
         },
         {
           icon: '🌐',
           title: '端口扫描',
-          description: '深入分析开放端口，识别潜在的安全风险。',
-          bgClass: 'bg-gradient-to-r from-pink-500 to-red-500'
+          description: '高效的端口检测，精准识别服务组件。'
         },
         {
           icon: '📂',
           title: '路径扫描',
-          description: '自动化路径扫描，发现隐藏的敏感信息。',
-          bgClass: 'bg-gradient-to-r from-yellow-400 to-orange-500'
+          description: '深度探索网站结构，发现隐藏资源。'
         },
         {
           icon: '🧩',
           title: '指纹识别',
-          description: '识别应用程序和服务的指纹，获取详细信息。',
-          bgClass: 'bg-gradient-to-r from-purple-500 to-indigo-500'
+          description: '准确识别技术组件，提供详细分析。'
         },
         {
           icon: '🔒',
-          title: '漏洞扫描',
-          description: '全面扫描已知漏洞，确保系统安全。',
-          bgClass: 'bg-gradient-to-r from-teal-400 to-cyan-500'
-        },
-        {
-          icon: '⚠️',
-          title: '漏洞利用',
-          description: '模拟攻击，测试系统的防御能力。',
-          bgClass: 'bg-gradient-to-r from-gray-500 to-gray-700'
+          title: '安全评估',
+          description: '全面的漏洞检测，提供专业评估。'
         },
         {
           icon: '⚡',
-          title: '多线程支持',
-          description: '高效利用资源，实现快速扫描。',
-          bgClass: 'bg-gradient-to-r from-green-500 to-teal-500'
+          title: '高性能',
+          description: '优化的扫描引擎，提供卓越性能。'
         },
         {
           icon: '📊',
-          title: '任务管理',
-          description: '集中管理所有扫描任务，轻松监控进度。',
-          bgClass: 'bg-gradient-to-r from-red-500 to-pink-500'
+          title: '可视化',
+          description: '清晰的数据展示，直观的进度管理。'
         },
         {
           icon: '⏰',
-          title: '分时段扫描',
-          description: '根据需求设置定时任务，灵活高效。',
-          bgClass: 'bg-gradient-to-r from-blue-500 to-purple-500'
+          title: '任务管理',
+          description: '灵活的任务调度，高效资源利用。'
         },
         {
           icon: '🚀',
           title: '快速部署',
-          description: '一键集成和部署，节省时间和资源。',
-          bgClass: 'bg-gradient-to-r from-yellow-500 to-orange-500'
-        },
-        {
-          icon: '🔑',
-          title: '安全报告生成',
-          description: '自动生成详细的安全报告，便于审计与分析。',
-          bgClass: 'bg-gradient-to-r from-indigo-400 to-blue-400'
-        },
-        {
-          icon: '🛠️',
-          title: '自定义配置',
-          description: '灵活配置扫描参数，以满足特定需求。',
-          bgClass: 'bg-gradient-to-r from-pink-300 to-red-300'
+          description: '简单的部署流程，快速开始扫描。'
         },
         {
           icon: '📈',
-          title: '实时监控面板',
-          description: '实时监控扫描进度与结果，直观呈现数据。',
-          bgClass: 'bg-gradient-to-r from-teal-300 to-cyan-300'
+          title: '数据分析',
+          description: '实时的数据分析，清晰的安全概览。'
+        },
+        {
+          icon: '🔑',
+          title: '安全报告',
+          description: '专业的报告生成，便于安全决策。'
+        },
+        {
+          icon: '🛠️',
+          title: '配置管理',
+          description: '灵活的配置选项，满足多样需求。'
         },
         {
           icon: '🔄',
-          title: '定期更新数据库',
-          description: '自动更新漏洞数据库，确保数据的时效性。',
-          bgClass: 'bg-gradient-to-r from-orange-400 to-red-400'
+          title: '定期更新',
+          description: '持续的特征更新，保持安全防护。'
         },
         {
-          icon: '📞',
-          title: '支持多种协议',
-          description: '支持HTTP、HTTPS、FTP等多种协议的扫描。',
-          bgClass: 'bg-gradient-to-r from-purple-300 to-indigo-300'
+          icon: '📱',
+          title: '多平台',
+          description: '支持多种平台，保持一致体验。'
+        },
+        {
+          icon: '🌍',
+          title: '协议支持',
+          description: '支持主流协议，全面扫描覆盖。'
         }
       ]
     }
