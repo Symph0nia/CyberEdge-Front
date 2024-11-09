@@ -1,46 +1,69 @@
 <template>
   <div class="bg-gray-900 flex items-center justify-center min-h-screen">
-    <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md text-center transform transition-all duration-700 ease-in-out hover:scale-105 opacity-0 translate-x-full animate-fade-in-right">
-      <h2 class="text-2xl font-bold mb-6 text-white">Google Authenticator 设置 🔐</h2>
+    <div class="bg-gray-800/40 backdrop-blur-xl p-10 rounded-3xl shadow-2xl w-full max-w-md
+                border border-gray-700/30 transform transition-all duration-500
+                opacity-0 translate-x-full animate-fade-in-right">
+      <!-- 内容保持不变 -->
+      <div class="space-y-6">
+        <!-- 标题 -->
+        <h2 class="text-xl font-medium tracking-wide text-gray-200">
+          设置双重认证
+        </h2>
 
-      <div v-if="interfaceClosed">
-        <p class="text-red-500 mb-4">注册通道已关闭 🚫</p>
-        <p class="text-yellow-300">请稍后再试</p>
-      </div>
-
-      <div v-else>
-        <div v-if="qrCodeUrl" class="mb-6">
-          <img :src="qrCodeUrl" alt="Google Authenticator QR Code" class="mx-auto">
-          <p class="text-green-400 mt-2">您的二维码已生成 ✅</p>
-        </div>
-        <p v-else-if="loading" class="text-white mb-4">正在生成二维码...</p>
-        <p v-else class="text-white mb-4">点击下方按钮生成二维码</p>
-
-        <p class="text-gray-300 mb-4">
-          请使用 Google Authenticator 应用扫描二维码，以启用双因素认证 📱
-        </p>
-
-        <div class="flex flex-col space-y-4 mt-6">
-          <button
-              @click="fetchQRCode"
-              class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transform hover:scale-105 transition duration-300 border-2 border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-              :disabled="loading"
-          >
-            {{ qrCodeUrl ? '刷新二维码' : '生成二维码' }} 🔄
-          </button>
-
-          <button
-              @click="goToLogin"
-              class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-700 transform hover:scale-105 transition duration-300 border-2 border-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
-          >
-            前往登录页面 🚀
-          </button>
+        <div v-if="interfaceClosed" class="space-y-2">
+          <p class="text-red-400/90 text-sm">注册通道已关闭</p>
+          <p class="text-gray-400 text-sm">请稍后重试</p>
         </div>
 
+        <div v-else class="space-y-6">
+          <!-- 二维码显示区域 -->
+          <div v-if="qrCodeUrl" class="space-y-4">
+            <div class="bg-gray-900/50 p-6 rounded-2xl border border-gray-700/30">
+              <img :src="qrCodeUrl" alt="认证二维码" class="mx-auto w-48 h-48">
+            </div>
+            <p class="text-sm text-gray-400">二维码已生成</p>
+          </div>
+
+          <p v-else-if="loading" class="text-sm text-gray-400">
+            正在生成二维码...
+          </p>
+
+          <!-- 说明文字 -->
+          <p class="text-sm text-gray-400 leading-relaxed">
+            请使用 Google Authenticator 扫描二维码以启用双重认证
+          </p>
+
+          <!-- 按钮区域 -->
+          <div class="space-y-3 pt-4">
+            <button
+                @click="fetchQRCode"
+                :disabled="loading"
+                class="w-full px-4 py-2.5 rounded-xl
+                     bg-gray-700/50 hover:bg-gray-600/50
+                     text-sm font-medium text-gray-200
+                     transition-all duration-200
+                     focus:outline-none focus:ring-2 focus:ring-gray-600/50
+                     disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {{ qrCodeUrl ? '刷新二维码' : '生成二维码' }}
+            </button>
+
+            <button
+                @click="goToLogin"
+                class="w-full px-4 py-2.5 rounded-xl
+                     bg-gray-800/50 hover:bg-gray-700/50
+                     text-sm font-medium text-gray-200
+                     transition-all duration-200
+                     focus:outline-none focus:ring-2 focus:ring-gray-600/50"
+            >
+              返回登录
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- 弹窗通知 -->
+    <!-- 通知组件 -->
     <PopupNotification
         v-if="showNotification"
         :message="notificationMessage"
@@ -78,23 +101,25 @@ export default {
         const response = await api.get('/auth/qrcode', { responseType: 'blob' });
         qrCodeUrl.value = URL.createObjectURL(response.data);
         interfaceClosed.value = false;
+
         showNotification.value = true;
-        notificationMessage.value = '二维码生成成功';
-        notificationEmoji.value = '✅';
+        notificationMessage.value = '二维码已生成';
+        notificationEmoji.value = '✓';
         notificationType.value = 'success';
       } catch (error) {
         console.error('获取二维码失败:', error);
         interfaceClosed.value = true;
+
         showNotification.value = true;
-        notificationMessage.value = '二维码生成失败';
-        notificationEmoji.value = '❌';
+        notificationMessage.value = '生成失败';
+        notificationEmoji.value = '!';
         notificationType.value = 'error';
 
         if (error.response && error.response.data instanceof Blob) {
           const text = await error.response.data.text();
           const errorData = JSON.parse(text);
           if (errorData.error === "二维码接口已关闭") {
-            notificationMessage.value = '二维码接口已关闭，请稍后再试';
+            notificationMessage.value = '接口暂时关闭';
           }
         }
       } finally {
@@ -122,6 +147,7 @@ export default {
 </script>
 
 <style scoped>
+/* 保留原有的右侧滑入动画 */
 @keyframes fade-in-right {
   0% {
     opacity: 0;
@@ -134,16 +160,35 @@ export default {
 }
 
 .animate-fade-in-right {
-  animation: fade-in-right 1s forwards;
+  animation: fade-in-right 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-button {
-  font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.backdrop-blur-xl {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 
-button:hover {
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+/* 优化按钮点击效果 */
+button:active {
+  transform: scale(0.98);
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
 }
 </style>

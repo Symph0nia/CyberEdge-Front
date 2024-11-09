@@ -52,10 +52,16 @@
 
           <!-- 攻击面搜集下拉菜单 -->
           <div class="relative group inline-block">
-            <button class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 flex items-center">
+            <button
+                @click="toggleDropdown('collection')"
+                class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 flex items-center"
+            >
               攻击面搜集 🔍
             </button>
-            <div class="absolute left-0 hidden group-hover:block bg-gray-800/90 backdrop-blur-md text-white rounded-lg shadow-xl mt-2 transition-all duration-200 transform opacity-0 group-hover:opacity-100">
+            <div
+                v-show="dropdowns.collection"
+                class="absolute left-0 bg-gray-800/90 backdrop-blur-md text-white rounded-lg shadow-xl mt-2 transition-all duration-200"
+            >
               <router-link to="/subdomain-scan-results" v-slot="{ navigate }">
                 <button @click="navigate" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-t-lg transition-colors duration-200">
                   子域名发现 🌐
@@ -71,10 +77,16 @@
 
           <!-- 攻击面刻画下拉菜单 -->
           <div class="relative group inline-block">
-            <button class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 flex items-center">
+            <button
+                @click="toggleDropdown('characterization')"
+                class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 flex items-center"
+            >
               攻击面刻画 📂
             </button>
-            <div class="absolute left-0 hidden group-hover:block bg-gray-800/90 backdrop-blur-md text-white rounded-lg shadow-xl mt-2 transition-all duration-200 transform opacity-0 group-hover:opacity-100">
+            <div
+                v-show="dropdowns.characterization"
+                class="absolute left-0 bg-gray-800/90 backdrop-blur-md text-white rounded-lg shadow-xl mt-2 transition-all duration-200"
+            >
               <router-link to="/path-scan-results" v-slot="{ navigate }">
                 <button @click="navigate" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-t-lg transition-colors duration-200">
                   路径扫描 🛤️
@@ -90,10 +102,16 @@
 
           <!-- 攻击面渗透下拉菜单 -->
           <div class="relative group inline-block">
-            <button class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 flex items-center">
+            <button
+                @click="toggleDropdown('penetration')"
+                class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 flex items-center"
+            >
               攻击面渗透 🔒
             </button>
-            <div class="absolute left-0 hidden group-hover:block bg-gray-800/90 backdrop-blur-md text-white rounded-lg shadow-xl mt-2 transition-all duration-200 transform opacity-0 group-hover:opacity-100">
+            <div
+                v-show="dropdowns.penetration"
+                class="absolute left-0 bg-gray-800/90 backdrop-blur-md text-white rounded-lg shadow-xl mt-2 transition-all duration-200"
+            >
               <router-link to="/under-development" v-slot="{ navigate }">
                 <button @click="navigate" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-t-lg transition-colors duration-200">
                   漏洞扫描 🔍
@@ -160,7 +178,7 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import PopupNotification from './Utils/PopupNotification.vue'
@@ -174,24 +192,72 @@ export default {
     const router = useRouter()
     const store = useStore()
 
+    // 通知相关的状态
     const showNotification = ref(false)
     const notificationMessage = ref('')
     const notificationEmoji = ref('')
     const notificationType = ref('success')
 
+    // 下拉菜单的状态
+    const dropdowns = ref({
+      collection: false,
+      characterization: false,
+      penetration: false
+    })
+
+    // 切换下拉菜单
+    const toggleDropdown = (menu) => {
+      // 阻止事件冒泡
+      event?.stopPropagation()
+
+      Object.keys(dropdowns.value).forEach(key => {
+        if (key !== menu) {
+          dropdowns.value[key] = false
+        }
+      })
+      dropdowns.value[menu] = !dropdowns.value[menu]
+    }
+
+    // 关闭所有下拉菜单
+    const closeAllDropdowns = () => {
+      Object.keys(dropdowns.value).forEach(key => {
+        dropdowns.value[key] = false
+      })
+    }
+
+    // 登出处理
     const handleLogout = async () => {
       await store.dispatch('logout')
-
       notificationMessage.value = '登出成功！期待您的再次访问！'
       notificationEmoji.value = '👋'
       notificationType.value = 'success'
       showNotification.value = true
 
-      // 使用 setTimeout 延迟 1.5 秒后跳转
       setTimeout(() => {
         router.push({ name: 'Home' })
       }, 1500)
     }
+
+    // 修改点击外部处理函数
+    const handleClickOutside = (e) => {
+      // 如果点击的是按钮本身，不处理
+      if (e.target.closest('button')) return
+
+      // 如果点击的不是下拉菜单区域，则关闭所有下拉菜单
+      if (!e.target.closest('.relative.group')) {
+        closeAllDropdowns()
+      }
+    }
+
+    // 组件挂载时添加事件监听
+    onMounted(() => {
+      document.addEventListener('click', handleClickOutside)
+    })
+
+    // 组件卸载前移除事件监听
+    onBeforeUnmount(() => {
+      document.removeEventListener('click', handleClickOutside)
+    })
 
     return {
       isAuthenticated: computed(() => store.state.isAuthenticated),
@@ -199,15 +265,23 @@ export default {
       showNotification,
       notificationMessage,
       notificationEmoji,
-      notificationType
+      notificationType,
+      dropdowns,
+      toggleDropdown
     }
   }
 }
 </script>
 
 <style scoped>
-/* 样式调整 */
-.group:hover .group-hover\:block {
-  display: block;
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>
