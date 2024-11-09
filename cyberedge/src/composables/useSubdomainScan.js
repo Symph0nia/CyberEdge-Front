@@ -1,186 +1,240 @@
-import { ref, computed } from 'vue'
+// useSubdomainScan.js
+import { ref, computed, watch } from 'vue'
 import api from '../api/axiosInstance'
 import { useRoute } from 'vue-router'
+import { useNotification } from './useNotification'
+import { useConfirmDialog } from './useConfirmDialog'
 
 export function useSubdomainScan() {
-    const route = useRoute();
-    const scanResult = ref(null);
-    const errorMessage = ref('');
-    const selectedSubdomains = ref([]);
-    const selectAll = ref(false);
-    const isResolving = ref(false);
+    const route = useRoute()
 
+    // 使用通知和确认对话框钩子
+    const { showNotification, notificationMessage, notificationType, showSuccess, showError, showWarning } = useNotification()
+    const { showDialog, dialogTitle, dialogMessage, dialogType, confirm, handleConfirm, handleCancel } = useConfirmDialog()
+
+    // 状态管理
+    const scanResult = ref(null)
+    const errorMessage = ref('')
+    const selectedSubdomains = ref([])
+    const selectAll = ref(false)
+    const isResolving = ref(false)
+
+    // 监听选中状态变化
+    watch(selectedSubdomains, (newVal) => {
+        selectAll.value = newVal.length === subdomains.value.length && newVal.length > 0
+    })
+
+    // 获取扫描结果
     const fetchScanResult = async (id) => {
         try {
-            const response = await api.get(`/results/${id}`);
-            scanResult.value = response.data;
+            const response = await api.get(`/results/${id}`)
+            scanResult.value = response.data
+            errorMessage.value = ''
         } catch (error) {
-            console.error('获取扫描结果详情失败:', error);
-            errorMessage.value = '获取扫描结果详情失败';
+            errorMessage.value = '获取扫描结果详情失败'
+            showError('获取扫描结果详情失败')
         }
-    };
+    }
 
+    // 处理子域名数据
     const subdomains = computed(() => {
-        if (!scanResult.value || !scanResult.value.Data) return [];
-        const subdomainGroup = scanResult.value.Data.find(group => group.Key === "subdomains");
-        if (!subdomainGroup || !Array.isArray(subdomainGroup.Value)) return [];
+        if (!scanResult.value?.Data) return []
+        const subdomainGroup = scanResult.value.Data.find(group => group.Key === "subdomains")
+        if (!subdomainGroup?.Value?.length) return []
 
-        return subdomainGroup.Value.map(subdomainData => {
-            const idItem = subdomainData.find(item => item.Key === "_id");
-            const domainItem = subdomainData.find(item => item.Key === "domain");
-            const isReadItem = subdomainData.find(item => item.Key === "is_read");
-            const ipItem = subdomainData.find(item => item.Key === "ip");
+        return subdomainGroup.Value.map(subdomainData => ({
+            id: subdomainData.find(item => item.Key === "_id")?.Value || '',
+            domain: subdomainData.find(item => item.Key === "domain")?.Value || '',
+            is_read: subdomainData.find(item => item.Key === "is_read")?.Value || false,
+            ip: subdomainData.find(item => item.Key === "ip")?.Value || ''
+        }))
+    })
 
-            return {
-                id: idItem ? idItem.Value : '',
-                domain: domainItem ? domainItem.Value : '',
-                is_read: isReadItem ? isReadItem.Value : false,
-                ip: ipItem ? ipItem.Value : ''
-            };
-        });
-    });
-
+    // 切换全选
     const toggleSelectAll = () => {
-        if (selectAll.value) {
-            selectedSubdomains.value = subdomains.value.map(s => s.id);
-        } else {
-            selectedSubdomains.value = [];
-        }
-    };
+        selectedSubdomains.value = selectAll.value
+            ? subdomains.value.map(s => s.id)
+            : []
+    }
 
+    // 切换已读状态
     const toggleReadStatus = async (subdomain) => {
         try {
-            await api.put(`/results/${route.params.id}/entries/${subdomain.id}/read`, { isRead: !subdomain.is_read });
-            await fetchScanResult(route.params.id);
+            await api.put(
+                `/results/${route.params.id}/entries/${subdomain.id}/read`,
+                { isRead: !subdomain.is_read }
+            )
+            await fetchScanResult(route.params.id)
+            showSuccess(`已${subdomain.is_read ? '标记为未读' : '标记为已读'}`)
         } catch (error) {
-            console.error('更新子域名已读状态失败:', error);
+            showError('更新状态失败')
         }
-    };
+    }
 
+    // 解析单个IP
     const resolveIP = async (subdomain) => {
         try {
-            await api.put(`/results/${route.params.id}/entries/${subdomain.id}/resolve`);
-            await fetchScanResult(route.params.id);  // 解析完成后刷新数据
+            const confirmed = await confirm({
+                title: '解析IP',
+                message: `是否解析 ${subdomain.domain} 的IP地址？`,
+                type: 'info'
+            })
+
+            if (!confirmed) return
+
+            await api.put(`/results/${route.params.id}/entries/${subdomain.id}/resolve`)
+            await fetchScanResult(route.params.id)
+            showSuccess('IP解析成功')
         } catch (error) {
-            console.error('解析IP失败:', error);
+            showError('IP解析失败')
         }
-    };
+    }
 
-    const resolveSelectedIPs = async (showNotificationMessage) => {
-        if (selectedSubdomains.value.length === 0) {
-            showNotificationMessage('请先选择子域名', '⚠️', 'warning');
-            return;
+    // 批量解析IP
+    const resolveSelectedIPs = async () => {
+        if (!selectedSubdomains.value.length) {
+            showWarning('请先选择子域名')
+            return
         }
-
-        isResolving.value = true;
-        let successCount = 0;
-        let failureCount = 0;
-        let skippedCount = 0;
 
         try {
+            const confirmed = await confirm({
+                title: '批量解析IP',
+                message: `是否解析选中的 ${selectedSubdomains.value.length} 个子域名的IP？`,
+                type: 'info'
+            })
+
+            if (!confirmed) return
+
+            isResolving.value = true
+            let successCount = 0
+            let failureCount = 0
+            let skippedCount = 0
+
             for (const id of selectedSubdomains.value) {
-                const subdomain = subdomains.value.find(s => s.id === id);
-                if (!subdomain) continue;
+                const subdomain = subdomains.value.find(s => s.id === id)
+                if (!subdomain) continue
 
                 if (subdomain.ip) {
-                    skippedCount++;
-                    continue;
+                    skippedCount++
+                    continue
                 }
 
                 try {
-                    await api.put(`/results/${route.params.id}/entries/${id}/resolve`);
-                    successCount++;
-                } catch (error) {
-                    console.error(`解析子域名 ID ${id} 失败:`, error);
-                    failureCount++;
+                    await api.put(`/results/${route.params.id}/entries/${id}/resolve`)
+                    successCount++
+                } catch {
+                    failureCount++
                 }
             }
 
-            await fetchScanResult(route.params.id);
+            await fetchScanResult(route.params.id)
+            selectedSubdomains.value = []
+            selectAll.value = false
 
-            let message = `解析完成。成功: ${successCount}`;
-            if (failureCount > 0) {
-                message += `, 失败: ${failureCount}`;
-            }
-            if (skippedCount > 0) {
-                message += `, 已跳过: ${skippedCount}`;
-            }
-            showNotificationMessage(message, '🌐', failureCount > 0 ? 'warning' : 'success');
+            let message = `解析完成。成功: ${successCount}`
+            if (failureCount > 0) message += `, 失败: ${failureCount}`
+            if (skippedCount > 0) message += `, 已跳过: ${skippedCount}`
 
-            selectedSubdomains.value = [];
-            selectAll.value = false;
+            failureCount > 0 ? showWarning(message) : showSuccess(message)
         } catch (error) {
-            console.error('批量解析过程中发生错误:', error);
-            showNotificationMessage('批量解析过程中发生错误', '❌', 'error');
+            showError('批量解析失败')
         } finally {
-            isResolving.value = false;
+            isResolving.value = false
         }
-    };
+    }
 
-    const sendToPortScan = async (subdomain, showNotificationMessage) => {
+    // 发送到端口扫描
+    const sendToPortScan = async (subdomain) => {
         if (!subdomain.ip) {
-            showNotificationMessage('没有可用的 IP，无法发送到端口扫描', '⚠️', 'warning');
-            return;
+            showWarning('没有可用的IP')
+            return
         }
 
         try {
-            const payload = {
+            const confirmed = await confirm({
+                title: '发送到端口扫描',
+                message: `是否将 ${subdomain.domain} (${subdomain.ip}) 发送到端口扫描？`,
+                type: 'info'
+            })
+
+            if (!confirmed) return
+
+            await api.post('/tasks', {
                 type: 'nmap',
                 payload: subdomain.ip,
-                parent_id: scanResult.value.id // 使用 scanResult 的 ID 作为 parent_id
-            };
-
-            await api.post('/tasks', payload);
-            showNotificationMessage(`成功发送 ${subdomain.domain} 到端口扫描`, '🌐', 'success');
-        } catch (error) {
-            console.error('发送到端口扫描失败:', error);
-            showNotificationMessage('发送到端口扫描失败', '❌', 'error');
+                parent_id: scanResult.value.id
+            })
+            showSuccess('已发送到端口扫描')
+        } catch {
+            showError('发送失败')
         }
-    };
+    }
 
-    // 批量发送选中的子域名到端口扫描
-    const sendSelectedToPortScan = async (showNotificationMessage) => {
+    // 批量发送到端口扫描
+    const sendSelectedToPortScan = async () => {
         const selectedDomains = selectedSubdomains.value
             .map(id => subdomains.value.find(sub => sub.id === id))
-            .filter(subdomain => subdomain && subdomain.ip); // 只选择有 IP 的子域名
+            .filter(subdomain => subdomain?.ip)
 
-        const uniqueIPs = [...new Set(selectedDomains.map(subdomain => subdomain.ip))]; // 去重
+        const uniqueIPs = [...new Set(selectedDomains.map(subdomain => subdomain.ip))]
 
-        if (uniqueIPs.length === 0) {
-            showNotificationMessage('没有可用的 IP 进行端口扫描', '⚠️', 'warning');
-            return;
+        if (!uniqueIPs.length) {
+            showWarning('没有可用的IP')
+            return
         }
 
-        for (const ip of uniqueIPs) {
-            try {
-                const payload = {
+        try {
+            const confirmed = await confirm({
+                title: '批量发送到端口扫描',
+                message: `是否将选中的 ${uniqueIPs.length} 个IP发送到端口扫描？`,
+                type: 'info'
+            })
+
+            if (!confirmed) return
+
+            for (const ip of uniqueIPs) {
+                await api.post('/tasks', {
                     type: 'nmap',
                     payload: ip,
                     parent_id: scanResult.value.id
-                };
-
-                await api.post('/tasks', payload); // 调用 API 发送任务
-            } catch (error) {
-                console.error(`发送到端口扫描失败 (IP: ${ip}):`, error);
+                })
             }
+            showSuccess(`已发送 ${uniqueIPs.length} 个IP到端口扫描`)
+        } catch {
+            showError('批量发送失败')
         }
-
-        showNotificationMessage(`成功发送 ${uniqueIPs.length} 个 IP 到端口扫描`, '🌐', 'success');
-    };
+    }
 
     return {
+        // 状态
         scanResult,
         errorMessage,
         subdomains,
         selectedSubdomains,
         selectAll,
         isResolving,
+
+        // 方法
         fetchScanResult,
         toggleSelectAll,
         toggleReadStatus,
         resolveIP,
         resolveSelectedIPs,
         sendToPortScan,
-        sendSelectedToPortScan // 导出批量发送方法
-    };
+        sendSelectedToPortScan,
+
+        // 通知相关
+        showNotification,
+        notificationMessage,
+        notificationType,
+
+        // 确认对话框相关
+        showDialog,
+        dialogTitle,
+        dialogMessage,
+        dialogType,
+        handleConfirm,
+        handleCancel
+    }
 }
