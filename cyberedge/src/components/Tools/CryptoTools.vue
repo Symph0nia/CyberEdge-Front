@@ -81,18 +81,20 @@
         <!-- 结果显示 -->
         <div v-if="outputText" class="space-y-3">
           <div class="p-4 rounded-xl bg-gray-900/50 backdrop-blur-sm
-                      border border-gray-700/30 break-words">
+              border border-gray-700/30 break-words">
             <p class="text-sm text-gray-400 mb-2">处理结果：</p>
-            <p class="text-sm">{{ outputText }}</p>
+            <div class="max-h-[200px] overflow-y-auto overflow-x-auto">
+              <p class="text-sm p-0.5">{{ outputText }}</p>
+            </div>
           </div>
 
           <button
               @click="copyToClipboard"
               class="w-full px-4 py-2.5 rounded-xl
-                   bg-gray-700/50 hover:bg-gray-600/50
-                   text-sm font-medium
-                   transition-all duration-200
-                   flex items-center justify-center space-x-2"
+           bg-gray-700/50 hover:bg-gray-600/50
+           text-sm font-medium
+           transition-all duration-200
+           flex items-center justify-center space-x-2"
           >
             <span>{{ copyButtonText }}</span>
           </button>
@@ -235,14 +237,10 @@ export default {
 </script>
 
 <style scoped>
-.break-words {
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
 /* 自定义滚动条 */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -256,5 +254,22 @@ export default {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(156, 163, 175, 0.5);
+}
+
+/* 确保文本正确换行 */
+.break-words {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 优化滚动容器的样式 */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+/* 确保内容有合适的间距 */
+.p-0.5 {
+  padding: 0.125rem;
 }
 </style>
