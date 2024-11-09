@@ -74,19 +74,29 @@
       </table>
     </div>
 
-    <!-- 批量操作按钮 -->
+    <!-- 所有扫描页面统一使用这个样式 -->
     <div class="flex space-x-3">
       <button
           @click="handleBatchRead"
           :disabled="!hasSelected"
-          class="batch-button bg-green-500/50 hover:bg-green-600/50 text-green-100"
+          class="batch-button"
+          :class="[
+      !hasSelected
+        ? 'bg-gray-700/50 text-gray-400'
+        : 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200'
+    ]"
       >
-        标记选中为已读
+        标记选中项为已读
       </button>
       <button
           @click="handleBatchDelete"
           :disabled="!hasSelected"
-          class="batch-button bg-red-500/50 hover:bg-red-600/50 text-red-100"
+          class="batch-button"
+          :class="[
+      !hasSelected
+        ? 'bg-gray-700/50 text-gray-400'
+        : 'bg-red-500/50 hover:bg-red-600/50 text-red-100'
+    ]"
       >
         删除选中项
       </button>
@@ -95,14 +105,15 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue' // 添加 watch 导入
 
 export default {
   name: 'PathScanTable',
   props: {
     pathScanResults: {
       type: Array,
-      required: true
+      required: true,
+      default: () => []
     }
   },
   emits: ['view-details', 'delete-result', 'delete-selected', 'toggle-read-status', 'mark-selected-read'],
@@ -118,13 +129,14 @@ export default {
 
     const selectedResults = ref([])
 
-    const hasSelected = computed(() => selectedResults.value.length > 0)
+    const hasSelected = computed(() => selectedResults.value?.length > 0)
     const isAllSelected = computed(() => {
-      return props.pathScanResults.length > 0 &&
-          selectedResults.value.length === props.pathScanResults.length
+      if (!props.pathScanResults?.length) return false
+      return selectedResults.value.length === props.pathScanResults.length
     })
 
     const formatDate = (timestamp) => {
+      if (!timestamp) return '-'
       return new Date(timestamp).toLocaleString('zh-CN', {
         year: 'numeric',
         month: '2-digit',
@@ -135,27 +147,49 @@ export default {
     }
 
     const getPathCount = (result) => {
+      if (!result?.Data) return 0
       const pathGroup = result.Data.find(group => group.Key === 'paths')
       return pathGroup?.Value?.length || 0
     }
 
     const toggleSelectAll = () => {
+      if (!props.pathScanResults?.length) return
       selectedResults.value = isAllSelected.value
           ? []
-          : props.pathScanResults.map(result => result.id)
+          : props.pathScanResults.map(result => result?.id).filter(Boolean)
     }
 
-    const handleViewDetails = (id) => emit('view-details', id)
-    const handleDelete = (id) => emit('delete-result', id)
-    const handleToggleRead = (result) => emit('toggle-read-status', result.id, !result.IsRead)
+    const handleViewDetails = (id) => {
+      if (!id) return
+      emit('view-details', id)
+    }
+
+    const handleDelete = (id) => {
+      if (!id) return
+      emit('delete-result', id)
+    }
+
+    const handleToggleRead = (result) => {
+      if (!result?.id) return
+      emit('toggle-read-status', result.id, !result.IsRead)
+    }
+
     const handleBatchDelete = () => {
+      if (!selectedResults.value?.length) return
       emit('delete-selected', selectedResults.value)
       selectedResults.value = []
     }
+
     const handleBatchRead = () => {
+      if (!selectedResults.value?.length) return
       emit('mark-selected-read', selectedResults.value)
       selectedResults.value = []
     }
+
+    // 监听 props 变化，重置选中状态
+    watch(() => props.pathScanResults, () => {
+      selectedResults.value = []
+    })
 
     return {
       selectedResults,
@@ -186,8 +220,13 @@ export default {
 .batch-button {
   @apply px-4 py-2.5 rounded-xl text-sm font-medium
   transition-all duration-200
-  focus:outline-none focus:ring-2
+  focus:outline-none focus:ring-2 focus:ring-opacity-50
   disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* 优化按钮点击效果 */
+.batch-button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 /* 自定义滚动条 */
@@ -212,10 +251,5 @@ export default {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(156, 163, 175, 0.5);
-}
-
-/* 优化按钮点击效果 */
-button:active:not(:disabled) {
-  transform: scale(0.98);
 }
 </style>

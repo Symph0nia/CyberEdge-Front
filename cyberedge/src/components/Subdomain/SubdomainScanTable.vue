@@ -75,19 +75,29 @@
       </table>
     </div>
 
-    <!-- 批量操作 -->
+    <!-- 所有扫描页面统一使用这个样式 -->
     <div class="flex space-x-3">
       <button
           @click="handleBatchRead"
           :disabled="!hasSelected"
-          class="batch-button bg-gray-700/50 hover:bg-gray-600/50 text-gray-200"
+          class="batch-button"
+          :class="[
+      !hasSelected
+        ? 'bg-gray-700/50 text-gray-400'
+        : 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200'
+    ]"
       >
         标记选中项为已读
       </button>
       <button
           @click="handleBatchDelete"
           :disabled="!hasSelected"
-          class="batch-button bg-red-500/50 hover:bg-red-600/50 text-red-100"
+          class="batch-button"
+          :class="[
+      !hasSelected
+        ? 'bg-gray-700/50 text-gray-400'
+        : 'bg-red-500/50 hover:bg-red-600/50 text-red-100'
+    ]"
       >
         删除选中项
       </button>
@@ -165,18 +175,19 @@ export default {
 .action-button {
   @apply px-3 py-1.5 rounded-xl text-xs font-medium
   transition-all duration-200
-  focus:outline-none focus:ring-2 focus:ring-opacity-50;
+  focus:outline-none focus:ring-2 focus:ring-opacity-50
+  disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
 .batch-button {
   @apply px-4 py-2.5 rounded-xl text-sm font-medium
   transition-all duration-200
-  focus:outline-none focus:ring-2
+  focus:outline-none focus:ring-2 focus:ring-opacity-50
   disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
 /* 优化按钮点击效果 */
-button:active:not(:disabled) {
+.batch-button:active:not(:disabled) {
   transform: scale(0.98);
 }
 
