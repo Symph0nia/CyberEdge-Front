@@ -1,64 +1,122 @@
 <template>
-  <div class="flex flex-col justify-center space-y-4">
-    <h2 class="text-2xl font-bold mb-4 text-white text-center">加密解密工具</h2>
-    <ul class="space-y-2">
-      <li>
-        <button class="block w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-white transition duration-200" @click="showModal('base64Encode')">Base64 加密</button>
-      </li>
-      <li>
-        <button class="block w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-white transition duration-200" @click="showModal('base64Decode')">Base64 解密</button>
-      </li>
-      <li>
-        <button class="block w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-white transition duration-200" @click="showModal('aesEncrypt')">AES 加密</button>
-      </li>
-      <li>
-        <button class="block w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-white transition duration-200" @click="showModal('aesDecrypt')">AES 解密</button>
-      </li>
-      <li>
-        <button class="block w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-white transition duration-200" @click="showModal('md5Hash')">MD5 加密</button>
-      </li>
-      <li>
-        <button class="block w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-white transition duration-200" @click="showModal('sha256Hash')">SHA-256 加密</button>
-      </li>
-      <li>
-        <button class="block w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-white transition duration-200" @click="showModal('urlEncode')">URL 编码</button>
-      </li>
-      <li>
-        <button class="block w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-white transition duration-200" @click="showModal('urlDecode')">URL 解码</button>
-      </li>
-      <li>
-        <button class="block w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-white transition duration-200" @click="showModal('hexEncode')">Hex 编码</button>
-      </li>
-      <li>
-        <button class="block w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-white transition duration-200" @click="showModal('hexDecode')">Hex 解码</button>
-      </li>
-    </ul>
+  <div class="flex flex-col p-6 text-gray-200">
+    <h2 class="text-xl font-medium mb-6 tracking-wide">加密解密工具</h2>
 
-    <!-- 输入框和结果输出 -->
-    <div v-if="isModalVisible" class="mt-4 p-6 bg-gray-900 rounded-lg shadow-lg">
-      <h3 class="text-lg text-white mb-2">请输入文本:</h3>
-      <input type="text" v-model="inputText" class="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200" placeholder="输入文本"/>
+    <!-- 工具列表 -->
+    <div class="space-y-1.5">
+      <button
+          v-for="tool in tools"
+          :key="tool.action"
+          @click="showModal(tool.action)"
+          class="w-full text-left px-4 py-2.5 rounded-xl
+               text-sm font-medium tracking-wide
+               transition-all duration-200
+               hover:bg-gray-700/50 focus:bg-gray-700/50
+               flex items-center space-x-3"
+      >
+        <span class="text-lg">{{ tool.icon }}</span>
+        <span>{{ tool.name }}</span>
+      </button>
+    </div>
 
-      <div v-if="currentAction === 'aesEncrypt' || currentAction === 'aesDecrypt'" class="mt-2">
-        <h4 class="text-white mb-1">密钥:</h4>
-        <input type="text" v-model="key" class="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200" placeholder="输入密钥"/>
-      </div>
-
-      <button @click="handleAction" class="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">提交</button>
-      <button @click="closeModal" class="mt-2 w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200">关闭</button>
-
-      <div v-if="outputText" class="mt-4 text-white flex flex-col">
-        <div class="bg-gray-800 rounded-lg p-3 break-words overflow-auto" style="max-height: 150px;">
-          <strong>结果:</strong> {{ outputText }}
+    <!-- 操作面板 - 添加固定高度和滚动 -->
+    <div v-if="isModalVisible"
+         class="mt-6 rounded-2xl bg-gray-800/30 backdrop-blur-sm border border-gray-700/30 p-6
+                max-h-[400px] overflow-y-auto relative">
+      <!-- 输入区域 -->
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-2 text-gray-300">输入文本</label>
+          <input
+              v-model="inputText"
+              type="text"
+              class="w-full px-4 py-2.5 rounded-xl
+                   bg-gray-900/50 backdrop-blur-sm
+                   border border-gray-700/30
+                   text-sm
+                   focus:outline-none focus:ring-2 focus:ring-gray-600/50
+                   transition-all duration-200"
+              placeholder="请输入需要处理的文本"
+          />
         </div>
-        <button @click="copyToClipboard" class="mt-2 bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600 transition duration-200">复制</button>
+
+        <!-- AES加密解密的密钥输入 -->
+        <div v-if="['aesEncrypt', 'aesDecrypt'].includes(currentAction)">
+          <label class="block text-sm font-medium mb-2 text-gray-300">密钥</label>
+          <input
+              v-model="key"
+              type="text"
+              class="w-full px-4 py-2.5 rounded-xl
+                   bg-gray-900/50 backdrop-blur-sm
+                   border border-gray-700/30
+                   text-sm
+                   focus:outline-none focus:ring-2 focus:ring-gray-600/50
+                   transition-all duration-200"
+              placeholder="请输入密钥"
+          />
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="flex space-x-3">
+          <button
+              @click="handleAction"
+              class="flex-1 px-4 py-2.5 rounded-xl
+                   bg-gray-700/50 hover:bg-gray-600/50
+                   text-sm font-medium
+                   transition-all duration-200"
+          >
+            执行
+          </button>
+          <button
+              @click="closeModal"
+              class="flex-1 px-4 py-2.5 rounded-xl
+                   bg-gray-800/50 hover:bg-gray-700/50
+                   text-sm font-medium
+                   transition-all duration-200"
+          >
+            取消
+          </button>
+        </div>
+
+        <!-- 结果显示 -->
+        <div v-if="outputText" class="space-y-3">
+          <div class="p-4 rounded-xl bg-gray-900/50 backdrop-blur-sm
+                      border border-gray-700/30 break-words">
+            <p class="text-sm text-gray-400 mb-2">处理结果：</p>
+            <p class="text-sm">{{ outputText }}</p>
+          </div>
+
+          <button
+              @click="copyToClipboard"
+              class="w-full px-4 py-2.5 rounded-xl
+                   bg-gray-700/50 hover:bg-gray-600/50
+                   text-sm font-medium
+                   transition-all duration-200
+                   flex items-center justify-center space-x-2"
+          >
+            <span>{{ copyButtonText }}</span>
+          </button>
+        </div>
       </div>
+    </div>
+
+    <!-- 复制成功提示 -->
+    <div v-if="showCopySuccess"
+         class="fixed bottom-4 left-1/2 transform -translate-x-1/2
+                bg-gray-800/90 backdrop-blur-sm
+                text-white text-sm
+                px-4 py-2 rounded-full
+                shadow-lg border border-gray-700/30
+                transition-all duration-300"
+         :class="{ 'opacity-0': !showCopySuccess }"
+    >
+      已复制到剪贴板
     </div>
   </div>
 </template>
 
 <script>
-import CryptoJS from 'crypto-js'; // 确保您安装了 crypto-js 库
+import CryptoJS from 'crypto-js';
 
 export default {
   name: 'CryptoTools',
@@ -68,22 +126,37 @@ export default {
       inputText: '',
       outputText: '',
       currentAction: '',
-      key: '' // 用于存储密钥
+      key: '',
+      showCopySuccess: false,
+      copyButtonText: '复制结果',
+      tools: [
+        { name: 'Base64 加密', action: 'base64Encode', icon: '🔒' },
+        { name: 'Base64 解密', action: 'base64Decode', icon: '🔓' },
+        { name: 'AES 加密', action: 'aesEncrypt', icon: '🔐' },
+        { name: 'AES 解密', action: 'aesDecrypt', icon: '🗝️' },
+        { name: 'MD5 加密', action: 'md5Hash', icon: '🔏' },
+        { name: 'SHA-256 加密', action: 'sha256Hash', icon: '🔒' },
+        { name: 'URL 编码', action: 'urlEncode', icon: '🌐' },
+        { name: 'URL 解码', action: 'urlDecode', icon: '🔍' },
+        { name: 'Hex 编码', action: 'hexEncode', icon: '📝' },
+        { name: 'Hex 解码', action: 'hexDecode', icon: '📄' }
+      ]
     };
   },
   methods: {
+    // 保持原有的方法实现不变
     showModal(action) {
       this.currentAction = action;
       this.isModalVisible = true;
-      this.inputText = ''; // 清空输入
-      this.outputText = ''; // 清空输出
-      this.key = ''; // 清空密钥
+      this.inputText = '';
+      this.outputText = '';
+      this.key = '';
     },
     closeModal() {
       this.isModalVisible = false;
-      this.inputText = ''; // 清空输入
-      this.outputText = ''; // 清空输出
-      this.key = ''; // 清空密钥
+      this.inputText = '';
+      this.outputText = '';
+      this.key = '';
     },
     handleAction() {
       switch (this.currentAction) {
@@ -139,10 +212,22 @@ export default {
     copyToClipboard() {
       navigator.clipboard.writeText(this.outputText)
           .then(() => {
-            alert("结果已复制到剪贴板");
+            // 更改按钮文字
+            this.copyButtonText = '已复制 ✓';
+            // 显示提示
+            this.showCopySuccess = true;
+
+            // 2秒后恢复按钮文字
+            setTimeout(() => {
+              this.copyButtonText = '复制结果';
+              this.showCopySuccess = false;
+            }, 2000);
           })
           .catch(() => {
-            alert("复制失败");
+            this.copyButtonText = '复制失败 ✗';
+            setTimeout(() => {
+              this.copyButtonText = '复制结果';
+            }, 2000);
           });
     }
   }
@@ -150,9 +235,26 @@ export default {
 </script>
 
 <style scoped>
-/* 添加样式，如果需要的话 */
 .break-words {
-  word-wrap: break-word; /* 允许长单词换行 */
-  overflow-wrap: break-word; /* 兼容性处理 */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
 }
 </style>
