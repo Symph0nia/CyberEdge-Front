@@ -1,15 +1,23 @@
 <template>
-  <Transition name="slide-fade">
-    <div v-if="show" class="popup-container">
-      <div :class="['popup-content', type === 'success' ? 'success' : 'error']">
-        <div class="emoji-container">
-          {{ emoji }}
+  <Transition name="notification">
+    <div v-if="show" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50">
+      <div
+          :class="[
+          'px-6 py-4 rounded-2xl shadow-2xl',
+          'backdrop-blur-xl border',
+          'flex items-center space-x-4',
+          type === 'success' ? 'bg-gray-800/80 border-gray-700/30' : 'bg-gray-800/80 border-gray-700/30'
+        ]"
+      >
+        <!-- 状态图标 -->
+        <div class="text-lg">
+          <span v-if="type === 'success'" class="text-green-400">✓</span>
+          <span v-else class="text-red-400">⚠</span>
         </div>
-        <div class="message">
+
+        <!-- 消息文本 -->
+        <div class="text-sm font-medium text-gray-200">
           {{ message }}
-        </div>
-        <div class="emoji-background">
-          {{ backgroundEmojis }}
         </div>
       </div>
     </div>
@@ -17,7 +25,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 export default {
   name: 'PopupNotification',
@@ -32,7 +40,7 @@ export default {
     },
     emoji: {
       type: String,
-      default: '🎉'
+      default: '✓'
     },
     type: {
       type: String,
@@ -43,12 +51,6 @@ export default {
   setup(props, { emit }) {
     const show = ref(false);
     let timer;
-
-    const backgroundEmojis = computed(() => {
-      return props.type === 'success'
-          ? '🎉✨🎊🏆🥇🌟💫👍👏💯🚀'
-          : '😓😢😭😿💔❌⛔🚫⚠️💣';
-    });
 
     onMounted(() => {
       show.value = true;
@@ -62,80 +64,35 @@ export default {
       clearTimeout(timer);
     });
 
-    return { show, backgroundEmojis };
+    return { show };
   }
 }
 </script>
 
 <style scoped>
-.popup-container {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
+.backdrop-blur-xl {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 
-.popup-content {
-  color: white;
-  padding: 20px 40px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(5px);
+.notification-enter-active,
+.notification-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.success {
-  background-color: rgba(72, 187, 120, 0.9);
-}
-
-.error {
-  background-color: rgba(245, 101, 101, 0.9);
-}
-
-.emoji-container {
-  font-size: 3em;
-  margin-right: 20px;
-  animation: bounce 0.6s ease infinite alternate;
-}
-
-.message {
-  font-size: 1.2em;
-  font-weight: 600;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-}
-
-.emoji-background {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 4em;
-  opacity: 0.1;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  transform: translateY(-50px) translateX(-50%);
+.notification-enter-from {
   opacity: 0;
+  transform: translate(-50%, -20px);
 }
 
-@keyframes bounce {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-10px);
-  }
+.notification-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -20px);
+}
+
+/* 为了确保动画平滑，添加硬件加速 */
+.fixed {
+  will-change: transform;
+  -webkit-font-smoothing: antialiased;
 }
 </style>

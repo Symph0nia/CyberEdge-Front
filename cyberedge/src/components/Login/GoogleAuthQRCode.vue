@@ -67,7 +67,6 @@
     <PopupNotification
         v-if="showNotification"
         :message="notificationMessage"
-        :emoji="notificationEmoji"
         :type="notificationType"
         @close="showNotification = false"
     />
@@ -77,6 +76,7 @@
 <script>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useNotification } from '../../composables/useNotification'; // 导入新的通知钩子
 import api from '../../api/axiosInstance';
 import PopupNotification from '../Utils/PopupNotification.vue';
 
@@ -90,10 +90,15 @@ export default {
     const qrCodeUrl = ref('');
     const loading = ref(false);
     const interfaceClosed = ref(false);
-    const showNotification = ref(false);
-    const notificationMessage = ref('');
-    const notificationEmoji = ref('');
-    const notificationType = ref('success');
+
+    // 使用新的通知钩子
+    const {
+      showNotification,
+      notificationMessage,
+      notificationType,
+      showSuccess,
+      showError
+    } = useNotification();
 
     const fetchQRCode = async () => {
       loading.value = true;
@@ -102,25 +107,23 @@ export default {
         qrCodeUrl.value = URL.createObjectURL(response.data);
         interfaceClosed.value = false;
 
-        showNotification.value = true;
-        notificationMessage.value = '二维码已生成';
-        notificationEmoji.value = '✓';
-        notificationType.value = 'success';
+        // 使用新的成功通知方法
+        showSuccess('二维码已生成');
       } catch (error) {
         console.error('获取二维码失败:', error);
         interfaceClosed.value = true;
-
-        showNotification.value = true;
-        notificationMessage.value = '生成失败';
-        notificationEmoji.value = '!';
-        notificationType.value = 'error';
 
         if (error.response && error.response.data instanceof Blob) {
           const text = await error.response.data.text();
           const errorData = JSON.parse(text);
           if (errorData.error === "二维码接口已关闭") {
-            notificationMessage.value = '接口暂时关闭';
+            // 使用新的错误通知方法
+            showError('接口暂时关闭');
+          } else {
+            showError('生成失败');
           }
+        } else {
+          showError('生成失败');
         }
       } finally {
         loading.value = false;
@@ -138,7 +141,6 @@ export default {
       fetchQRCode,
       showNotification,
       notificationMessage,
-      notificationEmoji,
       notificationType,
       goToLogin
     };
