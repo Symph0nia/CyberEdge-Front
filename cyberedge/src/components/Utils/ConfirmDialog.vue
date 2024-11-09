@@ -1,22 +1,56 @@
 <template>
-  <Transition name="fade">
-    <div v-if="show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full text-white relative overflow-hidden">
-        <div class="emoji-background">
-          {{ backgroundEmojis }}
-        </div>
-        <h2 class="text-2xl font-bold mb-4">{{ title }}</h2>
-        <p class="mb-6">{{ message }}</p>
-        <div class="flex justify-end space-x-4">
+  <Transition name="dialog">
+    <div v-if="show"
+         class="fixed inset-0 flex items-center justify-center z-50 px-4"
+         @click="onCancel"
+    >
+      <!-- 背景遮罩 -->
+      <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+
+      <!-- 对话框 -->
+      <div class="bg-gray-800/90 backdrop-blur-xl relative
+                  max-w-md w-full p-8 rounded-2xl shadow-2xl
+                  border border-gray-700/30
+                  transform transition-all duration-300"
+           @click.stop
+      >
+        <!-- 标题 -->
+        <h2 class="text-lg font-medium text-gray-200 mb-3">
+          {{ title }}
+        </h2>
+
+        <!-- 消息内容 -->
+        <p class="text-sm text-gray-300 leading-relaxed mb-6">
+          {{ message }}
+        </p>
+
+        <!-- 按钮区域 -->
+        <div class="flex space-x-3">
+          <!-- 取消按钮 -->
           <button
               @click="onCancel"
-              class="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700 transition duration-300"
+              class="flex-1 px-4 py-2.5 rounded-xl
+                   bg-gray-700/50 hover:bg-gray-600/50
+                   text-sm font-medium text-gray-200
+                   transition-all duration-200
+                   focus:outline-none focus:ring-2 focus:ring-gray-600/50"
           >
             取消
           </button>
+
+          <!-- 确认按钮 -->
           <button
               @click="onConfirm"
-              class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition duration-300"
+              :class="[
+              'flex-1 px-4 py-2.5 rounded-xl text-sm font-medium',
+              'transition-all duration-200',
+              'focus:outline-none focus:ring-2',
+              type === 'danger'
+                ? 'bg-red-500/50 hover:bg-red-600/50 focus:ring-red-500/50 text-red-100'
+                : type === 'warning'
+                  ? 'bg-yellow-500/50 hover:bg-yellow-600/50 focus:ring-yellow-500/50 text-yellow-100'
+                  : 'bg-blue-500/50 hover:bg-blue-600/50 focus:ring-blue-500/50 text-blue-100'
+            ]"
           >
             确认
           </button>
@@ -27,8 +61,6 @@
 </template>
 
 <script>
-import { computed } from 'vue';
-
 export default {
   name: 'ConfirmDialog',
   props: {
@@ -49,19 +81,6 @@ export default {
   },
   emits: ['confirm', 'cancel'],
   setup(props, { emit }) {
-    const backgroundEmojis = computed(() => {
-      switch (props.type) {
-        case 'info':
-          return '❓🤔💭🧐🔍📝📌❗';
-        case 'warning':
-          return '⚠️🚧🔔🚨🛑⏰🔰';
-        case 'danger':
-          return '🚫⛔🔥💀☠️⚡💢';
-        default:
-          return '❓🤔💭🧐🔍📝📌❗';
-      }
-    });
-
     const onConfirm = () => {
       emit('confirm');
     };
@@ -71,7 +90,6 @@ export default {
     };
 
     return {
-      backgroundEmojis,
       onConfirm,
       onCancel
     };
@@ -80,25 +98,40 @@ export default {
 </script>
 
 <style scoped>
-.emoji-background {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 8em;
-  opacity: 0.1;
-  white-space: nowrap;
-  pointer-events: none;
-  user-select: none;
+.dialog-enter-active,
+.dialog-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.fade-enter-active,
-.fade-leave-active {
+.dialog-enter-from,
+.dialog-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.dialog-enter-active .bg-black\/30,
+.dialog-leave-active .bg-black\/30 {
   transition: opacity 0.3s ease;
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.dialog-enter-from .bg-black\/30,
+.dialog-leave-to .bg-black\/30 {
   opacity: 0;
+}
+
+/* 优化按钮点击效果 */
+button:active {
+  transform: scale(0.98);
+}
+
+/* 确保模糊效果在所有浏览器中正常工作 */
+.backdrop-blur-xl {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 </style>
