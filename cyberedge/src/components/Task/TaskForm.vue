@@ -1,90 +1,152 @@
 <template>
-  <div class="task-form-container mt-6">
-    <h3 class="text-2xl font-bold mb-6">创建新任务 ✨</h3>
+  <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-2xl border border-gray-700/30 mt-6">
+    <h3 class="text-xl font-medium tracking-wide text-gray-200 mb-6">创建任务</h3>
 
-    <!-- 选择任务类型 -->
-    <select
-        v-model="newTaskType"
-        class="p-3 rounded-md bg-gray-700 text-white w-full mb-4 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-    >
-      <option value="" disabled>选择任务类型</option>
-      <option value="ping">Ping 任务</option>
-      <option value="httpx">Httpx 任务</option>
-      <option value="subfinder">Subfinder 任务</option>
-      <option value="nmap">Nmap 任务</option>
-      <option value="ffuf">Ffuf 任务</option>
-    </select>
+    <div class="space-y-4">
+      <!-- 选择任务类型 -->
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-300">任务类型</label>
+        <select
+            v-model="newTaskType"
+            class="w-full px-4 py-2.5 rounded-xl
+                 bg-gray-900/50 backdrop-blur-sm
+                 border border-gray-700/30
+                 text-sm text-gray-200
+                 focus:outline-none focus:ring-2 focus:ring-gray-600/50
+                 transition-all duration-200
+                 appearance-none"
+        >
+          <option value="" disabled>选择任务类型</option>
+          <option v-for="(label, value) in taskTypes"
+                  :key="value"
+                  :value="value">
+            {{ label }}
+          </option>
+        </select>
+      </div>
 
-    <!-- 输入目标地址 -->
-    <input
-        v-model="newTaskAddress"
-        type="text"
-        placeholder="输入目标地址"
-        class="p-3 rounded-md bg-gray-700 text-white w-full mb-4 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-    />
+      <!-- 输入目标地址 -->
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-300">目标地址</label>
+        <input
+            v-model="newTaskAddress"
+            type="text"
+            placeholder="输入目标地址"
+            class="w-full px-4 py-2.5 rounded-xl
+                 bg-gray-900/50 backdrop-blur-sm
+                 border border-gray-700/30
+                 text-sm text-gray-200
+                 focus:outline-none focus:ring-2 focus:ring-gray-600/50
+                 transition-all duration-200"
+        />
+      </div>
 
-    <!-- 创建按钮 -->
-    <button
-        @click="createTask"
-        :disabled="!isValidInput"
-        class="bg-gradient-to-r from-blue500 to-blue700 text-white px-[12px] py-[8px] rounded-md hover:bg-blue600 transform hover:scale-[1.05] transition duration=300 shadow-md w-full">
-      创建任务
-    </button>
+      <!-- 创建按钮 -->
+      <button
+          @click="handleCreateTask"
+          :disabled="!isValidInput"
+          class="w-full px-4 py-2.5 rounded-xl
+               text-sm font-medium
+               transition-all duration-200
+               focus:outline-none focus:ring-2
+               disabled:opacity-50 disabled:cursor-not-allowed"
+          :class="[
+          isValidInput
+            ? 'bg-blue-500/50 hover:bg-blue-600/50 text-blue-100 focus:ring-blue-500/50'
+            : 'bg-gray-700/50 text-gray-400'
+        ]"
+      >
+        创建任务
+      </button>
+    </div>
   </div>
 </template>
 
 <script>
+import { ref, computed } from 'vue'
+import { useNotification } from '../../composables/useNotification'
+
 export default {
   name: 'TaskForm',
-  data() {
-    return {
-      newTaskAddress: '', // 目标地址
-      newTaskType: '' // 任务类型
-    };
-  },
-  computed: {
-    isValidInput() {
-      // 确保任务类型和目标地址始终有效
-      const hasType = this.newTaskType.trim() !== '';
-      const hasAddress = this.newTaskAddress.trim() !== '';
+  setup(props, { emit }) {
+    // 使用通知钩子
+    const { showSuccess, showError } = useNotification()
 
-      return hasType && hasAddress;
+    // 表单数据
+    const newTaskType = ref('')
+    const newTaskAddress = ref('')
+
+    // 任务类型选项
+    const taskTypes = {
+      ping: 'Ping 检查',
+      httpx: 'HTTPX 扫描',
+      subfinder: '子域名扫描',
+      nmap: '端口扫描',
+      ffuf: '路径扫描'
     }
-  },
-  methods: {
-    createTask() {
-      // 发出 'create-task' 事件，并传递符合 API 要求的数据格式
-      this.$emit('create-task', {
-        type: this.newTaskType,
-        payload: this.newTaskAddress // 使用目标地址作为 payload
-      });
 
-      // 清空表单字段
-      this.newTaskAddress = '';
-      this.newTaskType = '';
+    // 输入验证
+    const isValidInput = computed(() => {
+      return newTaskType.value.trim() !== '' &&
+          newTaskAddress.value.trim() !== ''
+    })
+
+    // 创建任务处理
+    const handleCreateTask = () => {
+      if (!isValidInput.value) {
+        showError('请填写完整信息')
+        return
+      }
+
+      try {
+        emit('create-task', {
+          type: newTaskType.value,
+          payload: newTaskAddress.value
+        })
+
+        // 重置表单
+        newTaskType.value = ''
+        newTaskAddress.value = ''
+
+        showSuccess('任务已创建')
+      } catch (error) {
+        showError('创建任务失败')
+      }
+    }
+
+    return {
+      newTaskType,
+      newTaskAddress,
+      taskTypes,
+      isValidInput,
+      handleCreateTask
     }
   }
 }
 </script>
 
 <style scoped>
-.task-form-container {
-  padding: 20px;
+.backdrop-blur-xl {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 
-input, select {
-  width: 100%;
+/* 自定义select箭头 */
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
 }
 
-button.bg-blue500 {
-  background-color: #3b82f6; /* 蓝色按钮 */
+/* 优化按钮点击效果 */
+button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
-button.bg-blue600:hover {
-  background-color: #2563eb; /* 深蓝色按钮悬停效果 */
-}
-
-button.bg-gradient-to-r.from-blue500.to-blue700 {
-  background-image: linear-gradient(to right, #3b82f6, #2563eb); /* 渐变背景 */
+/* 禁用状态样式 */
+button:disabled {
+  transform: none;
 }
 </style>

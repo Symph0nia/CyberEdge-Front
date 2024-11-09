@@ -1,55 +1,51 @@
 <template>
   <div class="bg-gray-900 text-white flex flex-col min-h-screen">
-    <!-- 顶部导航栏 -->
     <HeaderPage />
 
-    <!-- 主体内容 -->
-    <div class="container mx-auto px-4 py-8 flex-1 mt-16">
-      <!-- 使用 TaskList 子组件 -->
+    <div class="container mx-auto px-6 py-8 flex-1 mt-16">
+      <!-- 任务列表组件 -->
       <TaskList
           :tasks="tasks"
           @toggle-task="toggleTask"
-          @confirm-delete="confirmDelete"
+          @delete-task="handleDelete"
           @refresh-tasks="handleRefreshTasks"
       />
 
-      <!-- 使用 TaskForm 子组件 -->
+      <!-- 任务创建表单组件 -->
       <TaskForm @create-task="createTask" />
-
-      <!-- 弹窗通知 -->
-      <PopupNotification
-          v-if="showNotification"
-          :message="notificationMessage"
-          :emoji="notificationEmoji"
-          :type="notificationType"
-          @close="showNotification = false"
-      />
-
-      <!-- 确认对话框 -->
-      <ConfirmDialog
-          :show="showConfirmDialog"
-          :title="confirmDialogTitle"
-          :message="confirmDialogMessage"
-          type="danger"
-          @confirm="handleConfirmDelete"
-          @cancel="showConfirmDialog = false"
-      />
     </div>
 
-    <!-- 页脚 -->
     <FooterPage />
+
+    <!-- 通知和确认对话框组件 -->
+    <PopupNotification
+        v-if="showNotification"
+        :message="notificationMessage"
+        :type="notificationType"
+        @close="showNotification = false"
+    />
+
+    <ConfirmDialog
+        :show="showDialog"
+        :title="dialogTitle"
+        :message="dialogMessage"
+        :type="dialogType"
+        @confirm="handleConfirm"
+        @cancel="handleCancel"
+    />
   </div>
 </template>
 
 <script>
-// 引入子组件
 import { ref, onMounted } from 'vue'
 import TaskList from './TaskList.vue'
 import TaskForm from './TaskForm.vue'
-import PopupNotification from '../Utils/PopupNotification.vue'
-import ConfirmDialog from '../Utils/ConfirmDialog.vue'
 import HeaderPage from '../HeaderPage.vue'
 import FooterPage from '../FooterPage.vue'
+import PopupNotification from '../Utils/PopupNotification.vue'
+import ConfirmDialog from '../Utils/ConfirmDialog.vue'
+import { useNotification } from '../../composables/useNotification'
+import { useConfirmDialog } from '../../composables/useConfirmDialog'
 import api from '../../api/axiosInstance'
 
 export default {
@@ -63,17 +59,27 @@ export default {
     ConfirmDialog
   },
   setup() {
-    const tasks = ref([]) // 存储任务列表
-    const showNotification = ref(false) // 控制通知的显示
-    const notificationMessage = ref('') // 通知消息
-    const notificationEmoji = ref('') // 通知表情
-    const notificationType = ref('success') // 通知类型
+    const tasks = ref([])
 
-    // 确认对话框相关状态
-    const showConfirmDialog = ref(false)
-    const confirmDialogTitle = ref('')
-    const confirmDialogMessage = ref('')
-    const taskToDelete = ref(null)
+    // 使用新的通知钩子
+    const {
+      showNotification,
+      notificationMessage,
+      notificationType,
+      showSuccess,
+      showError
+    } = useNotification()
+
+    // 使用新的确认对话框钩子
+    const {
+      showDialog,
+      dialogTitle,
+      dialogMessage,
+      dialogType,
+      confirm,
+      handleConfirm,
+      handleCancel
+    } = useConfirmDialog()
 
     // 获取任务列表
     const fetchTasks = async () => {
@@ -81,119 +87,106 @@ export default {
         const response = await api.get('/tasks')
         tasks.value = response.data
       } catch (error) {
-        console.error('获取任务列表失败:', error)
-        showNotification.value = true
-        notificationMessage.value = '获取任务列表失败'
-        notificationEmoji.value = '❌'
-        notificationType.value = 'error'
+        showError('获取任务列表失败')
       }
     }
 
-    // 创建新任务
+    // 创建任务
     const createTask = async (taskData) => {
       try {
         await api.post('/tasks', taskData)
-        fetchTasks() // 重新获取任务列表
-        showNotification.value = true
-        notificationMessage.value = '成功创建任务'
-        notificationEmoji.value = '✅'
+        await fetchTasks()
+        showSuccess('已创建新任务')
       } catch (error) {
-        console.error('创建任务失败:', error)
-        showNotification.value = true
-        notificationMessage.value = '创建任务失败'
-        notificationEmoji.value = '❌'
+        showError('创建任务失败')
       }
     }
 
-    // 切换任务状态（启动或停止）
+    // 切换任务状态
     const toggleTask = async (task) => {
       try {
-        if (task.status === 'running') {
-          await api.post(`/tasks/${task.id}/start`, { action: 'stop' }) // 假设同一个接口可以处理停止逻辑，传递 action 参数
-        } else {
-          await api.post(`/tasks/${task.id}/start`, { action: 'start' }) // 启动任务
-        }
-        fetchTasks()
+        const action = task.status === 'running' ? 'stop' : 'start'
+        await api.post(`/tasks/${task.id}/start`, { action })
+        await fetchTasks()
+        showSuccess(`已${action === 'start' ? '启动' : '停止'}任务`)
       } catch (error) {
-        console.error('切换任务状态失败:', error)
-        showNotification.value = true
-        notificationMessage.value = `切换任务状态失败: ${task.id}`
-        notificationEmoji.value = '❌'
-        notificationType.value = 'error'
-      }
-    }
-
-    // 确认删除任务
-    const confirmDelete = (taskID) => {
-      taskToDelete.value = taskID
-      confirmDialogTitle.value = '删除任务确认'
-      confirmDialogMessage.value = `您确定要删除任务 ${taskID} 吗？此操作不可撤销。`
-      showConfirmDialog.value = true
-    }
-
-    // 处理确认删除
-    const handleConfirmDelete = () => {
-      if (taskToDelete.value) {
-        deleteTask(taskToDelete.value)
-        showConfirmDialog.value = false
+        showError(`${task.status === 'running' ? '停止' : '启动'}任务失败`)
       }
     }
 
     // 删除任务
-    const deleteTask = async (taskID) => {
+    const handleDelete = async (taskId) => {
       try {
-        await api.delete(`/tasks/${taskID}`)
-        fetchTasks() // 重新获取任务列表
-        showNotification.value = true
-        notificationMessage.value = `成功删除任务 ${taskID}`
-        notificationEmoji.value = '🗑️'
+        const confirmed = await confirm({
+          title: '确认删除',
+          message: `是否确认删除任务 ${taskId}？此操作不可撤销。`,
+          type: 'danger'
+        })
+
+        if (confirmed) {
+          await api.delete(`/tasks/${taskId}`)
+          await fetchTasks()
+          showSuccess('已删除任务')
+        }
       } catch (error) {
-        console.error(`删除任务失败: ${taskID}`, error)
-        showNotification.value = true
-        notificationMessage.value = `删除任务 ${taskID} 失败`
-        notificationEmoji.value = '❌'
+        showError('删除任务失败')
       }
     }
 
-    // 刷新任务列表并显示通知
+    // 刷新任务列表
     const handleRefreshTasks = async () => {
       try {
-        await fetchTasks(); // 刷新数据
-
-        // 显示刷新成功的通知消息
-        showNotification.value = true;
-        notificationMessage.value = "已刷新任务列表";
-        notificationEmoji.value = "🔄";
-        notificationType.value = "success";
-
+        await fetchTasks()
+        showSuccess('已刷新任务列表')
       } catch (error) {
-        console.error("刷新任务列表失败:", error);
-        showNotification.value = true;
-        notificationMessage.value = "刷新任务列表失败";
-        notificationEmoji.value = "❌";
-        notificationType.value = "error";
+        showError('刷新任务列表失败')
       }
-    };
+    }
 
-    onMounted(() => {
-      fetchTasks(); // 页面加载时获取任务列表
-    });
+    onMounted(fetchTasks)
 
     return {
       tasks,
       showNotification,
       notificationMessage,
-      notificationEmoji,
       notificationType,
-      showConfirmDialog,
-      confirmDialogTitle,
-      confirmDialogMessage,
+      showDialog,
+      dialogTitle,
+      dialogMessage,
+      dialogType,
+      handleConfirm,
+      handleCancel,
       createTask,
       toggleTask,
-      confirmDelete,
-      handleConfirmDelete,
-      handleRefreshTasks, // 添加 handleRefreshTasks 到返回值中，以便监听 refresh-tasks 事件时调用该方法。
-    };
+      handleDelete,
+      handleRefreshTasks
+    }
   }
 }
 </script>
+
+<style scoped>
+.backdrop-blur-xl {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+</style>
