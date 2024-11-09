@@ -1,11 +1,11 @@
-// usePortScanDetail.js
+// usePortScan.js
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../api/axiosInstance'
 import { useNotification } from './useNotification'
 import { useConfirmDialog } from './useConfirmDialog'
 
-export function usePortScanDetail() {
+export function usePortScan() {
     const route = useRoute()
 
     // 使用通知和确认对话框钩子

@@ -151,7 +151,7 @@
 <script>
 import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { usePortScanDetail } from '../../composables/usePortScanDetail'
+import { usePortScan } from '../../composables/usePortScan'
 import HeaderPage from '../HeaderPage.vue'
 import FooterPage from '../FooterPage.vue'
 import PopupNotification from '../Utils/PopupNotification.vue'
@@ -190,7 +190,7 @@ export default {
       })
     }
 
-    // 使用 usePortScanDetail 中的所有功能
+    // 使用 usePortScan 中的所有功能
     const {
       // 基础数据
       scanResult,
@@ -219,7 +219,7 @@ export default {
       dialogType,
       handleConfirm,
       handleCancel
-    } = usePortScanDetail()
+    } = usePortScan()
 
     // 在组件挂载时获取数据
     onMounted(() => {

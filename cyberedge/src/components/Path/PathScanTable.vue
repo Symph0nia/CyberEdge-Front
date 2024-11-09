@@ -1,68 +1,102 @@
 <template>
-  <div>
-    <table class="min-w-full bg-gray-800 shadow-lg rounded-md overflow-hidden">
-      <thead class="bg-gray-700">
-      <tr>
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">
-          <input type="checkbox" @change="toggleSelectAll" v-model="selectAll" />
-        </th>
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">扫描ID</th>
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">目标地址</th>
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">时间戳</th>
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">路径数量</th>
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">已读状态</th>
-        <th class="py-4 px-6 border-b-2 border-gray-600 text-left">操作</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr v-for="result in pathScanResults" :key="result.id" class="hover:bg-gray-700 transition duration-300">
-        <td class="py-5 px-6 border-b border-gray-600">
-          <input type="checkbox" v-model="selectedResults" :value="result.id" />
-        </td>
-        <td class="py-5 px-6 border-b border-gray-600">{{ result.id }}</td>
-        <td class="py-5 px-6 border-b border-gray-600">{{ result.Target }}</td>
-        <td class="py-5 px-6 border-b border-gray-600">{{ new Date(result.Timestamp).toLocaleString() }}</td>
-        <td class="py-5 px-6 border-b border-gray-600">
-          {{ getPathCount(result) }} 个路径
-        </td>
-        <td class="py-5 px-6 border-b border-gray-600">
-          {{ result.IsRead ? '✅ 已读' : '📖 未读' }}
-        </td>
-        <td class="py-5 px-6 border-b border-gray-600 flex space-x-[10px]">
-          <button @click="$emit('view-details', result.id)"
-                  class="bg-blue-500 text-white px-[12px] py-[8px] rounded-md hover:bg-blue-600 transform hover:scale-[1.05] transition duration=300 shadow-md">
-            查看详情 🔍
-          </button>
-          <button @click="$emit('toggle-read-status', result.id, !result.IsRead)"
-                  class="bg-green-500 text-white px-[12px] py-[8px] rounded-md hover:bg-green-600 transform hover:scale-[1.05] transition duration=300 shadow-md">
-            {{ result.IsRead ? '标记为未读' : '标记为已读' }}
-          </button>
-          <button @click="$emit('delete-result', result.id)"
-                  class="bg-red-500 text-white px-[12px] py-[8px] rounded-md hover:bg-red-600 transform hover:scale-[1.05] transition duration=300 shadow-md">
-            删除 🗑️
-          </button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+  <div class="space-y-6">
+    <!-- 表格 -->
+    <div class="relative overflow-x-auto rounded-xl">
+      <table class="w-full">
+        <thead>
+        <tr class="border-b border-gray-700/50">
+          <th class="py-4 px-6 text-left">
+            <input
+                type="checkbox"
+                @change="toggleSelectAll"
+                :checked="isAllSelected"
+                class="rounded border-gray-700/50 bg-gray-900/50
+                       text-blue-500/50 focus:ring-blue-500/30"
+            />
+          </th>
+          <th v-for="header in tableHeaders"
+              :key="header"
+              class="py-4 px-6 text-left text-sm font-medium text-gray-400">
+            {{ header }}
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="result in pathScanResults"
+            :key="result.id"
+            class="border-b border-gray-700/30 hover:bg-gray-700/20 transition-colors duration-200">
+          <td class="py-4 px-6">
+            <input
+                type="checkbox"
+                v-model="selectedResults"
+                :value="result.id"
+                class="rounded border-gray-700/50 bg-gray-900/50
+                       text-blue-500/50 focus:ring-blue-500/30"
+            />
+          </td>
+          <td class="py-4 px-6 text-sm text-gray-200">{{ result.id }}</td>
+          <td class="py-4 px-6 text-sm text-gray-200">{{ result.Target }}</td>
+          <td class="py-4 px-6 text-sm text-gray-200">{{ formatDate(result.Timestamp) }}</td>
+          <td class="py-4 px-6 text-sm text-gray-200">{{ getPathCount(result) }} 个路径</td>
+          <td class="py-4 px-6">
+              <span
+                  class="px-2 py-1 rounded-full text-xs font-medium"
+                  :class="result.IsRead ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'"
+              >
+                {{ result.IsRead ? '已读' : '未读' }}
+              </span>
+          </td>
+          <td class="py-4 px-6">
+            <div class="flex space-x-2">
+              <button
+                  @click="handleViewDetails(result.id)"
+                  class="table-action-button bg-blue-500/50 text-blue-100"
+              >
+                查看
+              </button>
+              <button
+                  @click="handleToggleRead(result)"
+                  class="table-action-button"
+                  :class="result.IsRead ? 'bg-gray-700/50 text-gray-300' : 'bg-green-500/50 text-green-100'"
+              >
+                {{ result.IsRead ? '标为未读' : '标为已读' }}
+              </button>
+              <button
+                  @click="handleDelete(result.id)"
+                  class="table-action-button bg-red-500/50 text-red-100"
+              >
+                删除
+              </button>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- 批量操作按钮 -->
-    <div class="mt-4 flex space-x-4">
-      <button @click="$emit('mark-selected-read', selectedResults)"
-              :disabled="selectedResults.length === 0"
-              class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-        批量标记为已读
+    <div class="flex space-x-3">
+      <button
+          @click="handleBatchRead"
+          :disabled="!hasSelected"
+          class="batch-button bg-green-500/50 hover:bg-green-600/50 text-green-100"
+      >
+        标记选中为已读
       </button>
-      <button @click="$emit('delete-selected', selectedResults)"
-              :disabled="selectedResults.length === 0"
-              class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-        批量删除
+      <button
+          @click="handleBatchDelete"
+          :disabled="!hasSelected"
+          class="batch-button bg-red-500/50 hover:bg-red-600/50 text-red-100"
+      >
+        删除选中项
       </button>
     </div>
   </div>
 </template>
 
 <script>
+import { ref, computed } from 'vue'
+
 export default {
   name: 'PathScanTable',
   props: {
@@ -71,71 +105,117 @@ export default {
       required: true
     }
   },
-  data() {
-    return {
-      selectedResults: [],
-      selectAll: false
-    };
-  },
-  methods: {
-    getPathCount(result) {
-      // 遍历 result.Data，查找 Key 为 "paths" 的条目
-      const pathGroup = result.Data.find(group => group.Key === 'paths');
-      if (pathGroup && Array.isArray(pathGroup.Value)) {
-        return pathGroup.Value.length; // 返回路径数组的长度
-      }
-      return 0;
-    },
-    toggleSelectAll() {
-      if (this.selectAll) {
-        this.selectedResults = this.pathScanResults.map(result => result.id);
-      } else {
-        this.selectedResults = [];
-      }
+  emits: ['view-details', 'delete-result', 'delete-selected', 'toggle-read-status', 'mark-selected-read'],
+  setup(props, { emit }) {
+    const tableHeaders = [
+      '扫描ID',
+      '目标地址',
+      '时间戳',
+      '路径数量',
+      '状态',
+      '操作'
+    ]
+
+    const selectedResults = ref([])
+
+    const hasSelected = computed(() => selectedResults.value.length > 0)
+    const isAllSelected = computed(() => {
+      return props.pathScanResults.length > 0 &&
+          selectedResults.value.length === props.pathScanResults.length
+    })
+
+    const formatDate = (timestamp) => {
+      return new Date(timestamp).toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
     }
-  },
-  watch: {
-    selectedResults() {
-      this.selectAll = this.selectedResults.length === this.pathScanResults.length;
+
+    const getPathCount = (result) => {
+      const pathGroup = result.Data.find(group => group.Key === 'paths')
+      return pathGroup?.Value?.length || 0
+    }
+
+    const toggleSelectAll = () => {
+      selectedResults.value = isAllSelected.value
+          ? []
+          : props.pathScanResults.map(result => result.id)
+    }
+
+    const handleViewDetails = (id) => emit('view-details', id)
+    const handleDelete = (id) => emit('delete-result', id)
+    const handleToggleRead = (result) => emit('toggle-read-status', result.id, !result.IsRead)
+    const handleBatchDelete = () => {
+      emit('delete-selected', selectedResults.value)
+      selectedResults.value = []
+    }
+    const handleBatchRead = () => {
+      emit('mark-selected-read', selectedResults.value)
+      selectedResults.value = []
+    }
+
+    return {
+      selectedResults,
+      tableHeaders,
+      hasSelected,
+      isAllSelected,
+      formatDate,
+      getPathCount,
+      toggleSelectAll,
+      handleViewDetails,
+      handleDelete,
+      handleToggleRead,
+      handleBatchDelete,
+      handleBatchRead
     }
   }
 }
 </script>
 
 <style scoped>
-table {
-  width: 100%;
+.table-action-button {
+  @apply px-3 py-1.5 rounded-xl text-xs font-medium
+  transition-all duration-200
+  focus:outline-none focus:ring-2 focus:ring-opacity-50
+  disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
-thead th {
-  padding-bottom: 12px;
+.batch-button {
+  @apply px-4 py-2.5 rounded-xl text-sm font-medium
+  transition-all duration-200
+  focus:outline-none focus:ring-2
+  disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
-tbody tr:nth-child(even) {
-  background-color: #1f2937; /* 偶数行背景色 */
+/* 自定义滚动条 */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
 }
 
-tbody tr:hover {
-  background-color: #374151; /* 悬停时的背景色 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-button {
-  transition: all 0.3s ease;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-button:hover {
-  transform: scale(1.05);
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 3px;
 }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
 }
 
-.bg-blue-500 { background-color: #3b82f6; }
-.bg-blue-600:hover { background-color: #2563eb; }
-.bg-green-500 { background-color: #10b981; }
-.bg-green-600:hover { background-color: #059669; }
-.bg-red-500 { background-color: #ef4444; }
-.bg-red-600:hover { background-color: #dc2626; }
+/* 优化按钮点击效果 */
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
 </style>
