@@ -5,10 +5,9 @@
     <div class="container mx-auto px-6 py-8 flex-1 mt-16">
       <!-- 系统运行信息卡片 -->
       <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl
-                  border border-gray-700/30">
+                  border border-gray-700/30 mb-8">  <!-- 添加 mb-8 底部间距 -->
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-xl font-medium tracking-wide text-gray-200">系统状态</h2>
-          <!-- 刷新按钮 -->
           <button
               @click="fetchSystemInfo"
               class="px-4 py-2.5 rounded-xl text-sm font-medium
@@ -20,7 +19,6 @@
           </button>
         </div>
 
-        <!-- 信息卡片网格 -->
         <div v-if="systemInfo"
              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatusCard
@@ -34,10 +32,58 @@
           />
         </div>
 
-        <!-- 加载状态 -->
-        <div v-else
-             class="flex items-center justify-center py-12
-                    text-sm text-gray-400">
+        <div v-else class="flex items-center justify-center py-12 text-sm text-gray-400">
+          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-400"
+               xmlns="http://www.w3.org/2000/svg"
+               fill="none"
+               viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          加载中...
+        </div>
+      </div>
+
+      <!-- 工具状态卡片 -->
+      <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl
+              border border-gray-700/30">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-medium tracking-wide text-gray-200">工具状态</h2>
+          <button
+              @click="fetchToolsStatus"
+              class="px-4 py-2.5 rounded-xl text-sm font-medium
+               bg-gray-700/50 hover:bg-gray-600/50 text-gray-200
+               transition-all duration-200
+               focus:outline-none focus:ring-2 focus:ring-gray-600/50"
+          >
+            检查工具
+          </button>
+        </div>
+
+        <div v-if="toolsInfo"
+             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- 工具安装状态卡片 -->
+          <div v-for="(status, tool) in toolsInfo.installedStatus"
+               :key="tool"
+               class="bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 rounded-xl p-6
+                  transition-all duration-200 hover:bg-gray-900/70">
+            <div class="flex flex-col space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-300 font-medium">{{ tool }}</span>
+                <span :class="status ? 'text-green-400' : 'text-red-400'">
+              {{ status ? '已安装 ✓' : '未安装 ✗' }}
+            </span>
+              </div>
+              <!-- 显示版本信息（如果有） -->
+              <div v-if="toolsInfo.versions && toolsInfo.versions[tool]"
+                   class="text-sm text-gray-400">
+                版本: {{ toolsInfo.versions[tool] }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="flex items-center justify-center py-12 text-sm text-gray-400">
           <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-400"
                xmlns="http://www.w3.org/2000/svg"
                fill="none"
@@ -52,7 +98,6 @@
 
     <FooterPage />
 
-    <!-- 通知组件 -->
     <PopupNotification
         v-if="showNotification"
         :message="notificationMessage"
@@ -81,8 +126,8 @@ export default {
   },
   setup() {
     const systemInfo = ref(null)
+    const toolsInfo = ref(null)  // 改名以匹配后端响应
 
-    // 使用新的通知钩子
     const {
       showNotification,
       notificationMessage,
@@ -91,7 +136,6 @@ export default {
       showError
     } = useNotification()
 
-    // 系统信息卡片配置
     const systemInfoCards = {
       currentDirectory: { title: '程序运行目录', key: 'currentDirectory' },
       localIP: { title: '本机 IP', key: 'localIP' },
@@ -113,12 +157,29 @@ export default {
       }
     }
 
-    onMounted(fetchSystemInfo)
+    const fetchToolsStatus = async () => {
+      try {
+        const response = await api.get('/system/tools')  // 修改为新的API路径
+        if (response.data?.status === 'success' && response.data?.data?.toolsInfo) {
+          toolsInfo.value = response.data.data.toolsInfo
+          showSuccess('工具状态已更新')
+        }
+      } catch (error) {
+        showError(error.response?.data?.message || '获取工具状态失败')
+      }
+    }
+
+    onMounted(() => {
+      fetchSystemInfo()
+      fetchToolsStatus()
+    })
 
     return {
       systemInfo,
+      toolsInfo,
       systemInfoCards,
       fetchSystemInfo,
+      fetchToolsStatus,
       showNotification,
       notificationMessage,
       notificationType

@@ -125,6 +125,16 @@
             </div>
           </div>
 
+          <!-- 任务管理 -->
+          <router-link to="/task-management" v-slot="{ navigate }">
+            <button
+                @click="navigate"
+                class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
+            >
+              任务管理 📋
+            </button>
+          </router-link>
+
           <!-- 系统配置 -->
           <router-link to="/system-configuration" v-slot="{ navigate }">
             <button
