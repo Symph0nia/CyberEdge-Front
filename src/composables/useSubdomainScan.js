@@ -115,7 +115,7 @@ export function useSubdomainScan() {
             showError('IP解析失败')
         }
     }
-
+    
     // 批量解析IP
     const resolveSelectedIPs = async () => {
         if (!selectedSubdomains.value.length) {
@@ -133,36 +133,26 @@ export function useSubdomainScan() {
             if (!confirmed) return
 
             isResolving.value = true
-            let successCount = 0
-            let failureCount = 0
-            let skippedCount = 0
 
-            for (const id of selectedSubdomains.value) {
-                const subdomain = subdomains.value.find(s => s.id === id)
-                if (!subdomain) continue
+            const response = await api.put(
+                `/results/${route.params.id}/entries/batch/resolve`,
+                { entryIds: selectedSubdomains.value }
+            )
 
-                if (subdomain.ip) {
-                    skippedCount++
-                    continue
-                }
-
-                try {
-                    await api.put(`/results/${route.params.id}/entries/${id}/resolve`)
-                    successCount++
-                } catch {
-                    failureCount++
-                }
-            }
-
+            const result = response.data.result
             await fetchScanResult(route.params.id)
+
             selectedSubdomains.value = []
             selectAll.value = false
 
-            let message = `解析完成。成功: ${successCount}`
-            if (failureCount > 0) message += `, 失败: ${failureCount}`
-            if (skippedCount > 0) message += `, 已跳过: ${skippedCount}`
+            let message = `解析完成。成功: ${result.success.length}`
+            if (Object.keys(result.failed).length > 0) {
+                message += `, 失败: ${Object.keys(result.failed).length}`
+            }
 
-            failureCount > 0 ? showWarning(message) : showSuccess(message)
+            Object.keys(result.failed).length > 0
+                ? showWarning(message)
+                : showSuccess(message)
         } catch (error) {
             showError('批量解析失败')
         } finally {
