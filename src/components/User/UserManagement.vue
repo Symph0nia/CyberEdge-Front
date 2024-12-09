@@ -6,11 +6,34 @@
       <!-- 用户列表 -->
       <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl mb-8
                   border border-gray-700/30">
-        <h2 class="text-xl font-medium tracking-wide mb-6">用户管理</h2>
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-medium tracking-wide">用户管理</h2>
+          <!-- 批量删除按钮 -->
+          <button
+              v-if="selectedUsers.length > 0"
+              @click="handleBatchDelete"
+              class="px-4 py-2 rounded-xl text-sm font-medium
+                     bg-red-500/50 hover:bg-red-600/50 text-red-100
+                     transition-all duration-200
+                     focus:outline-none focus:ring-2 focus:ring-red-500/50"
+          >
+            批量删除 ({{ selectedUsers.length }})
+          </button>
+        </div>
+
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead>
             <tr>
+              <th class="text-left py-3 px-4 text-sm font-medium text-gray-400 border-b border-gray-700/50">
+                <input
+                    type="checkbox"
+                    :checked="isAllSelected"
+                    @change="toggleSelectAll"
+                    class="rounded border-gray-600 text-blue-500 focus:ring-blue-500/50
+                         bg-gray-700/50"
+                >
+              </th>
               <th class="text-left py-3 px-4 text-sm font-medium text-gray-400 border-b border-gray-700/50">用户名</th>
               <th class="text-left py-3 px-4 text-sm font-medium text-gray-400 border-b border-gray-700/50">登录次数</th>
               <th class="text-left py-3 px-4 text-sm font-medium text-gray-400 border-b border-gray-700/50">操作</th>
@@ -20,6 +43,15 @@
             <tr v-for="user in users"
                 :key="user.account"
                 class="border-b border-gray-700/30 hover:bg-gray-700/20 transition-colors duration-200">
+              <td class="py-3 px-4">
+                <input
+                    type="checkbox"
+                    v-model="selectedUsers"
+                    :value="user.account"
+                    class="rounded border-gray-600 text-blue-500 focus:ring-blue-500/50
+                         bg-gray-700/50"
+                >
+              </td>
               <td class="py-3 px-4 text-sm text-gray-200">{{ user.account }}</td>
               <td class="py-3 px-4 text-sm text-gray-200">{{ user.loginCount }}</td>
               <td class="py-3 px-4">
@@ -82,7 +114,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import api from '../../api/axiosInstance'
 import HeaderPage from '../HeaderPage.vue'
 import FooterPage from '../FooterPage.vue'
@@ -101,6 +133,7 @@ export default {
   },
   setup() {
     const users = ref([])
+    const selectedUsers = ref([])
     const qrcodeEnabled = ref(false)
 
     // 使用新的通知钩子
@@ -133,7 +166,43 @@ export default {
       }
     }
 
-    // 删除用户
+    // 批量删除用户
+    const handleBatchDelete = async () => {
+      if (selectedUsers.value.length === 0) return
+
+      try {
+        const confirmed = await confirm({
+          title: '确认批量删除',
+          message: `是否确认删除选中的 ${selectedUsers.value.length} 个用户？此操作不可撤销。`,
+          type: 'danger'
+        })
+
+        if (confirmed) {
+          const response = await api.delete('/users', {
+            data: { accounts: selectedUsers.value }
+          })
+
+          // 处理删除结果
+          const result = response.data.result
+          if (result.success.length > 0) {
+            showSuccess(`成功删除 ${result.success.length} 个用户`)
+          }
+
+          if (Object.keys(result.failed).length > 0) {
+            const failedCount = Object.keys(result.failed).length
+            showError(`${failedCount} 个用户删除失败`)
+          }
+
+          // 清空选择并刷新列表
+          selectedUsers.value = []
+          await fetchUsers()
+        }
+      } catch (error) {
+        showError('批量删除用户失败')
+      }
+    }
+
+    // 单个删除用户的逻辑修改
     const handleDelete = async (account) => {
       try {
         const confirmed = await confirm({
@@ -143,9 +212,18 @@ export default {
         })
 
         if (confirmed) {
-          await api.delete(`/users/${account}`)
+          const response = await api.delete('/users', {
+            data: { accounts: [account] }
+          })
+
+          const result = response.data.result
+          if (result.success.includes(account)) {
+            showSuccess(`已删除用户 ${account}`)
+          } else {
+            showError(`删除用户 ${account} 失败：${result.failed[account]}`)
+          }
+
           await fetchUsers()
-          showSuccess(`已删除用户 ${account}`)
         }
       } catch (error) {
         showError(`删除用户 ${account} 失败`)
@@ -175,6 +253,19 @@ export default {
       }
     }
 
+    const isAllSelected = computed(() => {
+      return users.value.length > 0 && selectedUsers.value.length === users.value.length
+    })
+
+    // 切换全选状态
+    const toggleSelectAll = () => {
+      if (isAllSelected.value) {
+        selectedUsers.value = []
+      } else {
+        selectedUsers.value = users.value.map(user => user.account)
+      }
+    }
+
     onMounted(() => {
       fetchUsers()
       getQRCodeStatus()
@@ -182,6 +273,8 @@ export default {
 
     return {
       users,
+      selectedUsers,
+      isAllSelected,
       qrcodeEnabled,
       showNotification,
       notificationMessage,
@@ -193,6 +286,8 @@ export default {
       handleConfirm,
       handleCancel,
       handleDelete,
+      handleBatchDelete,
+      toggleSelectAll,
       toggleQRCodeStatus
     }
   }

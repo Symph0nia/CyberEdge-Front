@@ -9,6 +9,8 @@
           @toggle-task="toggleTask"
           @delete-task="handleDelete"
           @refresh-tasks="handleRefreshTasks"
+          @batch-start="handleBatchStart"
+          @batch-delete="handleBatchDelete"
       />
 
       <!-- 任务创建表单组件 -->
@@ -61,7 +63,6 @@ export default {
   setup() {
     const tasks = ref([])
 
-    // 使用新的通知钩子
     const {
       showNotification,
       notificationMessage,
@@ -70,7 +71,6 @@ export default {
       showError
     } = useNotification()
 
-    // 使用新的确认对话框钩子
     const {
       showDialog,
       dialogTitle,
@@ -102,19 +102,28 @@ export default {
       }
     }
 
-    // 切换任务状态
+    // 切换单个任务状态
     const toggleTask = async (task) => {
       try {
-        const action = task.status === 'running' ? 'stop' : 'start'
-        await api.post(`/tasks/${task.id}/start`, { action })
+        const response = await api.post('/tasks/start', {
+          taskIds: [task.id]
+        })
+        const result = response.data.result
+
         await fetchTasks()
-        showSuccess(`已${action === 'start' ? '启动' : '停止'}任务`)
+
+        if (result.success.includes(task.id)) {
+          showSuccess('已启动任务')
+        } else {
+          const errorMsg = result.failed[task.id] || '启动失败'
+          showError(`启动任务失败: ${errorMsg}`)
+        }
       } catch (error) {
-        showError(`${task.status === 'running' ? '停止' : '启动'}任务失败`)
+        showError('启动任务失败')
       }
     }
 
-    // 删除任务
+    // 删除单个任务
     const handleDelete = async (taskId) => {
       try {
         const confirmed = await confirm({
@@ -124,12 +133,80 @@ export default {
         })
 
         if (confirmed) {
-          await api.delete(`/tasks/${taskId}`)
+          const response = await api.delete('/tasks', {
+            data: { taskIds: [taskId] }
+          })
+          const result = response.data.result
+
           await fetchTasks()
-          showSuccess('已删除任务')
+
+          if (result.success.includes(taskId)) {
+            showSuccess('已删除任务')
+          } else {
+            const errorMsg = result.failed[taskId] || '删除失败'
+            showError(`删除任务失败: ${errorMsg}`)
+          }
         }
       } catch (error) {
         showError('删除任务失败')
+      }
+    }
+
+    // 批量启动任务
+    const handleBatchStart = async (taskIds) => {
+      try {
+        const confirmed = await confirm({
+          title: '确认批量启动',
+          message: `是否确认启动选中的 ${taskIds.length} 个任务？`,
+          type: 'warning'
+        })
+
+        if (confirmed) {
+          const response = await api.post('/tasks/start', { taskIds })
+          const result = response.data.result
+
+          await fetchTasks()
+
+          if (result.success.length > 0) {
+            showSuccess(`成功启动 ${result.success.length} 个任务`)
+          }
+
+          if (Object.keys(result.failed).length > 0) {
+            showError(`${Object.keys(result.failed).length} 个任务启动失败`)
+          }
+        }
+      } catch (error) {
+        showError('批量启动任务失败')
+      }
+    }
+
+// 批量删除任务
+    const handleBatchDelete = async (taskIds) => {
+      try {
+        const confirmed = await confirm({
+          title: '确认批量删除',
+          message: `是否确认删除选中的 ${taskIds.length} 个任务？此操作不可撤销。`,
+          type: 'danger'
+        })
+
+        if (confirmed) {
+          const response = await api.delete('/tasks', {
+            data: { taskIds }
+          })
+          const result = response.data.result
+
+          await fetchTasks()
+
+          if (result.success.length > 0) {
+            showSuccess(`成功删除 ${result.success.length} 个任务`)
+          }
+
+          if (Object.keys(result.failed).length > 0) {
+            showError(`${Object.keys(result.failed).length} 个任务删除失败`)
+          }
+        }
+      } catch (error) {
+        showError('批量删除任务失败')
       }
     }
 
@@ -159,34 +236,10 @@ export default {
       createTask,
       toggleTask,
       handleDelete,
-      handleRefreshTasks
+      handleRefreshTasks,
+      handleBatchStart,
+      handleBatchDelete
     }
   }
 }
 </script>
-
-<style scoped>
-.backdrop-blur-xl {
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-}
-
-/* 自定义滚动条 */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.3);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.5);
-}
-</style>
