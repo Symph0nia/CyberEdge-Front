@@ -43,6 +43,16 @@
             {{ isResolving ? '正在解析...' : '解析选中IP' }}
           </button>
 
+          <!-- 新增的批量HTTPX探测按钮 -->
+          <button
+              @click="probeSelectedHosts"
+              :disabled="selectedSubdomains.length === 0 || isProbing"
+              class="action-button"
+              :class="[selectedSubdomains.length === 0 || isProbing ? 'bg-gray-700/50 text-gray-400' : 'bg-purple-500/50 hover:bg-purple-600/50 text-purple-100']"
+          >
+            {{ isProbing ? '正在探测...' : 'HTTPX探测' }}
+          </button>
+
           <button
               @click="sendSelectedToPortScan"
               :disabled="selectedSubdomains.length === 0"
@@ -111,6 +121,27 @@
                 >
                   解析IP
                 </button>
+              </td>
+              <td class="py-4 px-6 text-sm">
+                <span v-if="subdomain.httpStatus"
+                      :class="[
+                        'px-2 py-1 rounded-full text-xs font-medium',
+                        getHttpStatusClass(subdomain.httpStatus)
+                      ]">
+                  {{ subdomain.httpStatus }}
+                </span>
+                              <button
+                                  v-else
+                                  @click="probeHost(subdomain)"
+                                  class="text-xs px-3 py-1.5 rounded-xl
+                           bg-purple-500/50 hover:bg-purple-600/50 text-purple-100
+                           transition-all duration-200"
+                              >
+                                探测
+                </button>
+              </td>
+              <td class="py-4 px-6 text-sm text-gray-200 truncate max-w-xs" :title="subdomain.httpTitle">
+                {{ subdomain.httpTitle || '-' }}
               </td>
               <td class="py-4 px-6">
                   <span
@@ -202,6 +233,8 @@ export default {
       '子域名ID',
       '子域名',
       'IP地址',
+      'HTTP状态',
+      '标题',
       '状态',
       '操作'
     ]
@@ -235,7 +268,13 @@ export default {
       dialogMessage,
       dialogType,
       handleConfirm,
-      handleCancel
+      handleCancel,
+
+      isProbing,
+      probeHost,
+      probeSelectedHosts,
+      getHttpStatusClass
+
     } = useSubdomainScan()
 
     // 页面加载时获取数据
@@ -272,7 +311,11 @@ export default {
       dialogMessage,
       dialogType,
       handleConfirm,
-      handleCancel
+      handleCancel,
+      isProbing,
+      probeHost,
+      probeSelectedHosts,
+      getHttpStatusClass
     }
   }
 }

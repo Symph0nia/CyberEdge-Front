@@ -1,16 +1,31 @@
 // useSubdomainScan.js
-import { ref, computed, watch } from 'vue'
+import {computed, ref, watch} from 'vue'
 import api from '../api/axiosInstance'
-import { useRoute } from 'vue-router'
-import { useNotification } from './useNotification'
-import { useConfirmDialog } from './useConfirmDialog'
+import {useRoute} from 'vue-router'
+import {useNotification} from './useNotification'
+import {useConfirmDialog} from './useConfirmDialog'
 
 export function useSubdomainScan() {
     const route = useRoute()
 
     // 使用通知和确认对话框钩子
-    const { showNotification, notificationMessage, notificationType, showSuccess, showError, showWarning } = useNotification()
-    const { showDialog, dialogTitle, dialogMessage, dialogType, confirm, handleConfirm, handleCancel } = useConfirmDialog()
+    const {
+        showNotification,
+        notificationMessage,
+        notificationType,
+        showSuccess,
+        showError,
+        showWarning
+    } = useNotification()
+    const {
+        showDialog,
+        dialogTitle,
+        dialogMessage,
+        dialogType,
+        confirm,
+        handleConfirm,
+        handleCancel
+    } = useConfirmDialog()
 
     // 状态管理
     const scanResult = ref(null)
@@ -18,6 +33,7 @@ export function useSubdomainScan() {
     const selectedSubdomains = ref([])
     const selectAll = ref(false)
     const isResolving = ref(false)
+    const isProbing = ref(false)
 
     // 监听选中状态变化
     watch(selectedSubdomains, (newVal) => {
@@ -47,7 +63,9 @@ export function useSubdomainScan() {
             id: subdomainData.find(item => item.Key === "_id")?.Value || '',
             domain: subdomainData.find(item => item.Key === "domain")?.Value || '',
             is_read: subdomainData.find(item => item.Key === "is_read")?.Value || false,
-            ip: subdomainData.find(item => item.Key === "ip")?.Value || ''
+            ip: subdomainData.find(item => item.Key === "ip")?.Value || '',
+            httpStatus: subdomainData.find(item => item.Key === "http_status")?.Value || null,
+            httpTitle: subdomainData.find(item => item.Key === "http_title")?.Value || ''
         }))
 
         // 排序后处理
@@ -88,7 +106,7 @@ export function useSubdomainScan() {
         try {
             await api.put(
                 `/results/${route.params.id}/entries/${subdomain.id}/read`,
-                { isRead: !subdomain.is_read }
+                {isRead: !subdomain.is_read}
             )
             await fetchScanResult(route.params.id)
             showSuccess(`已${subdomain.is_read ? '标记为未读' : '标记为已读'}`)
@@ -136,7 +154,7 @@ export function useSubdomainScan() {
 
             const response = await api.put(
                 `/results/${route.params.id}/entries/batch/resolve`,
-                { entryIds: selectedSubdomains.value }
+                {entryIds: selectedSubdomains.value}
             )
 
             const result = response.data.result
@@ -222,6 +240,79 @@ export function useSubdomainScan() {
         }
     }
 
+    // 添加HTTP状态码样式函数
+    const getHttpStatusClass = (status) => {
+        if (status >= 200 && status < 300) return 'bg-green-500/20 text-green-300'
+        if (status >= 300 && status < 400) return 'bg-blue-500/20 text-blue-300'
+        if (status >= 400 && status < 500) return 'bg-yellow-500/20 text-yellow-300'
+        if (status >= 500) return 'bg-red-500/20 text-red-300'
+        return 'bg-gray-500/20 text-gray-300'
+    }
+
+    // 单个HTTPX探测
+    const probeHost = async (subdomain) => {
+        try {
+            const confirmed = await confirm({
+                title: 'HTTPX探测',
+                message: `是否对 ${subdomain.domain} 进行HTTPX探测？`,
+                type: 'info'
+            })
+
+            if (!confirmed) return
+
+            await api.put(`/results/${route.params.id}/entries/${subdomain.id}/probe`)
+            await fetchScanResult(route.params.id)
+            showSuccess('HTTPX探测成功')
+        } catch (error) {
+            showError('HTTPX探测失败')
+        }
+    }
+
+
+// 批量HTTPX探测
+    const probeSelectedHosts = async () => {
+        if (!selectedSubdomains.value.length) {
+            showWarning('请先选择子域名')
+            return
+        }
+
+        try {
+            const confirmed = await confirm({
+                title: '批量HTTPX探测',
+                message: `是否对选中的 ${selectedSubdomains.value.length} 个子域名进行HTTPX探测？`,
+                type: 'info'
+            })
+
+            if (!confirmed) return
+
+            isProbing.value = true
+
+            const response = await api.put(
+                `/results/${route.params.id}/entries/batch/probe`,
+                {entryIds: selectedSubdomains.value}
+            )
+
+            const result = response.data.result
+            await fetchScanResult(route.params.id)
+
+            selectedSubdomains.value = []
+            selectAll.value = false
+
+            let message = `探测完成。成功: ${result.success.length}`
+            if (Object.keys(result.failed).length > 0) {
+                message += `, 失败: ${Object.keys(result.failed).length}`
+            }
+
+            Object.keys(result.failed).length > 0
+                ? showWarning(message)
+                : showSuccess(message)
+        } catch (error) {
+            showError('批量探测失败')
+        } finally {
+            isProbing.value = false
+        }
+    }
+
     return {
         // 状态
         scanResult,
@@ -251,6 +342,11 @@ export function useSubdomainScan() {
         dialogMessage,
         dialogType,
         handleConfirm,
-        handleCancel
+        handleCancel,
+
+        isProbing,
+        probeHost,
+        probeSelectedHosts,
+        getHttpStatusClass
     }
 }
