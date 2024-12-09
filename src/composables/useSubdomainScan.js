@@ -36,17 +36,43 @@ export function useSubdomainScan() {
         }
     }
 
-    // 处理子域名数据
+    // 修改 subdomains computed 属性
     const subdomains = computed(() => {
         if (!scanResult.value?.Data) return []
         const subdomainGroup = scanResult.value.Data.find(group => group.Key === "subdomains")
         if (!subdomainGroup?.Value?.length) return []
 
-        return subdomainGroup.Value.map(subdomainData => ({
+        // 转换数据结构
+        const domainList = subdomainGroup.Value.map(subdomainData => ({
             id: subdomainData.find(item => item.Key === "_id")?.Value || '',
             domain: subdomainData.find(item => item.Key === "domain")?.Value || '',
             is_read: subdomainData.find(item => item.Key === "is_read")?.Value || false,
             ip: subdomainData.find(item => item.Key === "ip")?.Value || ''
+        }))
+
+        // 排序后处理
+        const sorted = domainList.sort((a, b) => {
+            if (a.ip && b.ip) {
+                const aIpParts = a.ip.split('.').map(Number)
+                const bIpParts = b.ip.split('.').map(Number)
+
+                for (let i = 0; i < 4; i++) {
+                    if (aIpParts[i] !== bIpParts[i]) {
+                        return aIpParts[i] - bIpParts[i]
+                    }
+                }
+                return a.domain.localeCompare(b.domain)
+            }
+            if (a.ip) return -1
+            if (b.ip) return 1
+            return a.domain.localeCompare(b.domain)
+        })
+
+        // 标记每个独立IP的第一条记录
+        const seenIPs = new Set()
+        return sorted.map(item => ({
+            ...item,
+            isFirstIP: item.ip && !seenIPs.has(item.ip) && seenIPs.add(item.ip)
         }))
     })
 

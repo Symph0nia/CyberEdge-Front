@@ -81,28 +81,33 @@
             <tbody>
             <tr v-for="subdomain in subdomains"
                 :key="subdomain.id"
-                class="border-b border-gray-700/30 hover:bg-gray-700/20 transition-colors duration-200">
+                class="border-b border-gray-700/30 transition-colors duration-200"
+                :class="[
+        subdomain.isFirstIP ? 'bg-blue-900/20' : 'hover:bg-gray-700/20',
+        subdomain.isFirstIP ? 'border-blue-500/30' : 'border-gray-700/30'
+    ]">
               <td class="py-4 px-6">
                 <input
                     type="checkbox"
                     v-model="selectedSubdomains"
                     :value="subdomain.id"
                     class="rounded border-gray-700/50 bg-gray-900/50
-                           text-blue-500/50 focus:ring-blue-500/30"
+                   text-blue-500/50 focus:ring-blue-500/30"
                 />
               </td>
               <td class="py-4 px-6 text-sm text-gray-200">{{ subdomain.id }}</td>
               <td class="py-4 px-6 text-sm text-gray-200">{{ subdomain.domain }}</td>
               <td class="py-4 px-6 text-sm">
-                  <span v-if="subdomain.ip" class="text-gray-200">
-                    {{ subdomain.ip }}
-                  </span>
+              <span v-if="subdomain.ip"
+                    :class="['text-gray-200', subdomain.isFirstIP ? 'font-medium' : '']">
+                  {{ subdomain.ip }}
+              </span>
                 <button
                     v-else
                     @click="resolveIP(subdomain)"
                     class="text-xs px-3 py-1.5 rounded-xl
-                           bg-blue-500/50 hover:bg-blue-600/50 text-blue-100
-                           transition-all duration-200"
+                   bg-blue-500/50 hover:bg-blue-600/50 text-blue-100
+                   transition-all duration-200"
                 >
                   解析IP
                 </button>
