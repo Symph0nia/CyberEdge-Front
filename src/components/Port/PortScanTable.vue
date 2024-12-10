@@ -59,26 +59,34 @@
             <td class="py-4 px-6">
               <div class="flex space-x-2">
                 <button
-                  @click="handleViewDetails(result.id)"
-                  class="table-action-button bg-blue-500/50 text-blue-100"
+                    @click="handleViewDetails(result.id)"
+                    class="action-button bg-blue-500/50 text-blue-100 flex items-center justify-center"
                 >
+                  <i class="ri-eye-line mr-1"></i>
                   查看
                 </button>
                 <button
-                  @click="handleToggleRead(result)"
-                  class="table-action-button"
-                  :class="
+                    @click="handleToggleRead(result)"
+                    class="action-button flex items-center justify-center"
+                    :class="
                     result.IsRead
                       ? 'bg-gray-700/50 text-gray-300'
                       : 'bg-green-500/50 text-green-100'
                   "
                 >
+                  <i
+                      :class="[
+                      result.IsRead ? 'ri-eye-off-line' : 'ri-eye-line',
+                      'mr-1',
+                    ]"
+                  ></i>
                   {{ result.IsRead ? "标为未读" : "标为已读" }}
                 </button>
                 <button
-                  @click="handleDelete(result)"
-                  class="table-action-button bg-red-500/50 text-red-100"
+                    @click="handleDelete(result.id)"
+                    class="action-button bg-red-500/50 text-red-100 flex items-center justify-center"
                 >
+                  <i class="ri-delete-bin-line mr-1"></i>
                   删除
                 </button>
               </div>
@@ -91,27 +99,29 @@
     <!-- 所有扫描页面统一使用这个样式 -->
     <div class="flex space-x-3">
       <button
-        @click="handleBatchRead"
-        :disabled="!hasSelected"
-        class="batch-button"
-        :class="[
+          @click="handleBatchRead"
+          :disabled="!hasSelected"
+          class="batch-button flex items-center justify-center"
+          :class="[
           !hasSelected
             ? 'bg-gray-700/50 text-gray-400'
             : 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200',
         ]"
       >
+        <i class="ri-eye-line mr-2"></i>
         标记选中项为已读
       </button>
       <button
-        @click="handleBatchDelete"
-        :disabled="!hasSelected"
-        class="batch-button"
-        :class="[
+          @click="handleBatchDelete"
+          :disabled="!hasSelected"
+          class="batch-button flex items-center justify-center"
+          :class="[
           !hasSelected
             ? 'bg-gray-700/50 text-gray-400'
             : 'bg-red-500/50 hover:bg-red-600/50 text-red-100',
         ]"
       >
+        <i class="ri-delete-bin-line mr-2"></i>
         删除选中项
       </button>
     </div>
@@ -248,7 +258,7 @@ export default {
 </script>
 
 <style scoped>
-.table-action-button {
+.action-button {
   @apply px-3 py-1.5 rounded-xl text-xs font-medium
   transition-all duration-200
   focus:outline-none focus:ring-2 focus:ring-opacity-50

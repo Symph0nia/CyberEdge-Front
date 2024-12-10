@@ -13,9 +13,10 @@
             端口扫描
           </h2>
           <button
-            @click="handleRefreshTasks"
-            class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
+              @click="handleRefreshTasks"
+              class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center"
           >
+            <i class="ri-refresh-line mr-2"></i>
             刷新列表
           </button>
         </div>
