@@ -132,23 +132,16 @@ export function useSubdomainScan() {
 
   // 切换已读状态
   const toggleReadStatus = async (subdomain) => {
-    await handleBatchOperation({
-      targets: [subdomain],
-      singleTitle: "更新状态",
-      singleMessage: `是否将 ${subdomain.domain} 标记为${
-        subdomain.is_read ? "未读" : "已读"
-      }？`,
-      apiCall: async () => {
-        await api.put(
+    try {
+      await api.put(
           `/results/${route.params.id}/entries/${subdomain.id}/read`,
           { isRead: !subdomain.is_read }
-        );
-        await fetchScanResult(route.params.id);
-      },
-      successMessage: `已${subdomain.is_read ? "标记为未读" : "标记为已读"}`,
-      errorMessage: "更新状态失败",
-      resetSelection: false,
-    });
+      );
+      await fetchScanResult(route.params.id);
+      showSuccess(`已${subdomain.is_read ? "标记为未读" : "标记为已读"}`);
+    } catch (error) {
+      showError("更新状态失败");
+    }
   };
 
   // 解析IP
