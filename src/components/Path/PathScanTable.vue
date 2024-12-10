@@ -1,129 +1,154 @@
 <template>
   <div class="space-y-6">
     <!-- 表格 -->
-    <div class="relative overflow-x-auto rounded-xl">
-      <table class="w-full">
-        <thead>
-          <tr class="border-b border-gray-700/50">
-            <th class="py-4 px-6 text-left">
-              <input
-                type="checkbox"
-                @change="toggleSelectAll"
-                :checked="isAllSelected"
-                class="rounded border-gray-700/50 bg-gray-900/50 text-blue-500/50 focus:ring-blue-500/30"
-              />
-            </th>
-            <th
-              v-for="header in tableHeaders"
-              :key="header"
-              class="py-4 px-6 text-left text-sm font-medium text-gray-400"
-            >
-              {{ header }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="result in pathScanResults"
-            :key="result.id"
-            class="border-b border-gray-700/30 hover:bg-gray-700/20 transition-colors duration-200"
-          >
-            <td class="py-4 px-6">
-              <input
-                type="checkbox"
-                v-model="selectedResults"
-                :value="result.id"
-                class="rounded border-gray-700/50 bg-gray-900/50 text-blue-500/50 focus:ring-blue-500/30"
-              />
-            </td>
-            <td class="py-4 px-6 text-sm text-gray-200">{{ result.id }}</td>
-            <td class="py-4 px-6 text-sm text-gray-200">{{ result.Target }}</td>
-            <td class="py-4 px-6 text-sm text-gray-200">
-              {{ formatDate(result.Timestamp) }}
-            </td>
-            <td class="py-4 px-6 text-sm text-gray-200">
-              {{ getPathCount(result) }} 个路径
-            </td>
-            <td class="py-4 px-6">
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium"
-                :class="
-                  result.IsRead
-                    ? 'bg-green-500/20 text-green-300'
-                    : 'bg-yellow-500/20 text-yellow-300'
-                "
+    <div v-if="pathScanResults?.length > 0">
+      <div class="relative overflow-x-auto rounded-xl">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-700/50">
+              <th class="py-4 px-6 text-left">
+                <input
+                  type="checkbox"
+                  @change="toggleSelectAll"
+                  :checked="isAllSelected"
+                  class="rounded border-gray-700/50 bg-gray-900/50 text-blue-500/50 focus:ring-blue-500/30"
+                />
+              </th>
+              <th
+                v-for="header in tableHeaders"
+                :key="header"
+                class="py-4 px-6 text-left text-sm font-medium text-gray-400"
               >
-                {{ result.IsRead ? "已读" : "未读" }}
-              </span>
-            </td>
-            <td class="py-4 px-6">
-              <div class="flex space-x-2">
-                <button
+                {{ header }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="result in pathScanResults"
+              :key="result.id"
+              class="border-b border-gray-700/30 hover:bg-gray-700/20 transition-colors duration-200"
+            >
+              <td class="py-4 px-6">
+                <input
+                  type="checkbox"
+                  v-model="selectedResults"
+                  :value="result.id"
+                  class="rounded border-gray-700/50 bg-gray-900/50 text-blue-500/50 focus:ring-blue-500/30"
+                />
+              </td>
+              <td class="py-4 px-6 text-sm text-gray-200">{{ result.id }}</td>
+              <td class="py-4 px-6 text-sm text-gray-200">
+                {{ result.Target }}
+              </td>
+              <td class="py-4 px-6 text-sm text-gray-200">
+                {{ formatDate(result.Timestamp) }}
+              </td>
+              <td class="py-4 px-6 text-sm text-gray-200">
+                {{ getPathCount(result) }} 个路径
+              </td>
+              <td class="py-4 px-6">
+                <span
+                  class="px-2 py-1 rounded-full text-xs font-medium"
+                  :class="
+                    result.IsRead
+                      ? 'bg-green-500/20 text-green-300'
+                      : 'bg-yellow-500/20 text-yellow-300'
+                  "
+                >
+                  {{ result.IsRead ? "已读" : "未读" }}
+                </span>
+              </td>
+              <td class="py-4 px-6">
+                <div class="flex space-x-2">
+                  <button
                     @click="handleViewDetails(result.id)"
                     class="action-button bg-blue-500/50 text-blue-100 flex items-center justify-center"
-                >
-                  <i class="ri-eye-line mr-1"></i>
-                  查看
-                </button>
-                <button
+                  >
+                    <i class="ri-eye-line mr-1"></i>
+                    查看
+                  </button>
+                  <button
                     @click="handleToggleRead(result)"
                     class="action-button flex items-center justify-center"
                     :class="
-                    result.IsRead
-                      ? 'bg-gray-700/50 text-gray-300'
-                      : 'bg-green-500/50 text-green-100'
-                  "
-                >
-                  <i
+                      result.IsRead
+                        ? 'bg-gray-700/50 text-gray-300'
+                        : 'bg-green-500/50 text-green-100'
+                    "
+                  >
+                    <i
                       :class="[
-                      result.IsRead ? 'ri-eye-off-line' : 'ri-eye-line',
-                      'mr-1',
-                    ]"
-                  ></i>
-                  {{ result.IsRead ? "标为未读" : "标为已读" }}
-                </button>
-                <button
+                        result.IsRead ? 'ri-eye-off-line' : 'ri-eye-line',
+                        'mr-1',
+                      ]"
+                    ></i>
+                    {{ result.IsRead ? "标为未读" : "标为已读" }}
+                  </button>
+                  <button
                     @click="handleDelete(result.id)"
                     class="action-button bg-red-500/50 text-red-100 flex items-center justify-center"
-                >
-                  <i class="ri-delete-bin-line mr-1"></i>
-                  删除
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+                  >
+                    <i class="ri-delete-bin-line mr-1"></i>
+                    删除
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    <!-- 所有扫描页面统一使用这个样式 -->
-    <div class="flex space-x-3">
-      <button
+      <!-- 所有扫描页面统一使用这个样式 -->
+      <div class="flex space-x-3">
+        <button
           @click="handleBatchRead"
           :disabled="!hasSelected"
           class="batch-button flex items-center justify-center"
           :class="[
-          !hasSelected
-            ? 'bg-gray-700/50 text-gray-400'
-            : 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200',
-        ]"
-      >
-        <i class="ri-eye-line mr-2"></i>
-        标记选中项为已读
-      </button>
-      <button
+            !hasSelected
+              ? 'bg-gray-700/50 text-gray-400'
+              : 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200',
+          ]"
+        >
+          <i class="ri-eye-line mr-2"></i>
+          标记选中项为已读
+        </button>
+        <button
           @click="handleBatchDelete"
           :disabled="!hasSelected"
           class="batch-button flex items-center justify-center"
           :class="[
-          !hasSelected
-            ? 'bg-gray-700/50 text-gray-400'
-            : 'bg-red-500/50 hover:bg-red-600/50 text-red-100',
-        ]"
-      >
-        <i class="ri-delete-bin-line mr-2"></i>
-        删除选中项
-      </button>
+            !hasSelected
+              ? 'bg-gray-700/50 text-gray-400'
+              : 'bg-red-500/50 hover:bg-red-600/50 text-red-100',
+          ]"
+        >
+          <i class="ri-delete-bin-line mr-2"></i>
+          删除选中项
+        </button>
+      </div>
+    </div>
+    <!-- 空状态占位符 -->
+    <div
+      v-else
+      class="flex flex-col items-center justify-center py-24 my-8 bg-gray-800/40 backdrop-blur-xl rounded-2xl border border-gray-700/30"
+    >
+      <div class="text-gray-600 text-6xl mb-6">
+        <i class="ri-search-2-line"></i>
+      </div>
+      <span class="text-xl text-gray-400 mb-4">暂无扫描结果</span>
+      <p class="text-gray-500 mb-6 text-center max-w-md">
+        当前还没有路径扫描结果，请在目标管理中创建扫描任务
+      </p>
+      <router-link to="/target-management">
+        <button
+          class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center"
+        >
+          <i class="ri-add-line mr-2"></i>
+          前往创建扫描任务
+        </button>
+      </router-link>
     </div>
   </div>
 </template>
