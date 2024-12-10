@@ -134,8 +134,8 @@ export function useSubdomainScan() {
   const toggleReadStatus = async (subdomain) => {
     try {
       await api.put(
-          `/results/${route.params.id}/entries/${subdomain.id}/read`,
-          { isRead: !subdomain.is_read }
+        `/results/${route.params.id}/entries/${subdomain.id}/read`,
+        { isRead: !subdomain.is_read }
       );
       await fetchScanResult(route.params.id);
       showSuccess(`已${subdomain.is_read ? "标记为未读" : "标记为已读"}`);
