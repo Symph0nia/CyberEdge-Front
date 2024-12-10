@@ -124,95 +124,71 @@ export function useSubdomainScan() {
   // 通用解析IP方法
   const resolveIPs = async (subdomains) => {
     // 将单个subdomain转换为数组
-    const targets = Array.isArray(subdomains) ? subdomains : [subdomains]
+    const targets = Array.isArray(subdomains) ? subdomains : [subdomains];
 
     if (targets.length === 0) {
-      showWarning('请先选择子域名')
-      return
-    }
-
-    try {
-      const confirmed = await confirm({
-        title: targets.length > 1 ? '批量解析IP' : '解析IP',
-        message: targets.length > 1
-            ? `是否解析选中的 ${targets.length} 个子域名的IP？`
-            : `是否解析 ${targets[0].domain} 的IP地址？`,
-        type: 'info'
-      })
-
-      if (!confirmed) return
-
-      isResolving.value = true
-
-      // 根据是否为批量处理选择API路径
-      const endpoint = targets.length > 1
-          ? `/results/${route.params.id}/entries/batch/resolve`
-          : `/results/${route.params.id}/entries/${targets[0].id}/resolve`
-
-      const data = targets.length > 1 ? {entryIds: targets} : undefined
-      const response = await api.put(endpoint, data)
-
-      await fetchScanResult(route.params.id)
-
-      if (targets.length > 1) {
-        const result = response.data.result
-        selectedSubdomains.value = []
-        selectAll.value = false
-
-        let message = `解析完成。成功: ${result.success.length}`
-        if (Object.keys(result.failed).length > 0) {
-          message += `, 失败: ${Object.keys(result.failed).length}`
-        }
-
-        Object.keys(result.failed).length > 0
-            ? showWarning(message)
-            : showSuccess(message)
-      } else {
-        showSuccess('IP解析成功')
-      }
-    } catch (error) {
-      showError(targets.length > 1 ? '批量解析失败' : 'IP解析失败')
-    } finally {
-      isResolving.value = false
-    }
-  }
-
-  // 发送到端口扫描
-  const sendToPortScan = async (subdomain) => {
-    if (!subdomain.ip) {
-      showWarning("没有可用的IP");
+      showWarning("请先选择子域名");
       return;
     }
 
     try {
       const confirmed = await confirm({
-        title: "发送到端口扫描",
-        message: `是否将 ${subdomain.domain} (${subdomain.ip}) 发送到端口扫描？`,
+        title: targets.length > 1 ? "批量解析IP" : "解析IP",
+        message:
+          targets.length > 1
+            ? `是否解析选中的 ${targets.length} 个子域名的IP？`
+            : `是否解析 ${targets[0].domain} 的IP地址？`,
         type: "info",
       });
 
       if (!confirmed) return;
 
-      await api.post("/tasks", {
-        type: "nmap",
-        payload: subdomain.ip,
-        parent_id: scanResult.value.id,
-      });
-      showSuccess("已发送到端口扫描");
-    } catch {
-      showError("发送失败");
+      isResolving.value = true;
+
+      // 根据是否为批量处理选择API路径
+      const endpoint =
+        targets.length > 1
+          ? `/results/${route.params.id}/entries/batch/resolve`
+          : `/results/${route.params.id}/entries/${targets[0].id}/resolve`;
+
+      const data = targets.length > 1 ? { entryIds: targets } : undefined;
+      const response = await api.put(endpoint, data);
+
+      await fetchScanResult(route.params.id);
+
+      if (targets.length > 1) {
+        const result = response.data.result;
+        selectedSubdomains.value = [];
+        selectAll.value = false;
+
+        let message = `解析完成。成功: ${result.success.length}`;
+        if (Object.keys(result.failed).length > 0) {
+          message += `, 失败: ${Object.keys(result.failed).length}`;
+        }
+
+        Object.keys(result.failed).length > 0
+          ? showWarning(message)
+          : showSuccess(message);
+      } else {
+        showSuccess("IP解析成功");
+      }
+    } catch (error) {
+      showError(targets.length > 1 ? "批量解析失败" : "IP解析失败");
+    } finally {
+      isResolving.value = false;
     }
   };
 
-  // 批量发送到端口扫描
-  const sendSelectedToPortScan = async () => {
-    const selectedDomains = selectedSubdomains.value
-      .map((id) => subdomains.value.find((sub) => sub.id === id))
-      .filter((subdomain) => subdomain?.ip);
+  const sendToPortScan = async (input) => {
+    // 处理输入数据
+    const targets = Array.isArray(input)
+      ? input
+          .map((id) => subdomains.value.find((sub) => sub.id === id))
+          .filter((subdomain) => subdomain?.ip)
+      : [input];
 
-    const uniqueIPs = [
-      ...new Set(selectedDomains.map((subdomain) => subdomain.ip)),
-    ];
+    // 获取唯一IP列表
+    const uniqueIPs = [...new Set(targets.map((subdomain) => subdomain.ip))];
 
     if (!uniqueIPs.length) {
       showWarning("没有可用的IP");
@@ -220,14 +196,18 @@ export function useSubdomainScan() {
     }
 
     try {
+      const isBatch = targets.length > 1;
       const confirmed = await confirm({
-        title: "批量发送到端口扫描",
-        message: `是否将选中的 ${uniqueIPs.length} 个IP发送到端口扫描？`,
+        title: isBatch ? "批量发送到端口扫描" : "发送到端口扫描",
+        message: isBatch
+          ? `是否将选中的 ${uniqueIPs.length} 个IP发送到端口扫描？`
+          : `是否将 ${targets[0].domain} (${targets[0].ip}) 发送到端口扫描？`,
         type: "info",
       });
 
       if (!confirmed) return;
 
+      // 发送请求
       for (const ip of uniqueIPs) {
         await api.post("/tasks", {
           type: "nmap",
@@ -235,9 +215,14 @@ export function useSubdomainScan() {
           parent_id: scanResult.value.id,
         });
       }
-      showSuccess(`已发送 ${uniqueIPs.length} 个IP到端口扫描`);
+
+      showSuccess(
+        isBatch
+          ? `已发送 ${uniqueIPs.length} 个IP到端口扫描`
+          : "已发送到端口扫描"
+      );
     } catch {
-      showError("批量发送失败");
+      showError(targets.length > 1 ? "批量发送失败" : "发送失败");
     }
   };
 
@@ -331,7 +316,6 @@ export function useSubdomainScan() {
     toggleReadStatus,
     resolveIPs,
     sendToPortScan,
-    sendSelectedToPortScan,
 
     // 通知相关
     showNotification,

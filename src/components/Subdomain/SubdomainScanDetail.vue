@@ -65,7 +65,7 @@
           </button>
 
           <button
-            @click="sendSelectedToPortScan"
+            @click="sendToPortScan(selectedSubdomains)"
             :disabled="selectedSubdomains.length === 0"
             class="action-button"
             :class="[
@@ -331,7 +331,6 @@ export default {
       toggleReadStatus,
       resolveIPs,
       sendToPortScan,
-      sendSelectedToPortScan,
 
       // 通知相关
       showNotification,
