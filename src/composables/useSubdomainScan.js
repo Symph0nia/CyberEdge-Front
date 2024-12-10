@@ -146,7 +146,10 @@ export function useSubdomainScan() {
 
   // 解析IP
   const resolveIPs = async (input) => {
-    const targets = Array.isArray(input) ? input : [input];
+    // 确保 targets 只包含 ID
+    const targets = Array.isArray(input)
+        ? input.map(item => item.id || item)  // 处理可能是对象或ID的情况
+        : [input.id || input];  // 单个项可能是对象或ID
 
     if (!targets.length) {
       showWarning("请先选择子域名");
@@ -160,17 +163,14 @@ export function useSubdomainScan() {
       batchMessage: `是否解析选中的 ${targets.length} 个子域名的IP？`,
       singleMessage: `是否解析 ${targets[0].domain} 的IP地址？`,
       apiCall: async (targets) => {
-        const endpoint =
-          targets.length > 1
-            ? `/results/${route.params.id}/entries/batch/resolve`
-            : `/results/${route.params.id}/entries/${targets[0].id}/resolve`;
-        const data = targets.length > 1 ? { entryIds: targets } : undefined;
-        await api.put(endpoint, data);
+        await api.put(`/results/${route.params.id}/entries/resolve`, {
+          entryIds: targets  // 现在只发送ID数组
+        });
         await fetchScanResult(route.params.id);
       },
       successMessage: targets.length > 1 ? "批量解析成功" : "IP解析成功",
       errorMessage: targets.length > 1 ? "批量解析失败" : "IP解析失败",
-      loadingRef: isResolving,
+      loadingRef: isResolving
     });
   };
 
