@@ -159,6 +159,7 @@ export default {
     tasks: {
       type: Array,
       required: true,
+      default: () => [] // 提供一个默认的空数组
     },
   },
   data() {
@@ -168,9 +169,11 @@ export default {
   },
   computed: {
     isAllSelected() {
-      return (
-        this.tasks.length > 0 && this.selectedTasks.length === this.tasks.length
-      );
+      // 首先检查 tasks 是否存在且是数组
+      if (!this.tasks || !Array.isArray(this.tasks)) {
+        return false;
+      }
+      return this.tasks.length > 0 && this.selectedTasks.length === this.tasks.length;
     },
   },
   methods: {
