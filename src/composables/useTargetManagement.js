@@ -98,6 +98,40 @@ export function useTargetManagement() {
     }
   };
 
+  // 归档/激活目标
+  const archiveTarget = async (target) => {
+    try {
+      const newStatus = target.status === "active" ? "archived" : "active";
+      const actionName = newStatus === "active" ? "激活" : "归档";
+
+      // 显示确认对话框
+      const confirmed = await confirm({
+        title: `确认${actionName}`,
+        message: `是否确认${actionName}目标 "${target.name}"？`,
+        type: "warning",
+      });
+
+      if (confirmed) {
+        // 准备更新的数据
+        const updatedData = {
+          ...target,
+          status: newStatus,
+          updatedAt: new Date().toISOString()
+        };
+
+        // 发送更新请求
+        await api.put(`/targets/${target.id}`, updatedData);
+
+        // 刷新目标列表
+        await fetchTargets();
+
+        showSuccess(`${actionName}目标成功`);
+      }
+    } catch (error) {
+      showError(`${target.status === "active" ? "归档" : "激活"}目标失败`);
+    }
+  };
+
   // 提交表单
   const submitTargetForm = async () => {
     if (isSubmitting.value) return;
@@ -155,6 +189,7 @@ export function useTargetManagement() {
     openCreateDialog,
     editTarget,
     deleteTarget,
+    archiveTarget,
     submitTargetForm,
     handleConfirm,
     handleCancel,

@@ -60,95 +60,117 @@
         </select>
       </div>
 
-      <!-- 目标卡片 -->
-      <div
-        v-for="target in filteredTargets"
-        :key="target.id"
-        class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 hover:bg-gray-750 transition-all duration-300 border border-gray-700/50 hover:border-gray-600/50 hover:shadow-xl hover:shadow-blue-500/5 group"
-      >
-        <!-- 目标基本信息 -->
-        <div class="flex justify-between items-start mb-4">
-          <div>
-            <h3
-              class="text-xl font-semibold text-white mb-2 group-hover:text-blue-400 transition-colors"
-            >
-              {{ target.name }}
-            </h3>
-            <p class="text-gray-400 text-sm line-clamp-2">
-              {{ target.description }}
-            </p>
-          </div>
+      <!-- 目标卡片容器 -->
+      <div class="grid gap-6 grid-cols-1">
+        <!-- 目标卡片 -->
+        <div
+          v-for="target in filteredTargets"
+          :key="target.id"
+          class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 hover:bg-gray-750 transition-all duration-300 border border-gray-700/50 hover:border-gray-600/50 hover:shadow-xl hover:shadow-blue-500/5 group"
+        >
+          <!-- 目标基本信息 -->
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3
+                class="text-xl font-semibold text-white mb-2 group-hover:text-blue-400 transition-colors"
+              >
+                {{ target.name }}
+              </h3>
+              <p class="text-gray-400 text-sm line-clamp-2">
+                {{ target.description }}
+              </p>
+            </div>
 
-          <!-- 状态标签 -->
-          <span
-            :class="[
-              'px-3 py-1 rounded-full text-xs font-medium flex items-center',
-              target.status === 'active'
-                ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-                : 'bg-gray-500/20 text-gray-300 border border-gray-500/30',
-            ]"
-          >
+            <!-- 状态标签 -->
             <span
-              class="w-2 h-2 rounded-full mr-2"
-              :class="
-                target.status === 'active' ? 'bg-green-400' : 'bg-gray-400'
-              "
+              :class="[
+                'px-4 py-1.5 rounded-full text-xs font-medium flex items-center shadow-sm transition-colors duration-200',
+                target.status === 'active'
+                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-emerald-500/20'
+                  : 'bg-zinc-500/15 text-zinc-400 border border-zinc-500/30 shadow-zinc-500/20',
+              ]"
             >
+              <span
+                class="w-2.5 h-2.5 rounded-full mr-2 animate-pulse"
+                :class="
+                  target.status === 'active'
+                    ? 'bg-emerald-400 shadow-emerald-400/50'
+                    : 'bg-zinc-400 shadow-zinc-400/50'
+                "
+              >
+              </span>
+              <span class="translate-y-px">
+                {{ target.status === "active" ? "活跃" : "已归档" }}
+              </span>
             </span>
-            {{ target.status === "active" ? "活跃" : "已归档" }}
-          </span>
-        </div>
-
-        <!-- 目标详细信息 -->
-        <div class="space-y-3 mb-6 bg-gray-900/30 p-4 rounded-lg">
-          <div class="flex items-center text-gray-400">
-            <i class="ri-global-line mr-2"></i>
-            <span class="text-sm">{{ target.domain }}</span>
           </div>
-          <div class="flex items-center text-gray-400">
-            <i class="ri-time-line mr-2"></i>
-            <span class="text-sm"
-              >创建于 {{ formatDate(target.createdAt) }}</span
+
+          <!-- 目标详细信息 -->
+          <div class="space-y-4 mb-6 bg-gray-900/30 p-5 rounded-lg">
+            <div class="flex items-center text-gray-400">
+              <i class="ri-global-line mr-3 text-lg text-gray-500"></i>
+              <div>
+                <span class="text-gray-500 text-sm">目标地址</span>
+                <div class="text-gray-200 mt-0.5">{{ target.target }}</div>
+              </div>
+            </div>
+
+            <div class="flex items-center text-gray-400">
+              <i class="ri-time-line mr-3 text-lg text-gray-500"></i>
+              <div>
+                <span class="text-gray-500 text-sm">创建时间</span>
+                <div class="text-gray-200 mt-0.5">
+                  {{ formatDate(target.createdAt) }}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center text-gray-400">
+              <i class="ri-radar-line mr-3 text-lg text-gray-500"></i>
+              <div>
+                <span class="text-gray-500 text-sm">上次更新</span>
+                <div class="text-gray-200 mt-0.5">
+                  {{
+                    target.updatedAt
+                      ? formatDate(target.updatedAt)
+                      : "未进行过扫描"
+                  }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="flex flex-wrap gap-2">
+            <button
+              @click="editTarget(target)"
+              class="flex-1 px-3 py-2 rounded-lg bg-blue-500/20 hover:bg-blue-600/30 text-blue-300 text-sm transition-all duration-200 flex items-center justify-center"
             >
-          </div>
-          <div class="flex items-center text-gray-400">
-            <i class="ri-radar-line mr-2"></i>
-            <span class="text-sm"
-              >上次扫描：{{ formatDate(target.lastScanTime) }}</span
+              <i class="ri-edit-line mr-1"></i> 编辑
+            </button>
+
+            <button
+              @click="startScan(target)"
+              class="flex-1 px-3 py-2 rounded-lg bg-green-500/20 hover:bg-green-600/30 text-green-300 text-sm transition-all duration-200 flex items-center justify-center"
             >
+              <i class="ri-scan-line mr-1"></i> 扫描
+            </button>
+
+            <button
+              @click="archiveTarget(target)"
+              class="flex-1 px-3 py-2 rounded-lg bg-yellow-500/20 hover:bg-yellow-600/30 text-yellow-300 text-sm transition-all duration-200 flex items-center justify-center"
+            >
+              <i class="ri-archive-line mr-1"></i>
+              {{ target.status === "active" ? "归档" : "激活" }}
+            </button>
+
+            <button
+              @click="deleteTarget(target)"
+              class="flex-1 px-3 py-2 rounded-lg bg-red-500/20 hover:bg-red-600/30 text-red-300 text-sm transition-all duration-200 flex items-center justify-center"
+            >
+              <i class="ri-delete-bin-line mr-1"></i> 删除
+            </button>
           </div>
-        </div>
-
-        <!-- 操作按钮 -->
-        <div class="flex flex-wrap gap-2">
-          <button
-            @click="editTarget(target)"
-            class="flex-1 px-3 py-2 rounded-lg bg-blue-500/20 hover:bg-blue-600/30 text-blue-300 text-sm transition-all duration-200 flex items-center justify-center"
-          >
-            <i class="ri-edit-line mr-1"></i> 编辑
-          </button>
-
-          <button
-            @click="startScan(target)"
-            class="flex-1 px-3 py-2 rounded-lg bg-green-500/20 hover:bg-green-600/30 text-green-300 text-sm transition-all duration-200 flex items-center justify-center"
-          >
-            <i class="ri-scan-line mr-1"></i> 扫描
-          </button>
-
-          <button
-            @click="archiveTarget(target)"
-            class="flex-1 px-3 py-2 rounded-lg bg-yellow-500/20 hover:bg-yellow-600/30 text-yellow-300 text-sm transition-all duration-200 flex items-center justify-center"
-          >
-            <i class="ri-archive-line mr-1"></i>
-            {{ target.status === "active" ? "归档" : "激活" }}
-          </button>
-
-          <button
-            @click="deleteTarget(target)"
-            class="flex-1 px-3 py-2 rounded-lg bg-red-500/20 hover:bg-red-600/30 text-red-300 text-sm transition-all duration-200 flex items-center justify-center"
-          >
-            <i class="ri-delete-bin-line mr-1"></i> 删除
-          </button>
         </div>
       </div>
 
@@ -174,6 +196,8 @@
         </button>
       </div>
     </div>
+
+    <FooterPage />
 
     <!-- 创建/编辑目标对话框 -->
     <DialogModal
@@ -282,6 +306,7 @@ import HeaderPage from "@/components/HeaderPage.vue";
 import DialogModal from "@/components/Utils/DialogModal.vue";
 import PopupNotification from "@/components/Utils/PopupNotification.vue";
 import ConfirmDialog from "@/components/Utils/ConfirmDialog.vue";
+import FooterPage from "@/components/FooterPage.vue";
 
 // 组合式函数
 const {
