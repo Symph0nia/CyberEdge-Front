@@ -4,31 +4,42 @@
 
     <!-- 主体内容 -->
     <div class="container mx-auto px-6 py-8 flex-1 mt-16">
-      <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-gray-700/30">
+      <div
+        class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-gray-700/30"
+      >
         <!-- 顶部操作栏 -->
-        <div class="flex flex-col sm:flex-row justify-between items-center mb-8">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-center mb-8"
+        >
           <div class="flex items-center mb-4 sm:mb-0">
-            <h2 class="text-xl font-medium tracking-wide text-gray-200">目标管理</h2>
-            <span class="ml-4 px-3 py-1.5 rounded-xl bg-gray-700/50 text-gray-200 text-sm">
+            <h2 class="text-xl font-medium tracking-wide text-gray-200">
+              目标管理
+            </h2>
+            <span
+              class="ml-4 px-3 py-1.5 rounded-xl bg-gray-700/50 text-gray-200 text-sm"
+            >
               共 {{ filteredTargets.length }} 个目标
             </span>
           </div>
 
           <div class="flex space-x-4">
             <button
-                @click="openCreateDialog"
-                class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center"
+              @click="openCreateDialog"
+              class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center"
             >
               <i class="ri-add-line mr-2"></i>
               新建目标
             </button>
 
             <button
-                @click="refreshTargets"
-                class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center"
-                :disabled="isLoading"
+              @click="refreshTargets"
+              class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center"
+              :disabled="isLoading"
             >
-              <i class="ri-refresh-line mr-2" :class="{ 'animate-spin': isLoading }"></i>
+              <i
+                class="ri-refresh-line mr-2"
+                :class="{ 'animate-spin': isLoading }"
+              ></i>
               {{ isLoading ? "加载中..." : "刷新" }}
             </button>
           </div>
@@ -39,16 +50,16 @@
           <div class="relative flex-grow">
             <i class="ri-search-line absolute left-4 top-3 text-gray-400"></i>
             <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="搜索目标名称或域名..."
-                class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
+              v-model="searchQuery"
+              type="text"
+              placeholder="搜索目标名称或域名..."
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
             />
           </div>
 
           <select
-              v-model="statusFilter"
-              class="px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
+            v-model="statusFilter"
+            class="px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
           >
             <option value="">所有状态</option>
             <option value="active">活跃</option>
@@ -60,9 +71,9 @@
         <div class="space-y-6">
           <!-- 目标卡片 -->
           <div
-              v-for="target in filteredTargets"
-              :key="target.id"
-              class="bg-gray-800/40 backdrop-blur-xl p-6 rounded-xl border border-gray-700/30 hover:border-gray-600/30 transition-all duration-300"
+            v-for="target in filteredTargets"
+            :key="target.id"
+            class="bg-gray-800/40 backdrop-blur-xl p-6 rounded-xl border border-gray-700/30 hover:border-gray-600/30 transition-all duration-300"
           >
             <!-- 目标基本信息 -->
             <div class="flex justify-between items-start mb-4">
@@ -76,9 +87,17 @@
               </div>
 
               <!-- 状态标签 -->
-              <span class="px-3 py-1.5 rounded-xl text-sm bg-gray-700/50 text-gray-200 flex items-center">
-                <span class="w-2 h-2 rounded-full mr-2"
-                      :class="target.status === 'active' ? 'bg-emerald-400' : 'bg-gray-400'">
+              <span
+                class="px-3 py-1.5 rounded-xl text-sm bg-gray-700/50 text-gray-200 flex items-center"
+              >
+                <span
+                  class="w-2 h-2 rounded-full mr-2"
+                  :class="
+                    target.status === 'active'
+                      ? 'bg-emerald-400'
+                      : 'bg-gray-400'
+                  "
+                >
                 </span>
                 {{ target.status === "active" ? "活跃" : "已归档" }}
               </span>
@@ -98,7 +117,9 @@
                 <i class="ri-time-line mr-3 text-lg"></i>
                 <div>
                   <span class="text-sm">创建时间</span>
-                  <div class="text-gray-200 mt-0.5">{{ formatDate(target.createdAt) }}</div>
+                  <div class="text-gray-200 mt-0.5">
+                    {{ formatDate(target.createdAt) }}
+                  </div>
                 </div>
               </div>
 
@@ -107,7 +128,11 @@
                 <div>
                   <span class="text-sm">上次更新</span>
                   <div class="text-gray-200 mt-0.5">
-                    {{ target.updatedAt ? formatDate(target.updatedAt) : "未进行过扫描" }}
+                    {{
+                      target.updatedAt
+                        ? formatDate(target.updatedAt)
+                        : "未进行过扫描"
+                    }}
                   </div>
                 </div>
               </div>
@@ -116,30 +141,30 @@
             <!-- 操作按钮 -->
             <div class="flex flex-wrap gap-2">
               <button
-                  @click="editTarget(target)"
-                  class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center"
+                @click="editTarget(target)"
+                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center"
               >
                 <i class="ri-edit-line mr-2"></i> 编辑
               </button>
 
               <button
-                  @click="startScan(target)"
-                  class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center"
+                @click="startScan(target)"
+                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center"
               >
                 <i class="ri-scan-line mr-2"></i> 扫描
               </button>
 
               <button
-                  @click="archiveTarget(target)"
-                  class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center"
+                @click="archiveTarget(target)"
+                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center"
               >
                 <i class="ri-archive-line mr-2"></i>
                 {{ target.status === "active" ? "归档" : "激活" }}
               </button>
 
               <button
-                  @click="deleteTarget(target)"
-                  class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center"
+                @click="deleteTarget(target)"
+                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center"
               >
                 <i class="ri-delete-bin-line mr-2"></i> 删除
               </button>
@@ -149,8 +174,8 @@
 
         <!-- 空状态展示 -->
         <div
-            v-if="filteredTargets.length === 0"
-            class="flex flex-col items-center justify-center py-24 my-8 bg-gray-800/40 backdrop-blur-xl rounded-2xl border border-gray-700/30"
+          v-if="filteredTargets.length === 0"
+          class="flex flex-col items-center justify-center py-24 my-8 bg-gray-800/40 backdrop-blur-xl rounded-2xl border border-gray-700/30"
         >
           <div class="text-gray-600 text-6xl mb-6">
             <i class="ri-folder-unknow-line"></i>
@@ -160,8 +185,8 @@
             创建你的第一个目标开始使用系统
           </p>
           <button
-              @click="openCreateDialog"
-              class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center"
+            @click="openCreateDialog"
+            class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center"
           >
             <i class="ri-add-line mr-2"></i>
             创建第一个目标
@@ -174,28 +199,32 @@
 
     <!-- 创建/编辑目标对话框 -->
     <DialogModal
-        v-if="showDialog"
-        :title="dialogMode === 'create' ? '新建目标' : '编辑目标'"
-        @close="showDialog = false"
-        class="bg-gray-800/40 backdrop-blur-xl rounded-2xl border border-gray-700/30"
+      v-if="showDialog"
+      :title="dialogMode === 'create' ? '新建目标' : '编辑目标'"
+      @close="showDialog = false"
+      class="bg-gray-800/40 backdrop-blur-xl rounded-2xl border border-gray-700/30"
     >
       <!-- 表单内容 -->
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">目标名称</label>
+          <label class="block text-sm font-medium text-gray-300 mb-1"
+            >目标名称</label
+          >
           <input
-              v-model="targetForm.name"
-              type="text"
-              placeholder="请输入目标名称"
-              class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
+            v-model="targetForm.name"
+            type="text"
+            placeholder="请输入目标名称"
+            class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
           />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">目标类型</label>
+          <label class="block text-sm font-medium text-gray-300 mb-1"
+            >目标类型</label
+          >
           <select
-              v-model="targetForm.type"
-              class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
+            v-model="targetForm.type"
+            class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
           >
             <option value="domain">域名</option>
             <option value="ip">IP地址</option>
@@ -207,20 +236,24 @@
             {{ targetForm.type === "domain" ? "域名" : "IP地址" }}
           </label>
           <input
-              v-model="targetForm.target"
-              type="text"
-              :placeholder="targetForm.type === 'domain' ? '请输入域名' : '请输入IP地址'"
-              class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
+            v-model="targetForm.target"
+            type="text"
+            :placeholder="
+              targetForm.type === 'domain' ? '请输入域名' : '请输入IP地址'
+            "
+            class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
           />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">描述</label>
+          <label class="block text-sm font-medium text-gray-300 mb-1"
+            >描述</label
+          >
           <textarea
-              v-model="targetForm.description"
-              rows="3"
-              placeholder="请输入目标描述"
-              class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none resize-none transition-all duration-200"
+            v-model="targetForm.description"
+            rows="3"
+            placeholder="请输入目标描述"
+            class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none resize-none transition-all duration-200"
           ></textarea>
         </div>
       </div>
@@ -229,15 +262,15 @@
       <template #footer>
         <div class="flex justify-end space-x-4">
           <button
-              @click="showDialog = false"
-              class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
+            @click="showDialog = false"
+            class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
           >
             取消
           </button>
           <button
-              @click="submitTargetForm"
-              :disabled="isSubmitting"
-              class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="submitTargetForm"
+            :disabled="isSubmitting"
+            class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {{ isSubmitting ? "提交中..." : "确定" }}
           </button>
@@ -247,20 +280,20 @@
 
     <!-- 通知组件 -->
     <PopupNotification
-        v-if="showNotification"
-        :message="notificationMessage"
-        :type="notificationType"
+      v-if="showNotification"
+      :message="notificationMessage"
+      :type="notificationType"
     />
 
     <!-- 确认对话框 -->
     <ConfirmDialog
-        v-if="showConfirmDialog"
-        :show="showConfirmDialog"
-        :title="dialogTitle"
-        :message="dialogMessage"
-        :type="dialogType"
-        @confirm="handleConfirm"
-        @cancel="handleCancel"
+      v-if="showConfirmDialog"
+      :show="showConfirmDialog"
+      :title="dialogTitle"
+      :message="dialogMessage"
+      :type="dialogType"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
     />
   </div>
 </template>

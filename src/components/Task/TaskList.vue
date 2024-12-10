@@ -1,152 +1,149 @@
 <template>
-  <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h2 class="text-xl font-medium tracking-wide text-gray-200">任务管理</h2>
-      <div class="flex space-x-3">
-        <!-- 批量操作按钮 -->
-        <div v-if="selectedTasks.length > 0" class="flex space-x-2">
-          <button
-            @click="handleBatchStart"
-            class="px-4 py-2.5 rounded-xl text-sm font-medium bg-blue-500/50 hover:bg-blue-600/50 text-blue-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-          >
-            批量启动
-          </button>
-          <button
-            @click="handleBatchDelete"
-            class="px-4 py-2.5 rounded-xl text-sm font-medium bg-red-500/50 hover:bg-red-600/50 text-red-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50"
-          >
-            批量删除
-          </button>
-        </div>
-        <!-- 刷新按钮 -->
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-medium tracking-wide text-gray-200">任务管理</h2>
+
+    <div class="flex space-x-4">
+      <!-- 批量操作按钮 -->
+      <div v-if="selectedTasks.length > 0" class="flex space-x-4">
         <button
-          @click="$emit('refresh-tasks')"
+          @click="handleBatchStart"
           class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
         >
-          刷新列表
+          <i class="ri-play-line mr-2"></i>
+          批量启动
+        </button>
+        <button
+          @click="handleBatchDelete"
+          class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
+        >
+          <i class="ri-delete-bin-line mr-2"></i>
+          批量删除
         </button>
       </div>
-    </div>
 
-    <!-- 任务表格 -->
-    <div
-      class="bg-gray-800/40 backdrop-blur-xl rounded-2xl border border-gray-700/30 overflow-hidden"
-    >
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead>
-            <tr>
-              <th
-                class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/50"
-              >
-                <input
-                  type="checkbox"
-                  :checked="isAllSelected"
-                  @change="toggleSelectAll"
-                  class="rounded border-gray-600 text-blue-500 focus:ring-blue-500/50 bg-gray-700/50"
-                />
-              </th>
-              <th
-                class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/50"
-              >
-                任务ID
-              </th>
-              <th
-                class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/50"
-              >
-                描述
-              </th>
-              <th
-                class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/50"
-              >
-                状态
-              </th>
-              <th
-                class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/50"
-              >
-                创建时间
-              </th>
-              <th
-                class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/50"
-              >
-                完成时间
-              </th>
-              <th
-                class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/50"
-              >
-                结果
-              </th>
-              <th
-                class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/50"
-              >
-                操作
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="task in tasks"
-              :key="task.id"
-              class="border-b border-gray-700/30 hover:bg-gray-700/20 transition-colors duration-200"
-            >
-              <td class="py-4 px-6">
-                <input
-                  type="checkbox"
-                  v-model="selectedTasks"
-                  :value="task.id"
-                  class="rounded border-gray-600 text-blue-500 focus:ring-blue-500/50 bg-gray-700/50"
-                />
-              </td>
-              <td class="py-4 px-6 text-sm text-gray-200">{{ task.id }}</td>
-              <td class="py-4 px-6 text-sm text-gray-200">
-                {{ formatDescription(task.type) }}
-              </td>
-              <td class="py-4 px-6 text-sm">
-                <span
-                  :class="[
-                    'px-2 py-1 rounded-full text-xs font-medium',
-                    getStatusStyle(task.status),
-                  ]"
-                >
-                  {{ formatStatus(task.status) }}
-                </span>
-              </td>
-              <td class="py-4 px-6 text-sm text-gray-200">
-                {{ formatDate(task.created_at) }}
-              </td>
-              <td class="py-4 px-6 text-sm text-gray-200">
-                {{ task.completed_at ? formatDate(task.completed_at) : "-" }}
-              </td>
-              <td class="py-4 px-6 text-sm text-gray-200">
-                {{ task.result || "-" }}
-              </td>
-              <td class="py-4 px-6">
-                <div class="flex space-x-2">
-                  <button
-                    @click="$emit('toggle-task', task)"
-                    :disabled="task.status === 'running'"
-                    class="px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 focus:outline-none focus:ring-2"
-                    :class="[
-                      task.status === 'running'
-                        ? 'bg-gray-700/50 text-gray-400 cursor-not-allowed'
-                        : 'bg-blue-500/50 hover:bg-blue-600/50 text-blue-100 focus:ring-blue-500/50',
-                    ]"
-                  >
-                    {{ task.status === "running" ? "运行中" : "启动" }}
-                  </button>
-                  <button
-                    @click="handleDelete(task.id)"
-                    class="px-3 py-1.5 rounded-xl text-xs font-medium bg-red-500/50 hover:bg-red-600/50 text-red-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50"
-                  >
-                    删除
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- 刷新按钮 -->
+      <button
+        @click="$emit('refresh-tasks')"
+        class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
+      >
+        <i class="ri-refresh-line mr-2"></i>
+        刷新列表
+      </button>
     </div>
+  </div>
+
+  <!-- 表格容器 -->
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <!-- 表头 -->
+      <thead>
+        <tr>
+          <th
+            class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/30"
+          >
+            <input
+              type="checkbox"
+              :checked="isAllSelected"
+              @change="toggleSelectAll"
+              class="rounded-lg border-gray-600/30 text-gray-600 focus:ring-2 focus:ring-gray-600/50 bg-gray-700/50"
+            />
+          </th>
+          <th
+            class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/30"
+          >
+            任务ID
+          </th>
+          <th
+            class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/30"
+          >
+            描述
+          </th>
+          <th
+            class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/30"
+          >
+            状态
+          </th>
+          <th
+            class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/30"
+          >
+            创建时间
+          </th>
+          <th
+            class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/30"
+          >
+            完成时间
+          </th>
+          <th
+            class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/30"
+          >
+            结果
+          </th>
+          <th
+            class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/30"
+          >
+            操作
+          </th>
+        </tr>
+      </thead>
+
+      <!-- 表格内容 -->
+      <tbody>
+        <tr
+          v-for="task in tasks"
+          :key="task.id"
+          class="border-b border-gray-700/30 hover:bg-gray-700/30 transition-all duration-200"
+        >
+          <td class="py-4 px-6">
+            <input
+              type="checkbox"
+              v-model="selectedTasks"
+              :value="task.id"
+              class="rounded-lg border-gray-600/30 text-gray-600 focus:ring-2 focus:ring-gray-600/50 bg-gray-700/50"
+            />
+          </td>
+          <td class="py-4 px-6 text-sm text-gray-200">{{ task.id }}</td>
+          <td class="py-4 px-6 text-sm text-gray-200">
+            {{ formatDescription(task.type) }}
+          </td>
+          <td class="py-4 px-6">
+            <span
+              class="px-3 py-1.5 rounded-xl text-xs font-medium"
+              :class="getStatusStyle(task.status)"
+            >
+              {{ formatStatus(task.status) }}
+            </span>
+          </td>
+          <td class="py-4 px-6 text-sm text-gray-200">
+            {{ formatDate(task.created_at) }}
+          </td>
+          <td class="py-4 px-6 text-sm text-gray-200">
+            {{ task.completed_at ? formatDate(task.completed_at) : "-" }}
+          </td>
+          <td class="py-4 px-6 text-sm text-gray-200">
+            {{ task.result || "-" }}
+          </td>
+          <td class="py-4 px-6">
+            <div class="flex space-x-4">
+              <button
+                @click="$emit('toggle-task', task)"
+                :disabled="task.status === 'running'"
+                class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <i class="ri-play-line mr-2"></i>
+                {{ task.status === "running" ? "运行中" : "启动" }}
+              </button>
+              <button
+                @click="handleDelete(task.id)"
+                class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
+              >
+                <i class="ri-delete-bin-line mr-2"></i>
+                删除
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
@@ -234,29 +231,5 @@ export default {
 .backdrop-blur-xl {
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-}
-
-/* 自定义滚动条 */
-.overflow-x-auto {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
-}
-
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.3);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.5);
 }
 </style>

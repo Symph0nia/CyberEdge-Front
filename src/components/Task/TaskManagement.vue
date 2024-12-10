@@ -3,23 +3,35 @@
     <HeaderPage />
 
     <div class="container mx-auto px-6 py-8 flex-1 mt-16">
-      <!-- 任务列表组件 -->
-      <TaskList
-        :tasks="tasks"
-        @toggle-task="toggleTask"
-        @delete-task="handleDelete"
-        @refresh-tasks="handleRefreshTasks"
-        @batch-start="handleBatchStart"
-        @batch-delete="handleBatchDelete"
-      />
+      <!-- 主要内容区域卡片 -->
+      <div
+        class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-gray-700/30"
+      >
+        <!-- 任务列表组件 -->
+        <div class="mb-8">
+          <TaskList
+            :tasks="tasks"
+            @toggle-task="toggleTask"
+            @delete-task="handleDelete"
+            @refresh-tasks="handleRefreshTasks"
+            @batch-start="handleBatchStart"
+            @batch-delete="handleBatchDelete"
+          />
+        </div>
 
-      <!-- 任务创建表单组件 -->
-      <TaskForm @create-task="createTask" />
+        <!-- 分隔线 -->
+        <div class="h-px bg-gray-700/30 my-8"></div>
+
+        <!-- 任务创建表单组件 -->
+        <div class="bg-gray-900/30 p-6 rounded-xl">
+          <TaskForm @create-task="createTask" />
+        </div>
+      </div>
     </div>
 
     <FooterPage />
 
-    <!-- 通知和确认对话框组件 -->
+    <!-- 通知组件 -->
     <PopupNotification
       v-if="showNotification"
       :message="notificationMessage"
@@ -27,6 +39,7 @@
       @close="showNotification = false"
     />
 
+    <!-- 确认对话框 -->
     <ConfirmDialog
       :show="showDialog"
       :title="dialogTitle"
@@ -34,6 +47,7 @@
       :type="dialogType"
       @confirm="handleConfirm"
       @cancel="handleCancel"
+      class="bg-gray-800/40 backdrop-blur-xl rounded-2xl border border-gray-700/30"
     />
   </div>
 </template>
@@ -243,3 +257,29 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.backdrop-blur-xl {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+</style>
