@@ -148,8 +148,8 @@ export function useSubdomainScan() {
   const resolveIPs = async (input) => {
     // 确保 targets 只包含 ID
     const targets = Array.isArray(input)
-        ? input.map(item => item.id || item)  // 处理可能是对象或ID的情况
-        : [input.id || input];  // 单个项可能是对象或ID
+      ? input.map((item) => item.id || item) // 处理可能是对象或ID的情况
+      : [input.id || input]; // 单个项可能是对象或ID
 
     if (!targets.length) {
       showWarning("请先选择子域名");
@@ -164,13 +164,13 @@ export function useSubdomainScan() {
       singleMessage: `是否解析 ${targets[0].domain} 的IP地址？`,
       apiCall: async (targets) => {
         await api.put(`/results/${route.params.id}/entries/resolve`, {
-          entryIds: targets  // 现在只发送ID数组
+          entryIds: targets, // 现在只发送ID数组
         });
         await fetchScanResult(route.params.id);
       },
       successMessage: targets.length > 1 ? "批量解析成功" : "IP解析成功",
       errorMessage: targets.length > 1 ? "批量解析失败" : "IP解析失败",
-      loadingRef: isResolving
+      loadingRef: isResolving,
     });
   };
 
@@ -242,6 +242,15 @@ export function useSubdomainScan() {
     });
   };
 
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showSuccess('已复制到剪贴板');
+    } catch (err) {
+      showError('复制失败');
+    }
+  };
+
   return {
     // 状态数据
     scanResult,
@@ -260,6 +269,7 @@ export function useSubdomainScan() {
     sendToPortScan,
     probeHosts,
     getHttpStatusClass,
+    copyToClipboard,
 
     // UI控制 - 通知
     showNotification,

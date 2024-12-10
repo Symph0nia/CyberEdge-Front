@@ -125,19 +125,54 @@
                 <td class="py-4 px-6 text-sm text-gray-200">
                   {{ subdomain.id }}
                 </td>
-                <td class="py-4 px-6 text-sm text-gray-200">
-                  {{ subdomain.domain }}
-                </td>
                 <td class="py-4 px-6 text-sm">
-                  <span
-                    v-if="subdomain.ip"
-                    :class="[
-                      'text-gray-200',
-                      subdomain.isFirstIP ? 'font-medium' : '',
-                    ]"
-                  >
-                    {{ subdomain.ip }}
-                  </span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-gray-200">{{ subdomain.domain }}</span>
+                    <button
+                        @click="copyToClipboard(subdomain.domain)"
+                        class="text-gray-400 hover:text-gray-200 transition-colors"
+                        title="复制域名"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+
+                <td class="py-4 px-6 text-sm">
+                  <div v-if="subdomain.ip" class="flex items-center gap-2">
+                    <span
+                      :class="[
+                        'text-gray-200',
+                        subdomain.isFirstIP ? 'font-medium' : '',
+                      ]"
+                    >
+                      {{ subdomain.ip }}
+                    </span>
+                    <button
+                      @click="copyToClipboard(subdomain.ip)"
+                      class="text-gray-400 hover:text-gray-200 transition-colors"
+                      title="复制IP"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                   <button
                     v-else
                     @click="resolveIPs(subdomain)"
@@ -298,6 +333,7 @@ const {
   handleConfirm,
   handleCancel,
   getHttpStatusClass,
+  copyToClipboard,
 } = useSubdomainScan();
 
 // 初始化加载
