@@ -5,7 +5,8 @@
     <div class="container mx-auto flex justify-between items-center">
       <!-- Logo区域 -->
       <div class="text-2xl font-medium text-white tracking-tight">
-        🌐 CyberEdge 综合扫描器
+        <i class="ri-global-line mr-2"></i>
+        CyberEdge 综合扫描器
       </div>
 
       <!-- 导航按钮区域 -->
@@ -17,7 +18,8 @@
               @click="navigate"
               class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
-              登录 🔐
+              <i class="ri-login-box-line mr-1"></i>
+              登录
             </button>
           </router-link>
           <router-link to="/setup-2fa" v-slot="{ navigate }">
@@ -25,7 +27,8 @@
               @click="navigate"
               class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
-              注册 📱
+              <i class="ri-user-add-line mr-1"></i>
+              注册
             </button>
           </router-link>
         </template>
@@ -38,7 +41,8 @@
               @click="navigate"
               class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
-              主页 🏠
+              <i class="ri-home-line mr-1"></i>
+              主页
             </button>
           </router-link>
 
@@ -48,7 +52,8 @@
               @click="navigate"
               class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
-              目标管理 🎯
+              <i class="ri-focus-3-line mr-1"></i>
+              目标管理
             </button>
           </router-link>
 
@@ -58,7 +63,8 @@
               @click="toggleDropdown('collection')"
               class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 flex items-center"
             >
-              攻击面搜集 🔍
+              <i class="ri-radar-line mr-1"></i>
+              攻击面搜集
             </button>
             <div
               v-show="dropdowns.collection"
@@ -69,7 +75,8 @@
                   @click="navigate"
                   class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-t-lg transition-colors duration-200"
                 >
-                  子域名发现 🌐
+                  <i class="ri-global-line mr-1"></i>
+                  子域名发现
                 </button>
               </router-link>
               <router-link to="/port-scan-results" v-slot="{ navigate }">
@@ -77,7 +84,8 @@
                   @click="navigate"
                   class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-b-lg transition-colors duration-200"
                 >
-                  端口扫描 ⚓
+                  <i class="ri-scan-2-line mr-1"></i>
+                  端口扫描
                 </button>
               </router-link>
             </div>
@@ -89,7 +97,8 @@
               @click="toggleDropdown('characterization')"
               class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 flex items-center"
             >
-              攻击面刻画 📂
+              <i class="ri-file-search-line mr-1"></i>
+              攻击面刻画
             </button>
             <div
               v-show="dropdowns.characterization"
@@ -100,7 +109,8 @@
                   @click="navigate"
                   class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-t-lg transition-colors duration-200"
                 >
-                  路径扫描 🛤️
+                  <i class="ri-folders-line mr-1"></i>
+                  路径扫描
                 </button>
               </router-link>
               <router-link to="/under-development" v-slot="{ navigate }">
@@ -108,7 +118,8 @@
                   @click="navigate"
                   class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-b-lg transition-colors duration-200"
                 >
-                  指纹识别 🧩
+                  <i class="ri-fingerprint-line mr-1"></i>
+                  指纹识别
                 </button>
               </router-link>
             </div>
@@ -120,7 +131,8 @@
               @click="toggleDropdown('penetration')"
               class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 flex items-center"
             >
-              攻击面渗透 🔒
+              <i class="ri-shield-keyhole-line mr-1"></i>
+              攻击面渗透
             </button>
             <div
               v-show="dropdowns.penetration"
@@ -131,7 +143,8 @@
                   @click="navigate"
                   class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-t-lg transition-colors duration-200"
                 >
-                  漏洞扫描 🔍
+                  <i class="ri-bug-line mr-1"></i>
+                  漏洞扫描
                 </button>
               </router-link>
               <router-link to="/under-development" v-slot="{ navigate }">
@@ -139,7 +152,8 @@
                   @click="navigate"
                   class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-b-lg transition-colors duration-200"
                 >
-                  漏洞利用 ⚠️
+                  <i class="ri-error-warning-line mr-1"></i>
+                  漏洞利用️
                 </button>
               </router-link>
             </div>
@@ -151,7 +165,8 @@
               @click="navigate"
               class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
-              任务管理 📋
+              <i class="ri-task-line mr-1"></i>
+              任务管理
             </button>
           </router-link>
 
@@ -161,7 +176,8 @@
               @click="navigate"
               class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
-              系统配置 ⚙️
+              <i class="ri-settings-3-line mr-1"></i>
+              系统配置
             </button>
           </router-link>
 
@@ -171,7 +187,8 @@
               @click="navigate"
               class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
-              用户管理 👤
+              <i class="ri-user-settings-line mr-1"></i>
+              用户管理
             </button>
           </router-link>
 
@@ -181,7 +198,8 @@
               @click="navigate"
               class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
             >
-              综合扫描 ⚡
+              <i class="ri-rocket-line mr-1"></i>
+              综合扫描
             </button>
           </router-link>
 
@@ -190,7 +208,8 @@
             @click="handleLogout"
             class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
           >
-            登出 🚪
+            <i class="ri-logout-box-line mr-1"></i>
+            登出
           </button>
         </template>
       </div>
