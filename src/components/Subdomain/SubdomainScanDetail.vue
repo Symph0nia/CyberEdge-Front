@@ -37,43 +37,48 @@
 
         <!-- 批量操作按钮 -->
         <div class="flex space-x-3 mb-6">
+          <!-- IP解析按钮 -->
           <button
             @click="resolveIPs(selectedSubdomains)"
             :disabled="selectedSubdomains.length === 0 || isResolving"
-            class="action-button"
+            class="action-button flex items-center justify-center"
             :class="[
               selectedSubdomains.length === 0 || isResolving
                 ? 'bg-gray-700/50 text-gray-400'
                 : 'bg-blue-500/50 hover:bg-blue-600/50 text-blue-100',
             ]"
           >
+            <i class="ri-radar-line mr-2"></i>
             {{ isResolving ? "正在解析..." : "解析选中IP" }}
           </button>
 
-          <!-- 新增的批量HTTPX探测按钮 -->
+          <!-- HTTPX探测按钮 -->
           <button
             @click="probeHosts(selectedSubdomains)"
             :disabled="selectedSubdomains.length === 0 || isProbing"
-            class="action-button"
+            class="action-button flex items-center justify-center"
             :class="[
               selectedSubdomains.length === 0 || isProbing
                 ? 'bg-gray-700/50 text-gray-400'
                 : 'bg-purple-500/50 hover:bg-purple-600/50 text-purple-100',
             ]"
           >
+            <i class="ri-search-eye-line mr-2"></i>
             {{ isProbing ? "正在探测..." : "HTTPX探测" }}
           </button>
 
+          <!-- 端口扫描按钮 -->
           <button
             @click="sendToPortScan(selectedSubdomains)"
             :disabled="selectedSubdomains.length === 0"
-            class="action-button"
+            class="action-button flex items-center justify-center"
             :class="[
               selectedSubdomains.length === 0
                 ? 'bg-gray-700/50 text-gray-400'
                 : 'bg-yellow-500/50 hover:bg-yellow-600/50 text-yellow-100',
             ]"
           >
+            <i class="ri-scan-2-line mr-2"></i>
             发送到端口扫描
           </button>
         </div>
@@ -185,8 +190,9 @@
                   <button
                     v-else
                     @click="resolveIPs(subdomain)"
-                    class="text-xs px-3 py-1.5 rounded-xl bg-blue-500/50 hover:bg-blue-600/50 text-blue-100 transition-all duration-200"
+                    class="text-xs px-3 py-1.5 rounded-xl bg-blue-500/50 hover:bg-blue-600/50 text-blue-100 transition-all duration-200 flex items-center justify-center"
                   >
+                    <i class="ri-radar-line mr-2"></i>
                     解析IP
                   </button>
                 </td>
@@ -194,7 +200,7 @@
                   <span
                     v-if="subdomain.httpStatus"
                     :class="[
-                      'px-2 py-1 rounded-full text-xs font-medium',
+                      'px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap inline-flex items-center',
                       getHttpStatusClass(subdomain.httpStatus),
                     ]"
                   >
@@ -203,26 +209,33 @@
                   <button
                     v-else
                     @click="probeHosts(subdomain)"
-                    class="text-xs px-3 py-1.5 rounded-xl bg-purple-500/50 hover:bg-purple-600/50 text-purple-100 transition-all duration-200"
+                    class="text-xs px-2 py-0.5 rounded-xl bg-purple-500/50 hover:bg-purple-600/50 text-purple-100 transition-all duration-200 flex items-center justify-center whitespace-nowrap"
                   >
+                    <i class="ri-search-eye-line mr-1 text-xs"></i>
                     探测
                   </button>
                 </td>
                 <td
-                  class="py-4 px-6 text-sm text-gray-200 truncate max-w-xs"
+                  class="py-4 px-6 text-sm text-gray-200 truncate w-48"
                   :title="subdomain.httpTitle"
                 >
                   {{ subdomain.httpTitle || "-" }}
                 </td>
                 <td class="py-4 px-6">
                   <span
-                    class="px-2 py-1 rounded-full text-xs font-medium"
+                    class="px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap inline-flex items-center"
                     :class="
                       subdomain.is_read
                         ? 'bg-green-500/20 text-green-300'
                         : 'bg-yellow-500/20 text-yellow-300'
                     "
                   >
+                    <i
+                      :class="[
+                        subdomain.is_read ? 'ri-eye-line' : 'ri-eye-off-line',
+                        'mr-1 text-xs',
+                      ]"
+                    ></i>
                     {{ subdomain.is_read ? "已读" : "未读" }}
                   </span>
                 </td>
@@ -230,25 +243,32 @@
                   <div class="flex space-x-2">
                     <button
                       @click="toggleReadStatus(subdomain)"
-                      class="table-action-button"
+                      class="px-2 py-1 text-xs rounded-xl flex items-center justify-center whitespace-nowrap transition-all duration-200"
                       :class="
                         subdomain.is_read
                           ? 'bg-gray-700/50 text-gray-300'
                           : 'bg-green-500/50 text-green-100'
                       "
                     >
+                      <i
+                        :class="[
+                          subdomain.is_read ? 'ri-eye-off-line' : 'ri-eye-line',
+                          'mr-1 text-xs',
+                        ]"
+                      ></i>
                       {{ subdomain.is_read ? "标为未读" : "标为已读" }}
                     </button>
                     <button
                       @click="sendToPortScan(subdomain)"
                       :disabled="!subdomain.ip"
-                      class="table-action-button"
+                      class="px-2 py-1 text-xs rounded-xl flex items-center justify-center whitespace-nowrap transition-all duration-200"
                       :class="[
                         subdomain.ip
                           ? 'bg-yellow-500/50 text-yellow-100 hover:bg-yellow-600/50'
                           : 'bg-gray-700/50 text-gray-400',
                       ]"
                     >
+                      <i class="ri-scan-2-line mr-1 text-xs"></i>
                       端口扫描
                     </button>
                   </div>
