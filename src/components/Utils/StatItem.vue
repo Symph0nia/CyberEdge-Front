@@ -7,11 +7,11 @@
 
 <script>
 export default {
-  name: 'StatItem',
+  name: "StatItem",
   props: {
     title: String,
     value: [String, Number],
-    bgColor: String
-  }
+    bgColor: String,
+  },
 };
 </script>

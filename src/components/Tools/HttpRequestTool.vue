@@ -9,7 +9,8 @@
         <span class="text-xs opacity-75 mt-1 block">
           在 Chrome 中运行：
           <code class="bg-gray-900/50 px-2 py-1 rounded-md text-gray-300">
-            chrome.exe --user-data-dir="C:/Chrome dev session" --disable-web-security
+            chrome.exe --user-data-dir="C:/Chrome dev session"
+            --disable-web-security
           </code>
         </span>
       </p>
@@ -21,15 +22,10 @@
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-300">请求地址</label>
         <input
-            type="text"
-            v-model="url"
-            class="w-full px-4 py-2.5 rounded-xl
-                 bg-gray-900/50 backdrop-blur-sm
-                 border border-gray-700/30
-                 text-sm
-                 focus:outline-none focus:ring-2 focus:ring-gray-600/50
-                 transition-all duration-200"
-            placeholder="输入请求的 URL"
+          type="text"
+          v-model="url"
+          class="w-full px-4 py-2.5 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 text-sm focus:outline-none focus:ring-2 focus:ring-gray-600/50 transition-all duration-200"
+          placeholder="输入请求的 URL"
         />
       </div>
 
@@ -37,18 +33,21 @@
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-300">HTTP 方法</label>
         <select
-            v-model="httpMethod"
-            class="w-full px-4 py-2.5 rounded-xl
-                 bg-gray-900/50 backdrop-blur-sm
-                 border border-gray-700/30
-                 text-sm
-                 focus:outline-none focus:ring-2 focus:ring-gray-600/50
-                 transition-all duration-200
-                 appearance-none"
+          v-model="httpMethod"
+          class="w-full px-4 py-2.5 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 text-sm focus:outline-none focus:ring-2 focus:ring-gray-600/50 transition-all duration-200 appearance-none"
         >
-          <option v-for="method in ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']"
-                  :key="method"
-                  :value="method">
+          <option
+            v-for="method in [
+              'GET',
+              'POST',
+              'PUT',
+              'DELETE',
+              'PATCH',
+              'OPTIONS',
+            ]"
+            :key="method"
+            :value="method"
+          >
             {{ method }}
           </option>
         </select>
@@ -58,14 +57,8 @@
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-300">数据格式</label>
         <select
-            v-model="dataFormat"
-            class="w-full px-4 py-2.5 rounded-xl
-                 bg-gray-900/50 backdrop-blur-sm
-                 border border-gray-700/30
-                 text-sm
-                 focus:outline-none focus:ring-2 focus:ring-gray-600/50
-                 transition-all duration-200
-                 appearance-none"
+          v-model="dataFormat"
+          class="w-full px-4 py-2.5 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 text-sm focus:outline-none focus:ring-2 focus:ring-gray-600/50 transition-all duration-200 appearance-none"
         >
           <option value="json">JSON</option>
           <option value="raw">Raw</option>
@@ -76,27 +69,17 @@
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-300">请求数据</label>
         <textarea
-            v-model="requestData"
-            rows="4"
-            class="w-full px-4 py-2.5 rounded-xl
-                 bg-gray-900/50 backdrop-blur-sm
-                 border border-gray-700/30
-                 text-sm
-                 focus:outline-none focus:ring-2 focus:ring-gray-600/50
-                 transition-all duration-200
-                 resize-none"
-            placeholder='{"key": "value"}'
+          v-model="requestData"
+          rows="4"
+          class="w-full px-4 py-2.5 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 text-sm focus:outline-none focus:ring-2 focus:ring-gray-600/50 transition-all duration-200 resize-none"
+          placeholder='{"key": "value"}'
         ></textarea>
       </div>
 
       <!-- 发送按钮 -->
       <button
-          @click="sendRequest"
-          class="w-full px-4 py-2.5 rounded-xl
-               bg-gray-700/50 hover:bg-gray-600/50
-               text-sm font-medium
-               transition-all duration-200
-               flex items-center justify-center space-x-2"
+        @click="sendRequest"
+        class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2"
       >
         <span>发送请求</span>
       </button>
@@ -106,16 +89,20 @@
         <!-- 状态码 -->
         <div class="flex items-center space-x-2 text-sm">
           <span class="font-medium text-gray-300">状态码：</span>
-          <span :class="{
-      'text-green-400': responseStatus >= 200 && responseStatus < 300,
-      'text-yellow-400': responseStatus >= 300 && responseStatus < 400,
-      'text-red-400': responseStatus >= 400
-    }">{{ responseStatus }}</span>
+          <span
+            :class="{
+              'text-green-400': responseStatus >= 200 && responseStatus < 300,
+              'text-yellow-400': responseStatus >= 300 && responseStatus < 400,
+              'text-red-400': responseStatus >= 400,
+            }"
+            >{{ responseStatus }}</span
+          >
         </div>
 
         <!-- 响应数据 - 添加最大高度和滚动 -->
-        <div class="p-4 rounded-xl bg-gray-900/50 backdrop-blur-sm
-              border border-gray-700/30 break-words">
+        <div
+          class="p-4 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 break-words"
+        >
           <p class="text-sm text-gray-400 mb-2">响应数据：</p>
           <div class="max-h-[200px] overflow-y-auto overflow-x-auto">
             <pre class="text-sm whitespace-pre-wrap">{{ response }}</pre>
@@ -128,15 +115,15 @@
 
 <script>
 export default {
-  name: 'HttpRequestTool',
+  name: "HttpRequestTool",
   data() {
     return {
-      url: '',
-      httpMethod: 'GET',
-      requestData: '',
+      url: "",
+      httpMethod: "GET",
+      requestData: "",
       response: null,
       responseStatus: null,
-      dataFormat: 'json'
+      dataFormat: "json",
     };
   },
   methods: {
@@ -145,19 +132,22 @@ export default {
         const options = {
           method: this.httpMethod,
           headers: {
-            'Content-Type': this.dataFormat === 'json' ? 'application/json' : 'text/plain',
+            "Content-Type":
+              this.dataFormat === "json" ? "application/json" : "text/plain",
           },
-          body: this.httpMethod !== 'GET' ?
-              this.dataFormat === 'json' ?
-                  JSON.stringify(JSON.parse(this.requestData)) :
-                  this.requestData : null,
+          body:
+            this.httpMethod !== "GET"
+              ? this.dataFormat === "json"
+                ? JSON.stringify(JSON.parse(this.requestData))
+                : this.requestData
+              : null,
         };
 
         const res = await fetch(this.url, options);
         this.responseStatus = res.status;
         this.response = await res.text();
       } catch (error) {
-        this.responseStatus = '请求出错';
+        this.responseStatus = "请求出错";
         this.response = error.message;
       }
     },

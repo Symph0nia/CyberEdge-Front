@@ -7,20 +7,11 @@
 
     <!-- 加密解密工具箱按钮 -->
     <button
-        v-if="isAuthenticated"
-        @click="toggleMenu"
-        class="absolute left-6 bottom-6
-               bg-gray-800/80 backdrop-blur-md
-               text-white text-sm font-medium
-               px-6 py-3 rounded-2xl
-               hover:bg-gray-700/80
-               transition-all duration-300
-               border border-gray-600/30
-               focus:outline-none
-               shadow-lg hover:shadow-xl
-               tracking-wide"
-        type="button"
-        style="z-index: 2000;"
+      v-if="isAuthenticated"
+      @click="toggleMenu"
+      class="absolute left-6 bottom-6 bg-gray-800/80 backdrop-blur-md text-white text-sm font-medium px-6 py-3 rounded-2xl hover:bg-gray-700/80 transition-all duration-300 border border-gray-600/30 focus:outline-none shadow-lg hover:shadow-xl tracking-wide"
+      type="button"
+      style="z-index: 2000"
     >
       加密解密工具箱
     </button>
@@ -29,20 +20,11 @@
 
     <!-- 网络请求工具箱按钮 -->
     <button
-        v-if="isAuthenticated"
-        @click="toggleRequestTools"
-        class="absolute right-6 bottom-6
-               bg-gray-800/80 backdrop-blur-md
-               text-white text-sm font-medium
-               px-6 py-3 rounded-2xl
-               hover:bg-gray-700/80
-               transition-all duration-300
-               border border-gray-600/30
-               focus:outline-none
-               shadow-lg hover:shadow-xl
-               tracking-wide"
-        type="button"
-        style="z-index: 2000;"
+      v-if="isAuthenticated"
+      @click="toggleRequestTools"
+      class="absolute right-6 bottom-6 bg-gray-800/80 backdrop-blur-md text-white text-sm font-medium px-6 py-3 rounded-2xl hover:bg-gray-700/80 transition-all duration-300 border border-gray-600/30 focus:outline-none shadow-lg hover:shadow-xl tracking-wide"
+      type="button"
+      style="z-index: 2000"
     >
       网络请求工具箱
     </button>
@@ -51,28 +33,28 @@
 
 <script>
 // script 部分保持不变
-import LeftSidebarMenu from './components/LeftSidebarMenu.vue';
-import RightSidebarMenu from './components/RightSidebarMenu.vue';
-import { computed } from 'vue';
-import { useStore } from 'vuex';
+import LeftSidebarMenu from "./components/LeftSidebarMenu.vue";
+import RightSidebarMenu from "./components/RightSidebarMenu.vue";
+import { computed } from "vue";
+import { useStore } from "vuex";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
     LeftSidebarMenu,
-    RightSidebarMenu
+    RightSidebarMenu,
   },
   setup() {
     const store = useStore();
     const isAuthenticated = computed(() => store.state.isAuthenticated);
     return {
-      isAuthenticated
+      isAuthenticated,
     };
   },
   data() {
     return {
       isMenuVisible: false,
-      isRequestToolVisible: false
+      isRequestToolVisible: false,
     };
   },
   methods: {
@@ -81,8 +63,8 @@ export default {
     },
     toggleRequestTools() {
       this.isRequestToolVisible = !this.isRequestToolVisible;
-    }
-  }
+    },
+  },
 };
 </script>
 

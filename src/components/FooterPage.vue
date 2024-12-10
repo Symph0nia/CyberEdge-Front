@@ -7,7 +7,9 @@
 
       <p class="tracking-wide text-gray-400 text-xs font-light leading-relaxed">
         致力于保护您的网络安全与隐私
-        <span class="inline-block ml-1 transform hover:scale-105 transition-transform duration-200">
+        <span
+          class="inline-block ml-1 transform hover:scale-105 transition-transform duration-200"
+        >
           🔒
         </span>
       </p>
@@ -17,6 +19,6 @@
 
 <script>
 export default {
-  name: 'FooterPage'
-}
+  name: "FooterPage",
+};
 </script>

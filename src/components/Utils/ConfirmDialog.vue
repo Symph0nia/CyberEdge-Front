@@ -1,18 +1,17 @@
 <template>
   <Transition name="dialog">
-    <div v-if="show"
-         class="fixed inset-0 flex items-center justify-center z-50 px-4"
-         @click="onCancel"
+    <div
+      v-if="show"
+      class="fixed inset-0 flex items-center justify-center z-50 px-4"
+      @click="onCancel"
     >
       <!-- 背景遮罩 -->
       <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
 
       <!-- 对话框 -->
-      <div class="bg-gray-800/90 backdrop-blur-xl relative
-                  max-w-md w-full p-8 rounded-2xl shadow-2xl
-                  border border-gray-700/30
-                  transform transition-all duration-300"
-           @click.stop
+      <div
+        class="bg-gray-800/90 backdrop-blur-xl relative max-w-md w-full p-8 rounded-2xl shadow-2xl border border-gray-700/30 transform transition-all duration-300"
+        @click.stop
       >
         <!-- 标题 -->
         <h2 class="text-lg font-medium text-gray-200 mb-3">
@@ -28,28 +27,24 @@
         <div class="flex space-x-3">
           <!-- 取消按钮 -->
           <button
-              @click="onCancel"
-              class="flex-1 px-4 py-2.5 rounded-xl
-                   bg-gray-700/50 hover:bg-gray-600/50
-                   text-sm font-medium text-gray-200
-                   transition-all duration-200
-                   focus:outline-none focus:ring-2 focus:ring-gray-600/50"
+            @click="onCancel"
+            class="flex-1 px-4 py-2.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
           >
             取消
           </button>
 
           <!-- 确认按钮 -->
           <button
-              @click="onConfirm"
-              :class="[
+            @click="onConfirm"
+            :class="[
               'flex-1 px-4 py-2.5 rounded-xl text-sm font-medium',
               'transition-all duration-200',
               'focus:outline-none focus:ring-2',
               type === 'danger'
                 ? 'bg-red-500/50 hover:bg-red-600/50 focus:ring-red-500/50 text-red-100'
                 : type === 'warning'
-                  ? 'bg-yellow-500/50 hover:bg-yellow-600/50 focus:ring-yellow-500/50 text-yellow-100'
-                  : 'bg-blue-500/50 hover:bg-blue-600/50 focus:ring-blue-500/50 text-blue-100'
+                ? 'bg-yellow-500/50 hover:bg-yellow-600/50 focus:ring-yellow-500/50 text-yellow-100'
+                : 'bg-blue-500/50 hover:bg-blue-600/50 focus:ring-blue-500/50 text-blue-100',
             ]"
           >
             确认
@@ -62,39 +57,39 @@
 
 <script>
 export default {
-  name: 'ConfirmDialog',
+  name: "ConfirmDialog",
   props: {
     show: Boolean,
     title: {
       type: String,
-      default: '确认'
+      default: "确认",
     },
     message: {
       type: String,
-      required: true
+      required: true,
     },
     type: {
       type: String,
-      default: 'info',
-      validator: (value) => ['info', 'warning', 'danger'].includes(value)
-    }
+      default: "info",
+      validator: (value) => ["info", "warning", "danger"].includes(value),
+    },
   },
-  emits: ['confirm', 'cancel'],
+  emits: ["confirm", "cancel"],
   setup(props, { emit }) {
     const onConfirm = () => {
-      emit('confirm');
+      emit("confirm");
     };
 
     const onCancel = () => {
-      emit('cancel');
+      emit("cancel");
     };
 
     return {
       onConfirm,
-      onCancel
+      onCancel,
     };
-  }
-}
+  },
+};
 </script>
 
 <style scoped>

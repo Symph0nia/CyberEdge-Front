@@ -1,12 +1,17 @@
 <template>
   <Transition name="notification">
-    <div v-if="show" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50">
+    <div
+      v-if="show"
+      class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50"
+    >
       <div
-          :class="[
+        :class="[
           'px-6 py-4 rounded-2xl shadow-2xl',
           'backdrop-blur-xl border',
           'flex items-center space-x-4',
-          type === 'success' ? 'bg-gray-800/80 border-gray-700/30' : 'bg-gray-800/80 border-gray-700/30'
+          type === 'success'
+            ? 'bg-gray-800/80 border-gray-700/30'
+            : 'bg-gray-800/80 border-gray-700/30',
         ]"
       >
         <!-- 状态图标 -->
@@ -25,28 +30,28 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from "vue";
 
 export default {
-  name: 'PopupNotification',
+  name: "PopupNotification",
   props: {
     message: {
       type: String,
-      required: true
+      required: true,
     },
     duration: {
       type: Number,
-      default: 3000
+      default: 3000,
     },
     emoji: {
       type: String,
-      default: '✓'
+      default: "✓",
     },
     type: {
       type: String,
-      default: 'success',
-      validator: (value) => ['success', 'error'].includes(value)
-    }
+      default: "success",
+      validator: (value) => ["success", "error"].includes(value),
+    },
   },
   setup(props, { emit }) {
     const show = ref(false);
@@ -56,7 +61,7 @@ export default {
       show.value = true;
       timer = setTimeout(() => {
         show.value = false;
-        emit('close');
+        emit("close");
       }, props.duration);
     });
 
@@ -65,8 +70,8 @@ export default {
     });
 
     return { show };
-  }
-}
+  },
+};
 </script>
 
 <style scoped>

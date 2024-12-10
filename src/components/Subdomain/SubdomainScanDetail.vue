@@ -4,11 +4,14 @@
 
     <div class="container mx-auto px-6 py-8 flex-1 mt-16">
       <!-- 主要内容卡片 -->
-      <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl
-                  border border-gray-700/30">
+      <div
+        class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-gray-700/30"
+      >
         <!-- 标题和基本信息 -->
         <div class="space-y-6 mb-8">
-          <h2 class="text-xl font-medium tracking-wide text-gray-200">扫描详情</h2>
+          <h2 class="text-xl font-medium tracking-wide text-gray-200">
+            扫描详情
+          </h2>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="space-y-1">
@@ -22,7 +25,11 @@
             <div class="space-y-1">
               <p class="text-sm text-gray-400">扫描时间</p>
               <p class="text-sm text-gray-200">
-                {{ scanResult ? new Date(scanResult.Timestamp).toLocaleString() : '' }}
+                {{
+                  scanResult
+                    ? new Date(scanResult.Timestamp).toLocaleString()
+                    : ""
+                }}
               </p>
             </div>
           </div>
@@ -31,36 +38,40 @@
         <!-- 批量操作按钮 -->
         <div class="flex space-x-3 mb-6">
           <button
-              @click="resolveSelectedIPs"
-              :disabled="selectedSubdomains.length === 0 || isResolving"
-              class="action-button"
-              :class="[
+            @click="resolveIPs(selectedSubdomains)"
+            :disabled="selectedSubdomains.length === 0 || isResolving"
+            class="action-button"
+            :class="[
               selectedSubdomains.length === 0 || isResolving
                 ? 'bg-gray-700/50 text-gray-400'
-                : 'bg-blue-500/50 hover:bg-blue-600/50 text-blue-100'
+                : 'bg-blue-500/50 hover:bg-blue-600/50 text-blue-100',
             ]"
           >
-            {{ isResolving ? '正在解析...' : '解析选中IP' }}
+            {{ isResolving ? "正在解析..." : "解析选中IP" }}
           </button>
 
           <!-- 新增的批量HTTPX探测按钮 -->
           <button
-              @click="probeSelectedHosts"
-              :disabled="selectedSubdomains.length === 0 || isProbing"
-              class="action-button"
-              :class="[selectedSubdomains.length === 0 || isProbing ? 'bg-gray-700/50 text-gray-400' : 'bg-purple-500/50 hover:bg-purple-600/50 text-purple-100']"
+            @click="probeSelectedHosts"
+            :disabled="selectedSubdomains.length === 0 || isProbing"
+            class="action-button"
+            :class="[
+              selectedSubdomains.length === 0 || isProbing
+                ? 'bg-gray-700/50 text-gray-400'
+                : 'bg-purple-500/50 hover:bg-purple-600/50 text-purple-100',
+            ]"
           >
-            {{ isProbing ? '正在探测...' : 'HTTPX探测' }}
+            {{ isProbing ? "正在探测..." : "HTTPX探测" }}
           </button>
 
           <button
-              @click="sendSelectedToPortScan"
-              :disabled="selectedSubdomains.length === 0"
-              class="action-button"
-              :class="[
+            @click="sendSelectedToPortScan"
+            :disabled="selectedSubdomains.length === 0"
+            class="action-button"
+            :class="[
               selectedSubdomains.length === 0
                 ? 'bg-gray-700/50 text-gray-400'
-                : 'bg-yellow-500/50 hover:bg-yellow-600/50 text-yellow-100'
+                : 'bg-yellow-500/50 hover:bg-yellow-600/50 text-yellow-100',
             ]"
           >
             发送到端口扫描
@@ -71,118 +82,143 @@
         <div class="relative overflow-x-auto rounded-xl">
           <table class="w-full">
             <thead>
-            <tr class="border-b border-gray-700/50">
-              <th class="py-4 px-6 text-left">
-                <input
+              <tr class="border-b border-gray-700/50">
+                <th class="py-4 px-6 text-left">
+                  <input
                     type="checkbox"
                     @change="toggleSelectAll"
                     v-model="selectAll"
-                    class="rounded border-gray-700/50 bg-gray-900/50
-                           text-blue-500/50 focus:ring-blue-500/30"
-                />
-              </th>
-              <th v-for="header in tableHeaders"
+                    class="rounded border-gray-700/50 bg-gray-900/50 text-blue-500/50 focus:ring-blue-500/30"
+                  />
+                </th>
+                <th
+                  v-for="header in tableHeaders"
                   :key="header"
-                  class="py-4 px-6 text-left text-sm font-medium text-gray-400">
-                {{ header }}
-              </th>
-            </tr>
+                  class="py-4 px-6 text-left text-sm font-medium text-gray-400"
+                >
+                  {{ header }}
+                </th>
+              </tr>
             </thead>
             <tbody>
-            <tr v-for="subdomain in subdomains"
+              <tr
+                v-for="subdomain in subdomains"
                 :key="subdomain.id"
                 class="border-b border-gray-700/30 transition-colors duration-200"
                 :class="[
-        subdomain.isFirstIP ? 'bg-blue-900/20' : 'hover:bg-gray-700/20',
-        subdomain.isFirstIP ? 'border-blue-500/30' : 'border-gray-700/30'
-    ]">
-              <td class="py-4 px-6">
-                <input
+                  subdomain.isFirstIP
+                    ? 'bg-blue-900/20'
+                    : 'hover:bg-gray-700/20',
+                  subdomain.isFirstIP
+                    ? 'border-blue-500/30'
+                    : 'border-gray-700/30',
+                ]"
+              >
+                <td class="py-4 px-6">
+                  <input
                     type="checkbox"
                     v-model="selectedSubdomains"
                     :value="subdomain.id"
-                    class="rounded border-gray-700/50 bg-gray-900/50
-                   text-blue-500/50 focus:ring-blue-500/30"
-                />
-              </td>
-              <td class="py-4 px-6 text-sm text-gray-200">{{ subdomain.id }}</td>
-              <td class="py-4 px-6 text-sm text-gray-200">{{ subdomain.domain }}</td>
-              <td class="py-4 px-6 text-sm">
-              <span v-if="subdomain.ip"
-                    :class="['text-gray-200', subdomain.isFirstIP ? 'font-medium' : '']">
-                  {{ subdomain.ip }}
-              </span>
-                <button
-                    v-else
-                    @click="resolveIP(subdomain)"
-                    class="text-xs px-3 py-1.5 rounded-xl
-                   bg-blue-500/50 hover:bg-blue-600/50 text-blue-100
-                   transition-all duration-200"
-                >
-                  解析IP
-                </button>
-              </td>
-              <td class="py-4 px-6 text-sm">
-                <span v-if="subdomain.httpStatus"
-                      :class="[
-                        'px-2 py-1 rounded-full text-xs font-medium',
-                        getHttpStatusClass(subdomain.httpStatus)
-                      ]">
-                  {{ subdomain.httpStatus }}
-                </span>
-                              <button
-                                  v-else
-                                  @click="probeHost(subdomain)"
-                                  class="text-xs px-3 py-1.5 rounded-xl
-                           bg-purple-500/50 hover:bg-purple-600/50 text-purple-100
-                           transition-all duration-200"
-                              >
-                                探测
-                </button>
-              </td>
-              <td class="py-4 px-6 text-sm text-gray-200 truncate max-w-xs" :title="subdomain.httpTitle">
-                {{ subdomain.httpTitle || '-' }}
-              </td>
-              <td class="py-4 px-6">
+                    class="rounded border-gray-700/50 bg-gray-900/50 text-blue-500/50 focus:ring-blue-500/30"
+                  />
+                </td>
+                <td class="py-4 px-6 text-sm text-gray-200">
+                  {{ subdomain.id }}
+                </td>
+                <td class="py-4 px-6 text-sm text-gray-200">
+                  {{ subdomain.domain }}
+                </td>
+                <td class="py-4 px-6 text-sm">
                   <span
-                      class="px-2 py-1 rounded-full text-xs font-medium"
-                      :class="subdomain.is_read ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'"
+                    v-if="subdomain.ip"
+                    :class="[
+                      'text-gray-200',
+                      subdomain.isFirstIP ? 'font-medium' : '',
+                    ]"
                   >
-                    {{ subdomain.is_read ? '已读' : '未读' }}
+                    {{ subdomain.ip }}
                   </span>
-              </td>
-              <td class="py-4 px-6">
-                <div class="flex space-x-2">
                   <button
+                    v-else
+                    @click="resolveIPs(subdomain)"
+                    class="text-xs px-3 py-1.5 rounded-xl bg-blue-500/50 hover:bg-blue-600/50 text-blue-100 transition-all duration-200"
+                  >
+                    解析IP
+                  </button>
+                </td>
+                <td class="py-4 px-6 text-sm">
+                  <span
+                    v-if="subdomain.httpStatus"
+                    :class="[
+                      'px-2 py-1 rounded-full text-xs font-medium',
+                      getHttpStatusClass(subdomain.httpStatus),
+                    ]"
+                  >
+                    {{ subdomain.httpStatus }}
+                  </span>
+                  <button
+                    v-else
+                    @click="probeHost(subdomain)"
+                    class="text-xs px-3 py-1.5 rounded-xl bg-purple-500/50 hover:bg-purple-600/50 text-purple-100 transition-all duration-200"
+                  >
+                    探测
+                  </button>
+                </td>
+                <td
+                  class="py-4 px-6 text-sm text-gray-200 truncate max-w-xs"
+                  :title="subdomain.httpTitle"
+                >
+                  {{ subdomain.httpTitle || "-" }}
+                </td>
+                <td class="py-4 px-6">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs font-medium"
+                    :class="
+                      subdomain.is_read
+                        ? 'bg-green-500/20 text-green-300'
+                        : 'bg-yellow-500/20 text-yellow-300'
+                    "
+                  >
+                    {{ subdomain.is_read ? "已读" : "未读" }}
+                  </span>
+                </td>
+                <td class="py-4 px-6">
+                  <div class="flex space-x-2">
+                    <button
                       @click="toggleReadStatus(subdomain)"
                       class="table-action-button"
-                      :class="subdomain.is_read ? 'bg-gray-700/50 text-gray-300' : 'bg-green-500/50 text-green-100'"
-                  >
-                    {{ subdomain.is_read ? '标为未读' : '标为已读' }}
-                  </button>
-                  <button
+                      :class="
+                        subdomain.is_read
+                          ? 'bg-gray-700/50 text-gray-300'
+                          : 'bg-green-500/50 text-green-100'
+                      "
+                    >
+                      {{ subdomain.is_read ? "标为未读" : "标为已读" }}
+                    </button>
+                    <button
                       @click="sendToPortScan(subdomain)"
                       :disabled="!subdomain.ip"
                       class="table-action-button"
                       :class="[
                         subdomain.ip
                           ? 'bg-yellow-500/50 text-yellow-100 hover:bg-yellow-600/50'
-                          : 'bg-gray-700/50 text-gray-400'
+                          : 'bg-gray-700/50 text-gray-400',
                       ]"
-                  >
-                    端口扫描
-                  </button>
-                </div>
-              </td>
-            </tr>
+                    >
+                      端口扫描
+                    </button>
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
 
         <!-- 错误提示 -->
-        <div v-if="errorMessage"
-             class="mt-4 px-4 py-2 rounded-xl
-                    bg-red-500/20 border border-red-500/30">
+        <div
+          v-if="errorMessage"
+          class="mt-4 px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/30"
+        >
           <p class="text-sm text-red-400">{{ errorMessage }}</p>
         </div>
       </div>
@@ -192,52 +228,52 @@
 
     <!-- 通知组件 -->
     <PopupNotification
-        v-if="showNotification"
-        :message="notificationMessage"
-        :type="notificationType"
-        @close="showNotification = false"
+      v-if="showNotification"
+      :message="notificationMessage"
+      :type="notificationType"
+      @close="showNotification = false"
     />
 
     <!-- 确认对话框 -->
     <ConfirmDialog
-        :show="showDialog"
-        :title="dialogTitle"
-        :message="dialogMessage"
-        :type="dialogType"
-        @confirm="handleConfirm"
-        @cancel="handleCancel"
+      :show="showDialog"
+      :title="dialogTitle"
+      :message="dialogMessage"
+      :type="dialogType"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
     />
   </div>
 </template>
 
 <script>
-import { onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import HeaderPage from '../HeaderPage.vue'
-import FooterPage from '../FooterPage.vue'
-import PopupNotification from '../Utils/PopupNotification.vue'
-import ConfirmDialog from '../Utils/ConfirmDialog.vue'
-import { useSubdomainScan } from '../../composables/useSubdomainScan'
+import { onMounted } from "vue";
+import { useRoute } from "vue-router";
+import HeaderPage from "../HeaderPage.vue";
+import FooterPage from "../FooterPage.vue";
+import PopupNotification from "../Utils/PopupNotification.vue";
+import ConfirmDialog from "../Utils/ConfirmDialog.vue";
+import { useSubdomainScan } from "../../composables/useSubdomainScan";
 
 export default {
-  name: 'SubdomainScanDetail',
+  name: "SubdomainScanDetail",
   components: {
     HeaderPage,
     FooterPage,
     PopupNotification,
-    ConfirmDialog
+    ConfirmDialog,
   },
   setup() {
-    const route = useRoute()
+    const route = useRoute();
     const tableHeaders = [
-      '子域名ID',
-      '子域名',
-      'IP地址',
-      'HTTP状态',
-      '标题',
-      '状态',
-      '操作'
-    ]
+      "子域名ID",
+      "子域名",
+      "IP地址",
+      "HTTP状态",
+      "标题",
+      "状态",
+      "操作",
+    ];
 
     const {
       // 基础数据
@@ -252,8 +288,7 @@ export default {
       fetchScanResult,
       toggleSelectAll,
       toggleReadStatus,
-      resolveIP,
-      resolveSelectedIPs,
+      resolveIPs,
       sendToPortScan,
       sendSelectedToPortScan,
 
@@ -273,14 +308,13 @@ export default {
       isProbing,
       probeHost,
       probeSelectedHosts,
-      getHttpStatusClass
-
-    } = useSubdomainScan()
+      getHttpStatusClass,
+    } = useSubdomainScan();
 
     // 页面加载时获取数据
     onMounted(() => {
-      fetchScanResult(route.params.id)
-    })
+      fetchScanResult(route.params.id);
+    });
 
     return {
       // 基础数据
@@ -295,8 +329,7 @@ export default {
       // 操作方法
       toggleSelectAll,
       toggleReadStatus,
-      resolveIP,
-      resolveSelectedIPs,
+      resolveIPs,
       sendToPortScan,
       sendSelectedToPortScan,
 
@@ -315,10 +348,10 @@ export default {
       isProbing,
       probeHost,
       probeSelectedHosts,
-      getHttpStatusClass
-    }
-  }
-}
+      getHttpStatusClass,
+    };
+  },
+};
 </script>
 
 <style scoped>

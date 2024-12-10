@@ -3,24 +3,39 @@
 </template>
 
 <script>
-import { computed } from 'vue'
-import { Bar } from 'vue-chartjs'
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
+import { computed } from "vue";
+import { Bar } from "vue-chartjs";
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+} from "chart.js";
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale
+);
 
 export default {
-  name: 'BarChart',
+  name: "BarChart",
   components: { Bar },
   props: {
     chartData: {
       type: Object,
-      required: true
+      required: true,
     },
     chartOptions: {
       type: Object,
-      default: () => ({})
-    }
+      default: () => ({}),
+    },
   },
   setup(props) {
     const defaultOptions = {
@@ -28,54 +43,54 @@ export default {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'top',
+          position: "top",
           labels: {
             font: {
-              size: 14
+              size: 14,
             },
-            color: '#FFFFFF' // 白色文字
-          }
+            color: "#FFFFFF", // 白色文字
+          },
         },
         tooltip: {
-          mode: 'index',
+          mode: "index",
           intersect: false,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          titleColor: '#FFFFFF',
-          bodyColor: '#FFFFFF',
-          borderColor: '#FFFFFF',
-          borderWidth: 1
-        }
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          titleColor: "#FFFFFF",
+          bodyColor: "#FFFFFF",
+          borderColor: "#FFFFFF",
+          borderWidth: 1,
+        },
       },
       scales: {
         x: {
           grid: {
-            color: 'rgba(255, 255, 255, 0.1)' // 淡白色网格线
+            color: "rgba(255, 255, 255, 0.1)", // 淡白色网格线
           },
           ticks: {
-            color: '#FFFFFF' // 白色文字
-          }
+            color: "#FFFFFF", // 白色文字
+          },
         },
         y: {
           beginAtZero: true,
           grid: {
-            color: 'rgba(255, 255, 255, 0.1)' // 淡白色网格线
+            color: "rgba(255, 255, 255, 0.1)", // 淡白色网格线
           },
           ticks: {
-            color: '#FFFFFF', // 白色文字
-            callback: function(value) {
-              return value.toLocaleString() // 格式化大数字
-            }
-          }
-        }
-      }
-    }
+            color: "#FFFFFF", // 白色文字
+            callback: function (value) {
+              return value.toLocaleString(); // 格式化大数字
+            },
+          },
+        },
+      },
+    };
 
     const mergedOptions = computed(() => ({
       ...defaultOptions,
-      ...props.chartOptions
-    }))
+      ...props.chartOptions,
+    }));
 
-    return { mergedOptions }
-  }
-}
+    return { mergedOptions };
+  },
+};
 </script>

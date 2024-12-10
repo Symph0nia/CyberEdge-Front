@@ -1,8 +1,8 @@
 <template>
   <div class="bg-gray-900 flex items-center justify-center min-h-screen">
-    <div class="bg-gray-800/40 backdrop-blur-xl p-10 rounded-3xl shadow-2xl w-full max-w-md
-                border border-gray-700/30 transform transition-all duration-500
-                opacity-0 translate-x-full animate-fade-in-right">
+    <div
+      class="bg-gray-800/40 backdrop-blur-xl p-10 rounded-3xl shadow-2xl w-full max-w-md border border-gray-700/30 transform transition-all duration-500 opacity-0 translate-x-full animate-fade-in-right"
+    >
       <!-- 内容保持不变 -->
       <div class="space-y-6">
         <!-- 标题 -->
@@ -18,8 +18,14 @@
         <div v-else class="space-y-6">
           <!-- 二维码显示区域 -->
           <div v-if="qrCodeUrl" class="space-y-4">
-            <div class="bg-gray-900/50 p-6 rounded-2xl border border-gray-700/30">
-              <img :src="qrCodeUrl" alt="认证二维码" class="mx-auto w-48 h-48">
+            <div
+              class="bg-gray-900/50 p-6 rounded-2xl border border-gray-700/30"
+            >
+              <img
+                :src="qrCodeUrl"
+                alt="认证二维码"
+                class="mx-auto w-48 h-48"
+              />
             </div>
             <p class="text-sm text-gray-400">二维码已生成</p>
           </div>
@@ -36,25 +42,16 @@
           <!-- 按钮区域 -->
           <div class="space-y-3 pt-4">
             <button
-                @click="fetchQRCode"
-                :disabled="loading"
-                class="w-full px-4 py-2.5 rounded-xl
-                     bg-gray-700/50 hover:bg-gray-600/50
-                     text-sm font-medium text-gray-200
-                     transition-all duration-200
-                     focus:outline-none focus:ring-2 focus:ring-gray-600/50
-                     disabled:opacity-50 disabled:cursor-not-allowed"
+              @click="fetchQRCode"
+              :disabled="loading"
+              class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {{ qrCodeUrl ? '刷新二维码' : '生成二维码' }}
+              {{ qrCodeUrl ? "刷新二维码" : "生成二维码" }}
             </button>
 
             <button
-                @click="goToLogin"
-                class="w-full px-4 py-2.5 rounded-xl
-                     bg-gray-800/50 hover:bg-gray-700/50
-                     text-sm font-medium text-gray-200
-                     transition-all duration-200
-                     focus:outline-none focus:ring-2 focus:ring-gray-600/50"
+              @click="goToLogin"
+              class="w-full px-4 py-2.5 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
             >
               返回登录
             </button>
@@ -65,29 +62,29 @@
 
     <!-- 通知组件 -->
     <PopupNotification
-        v-if="showNotification"
-        :message="notificationMessage"
-        :type="notificationType"
-        @close="showNotification = false"
+      v-if="showNotification"
+      :message="notificationMessage"
+      :type="notificationType"
+      @close="showNotification = false"
     />
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useNotification } from '../../composables/useNotification'; // 导入新的通知钩子
-import api from '../../api/axiosInstance';
-import PopupNotification from '../Utils/PopupNotification.vue';
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { useNotification } from "../../composables/useNotification"; // 导入新的通知钩子
+import api from "../../api/axiosInstance";
+import PopupNotification from "../Utils/PopupNotification.vue";
 
 export default {
-  name: 'GoogleAuthQRCode',
+  name: "GoogleAuthQRCode",
   components: {
-    PopupNotification
+    PopupNotification,
   },
   setup() {
     const router = useRouter();
-    const qrCodeUrl = ref('');
+    const qrCodeUrl = ref("");
     const loading = ref(false);
     const interfaceClosed = ref(false);
 
@@ -97,20 +94,22 @@ export default {
       notificationMessage,
       notificationType,
       showSuccess,
-      showError
+      showError,
     } = useNotification();
 
     const fetchQRCode = async () => {
       loading.value = true;
       try {
-        const response = await api.get('/auth/qrcode', { responseType: 'blob' });
+        const response = await api.get("/auth/qrcode", {
+          responseType: "blob",
+        });
         qrCodeUrl.value = URL.createObjectURL(response.data);
         interfaceClosed.value = false;
 
         // 使用新的成功通知方法
-        showSuccess('二维码已生成');
+        showSuccess("二维码已生成");
       } catch (error) {
-        console.error('获取二维码失败:', error);
+        console.error("获取二维码失败:", error);
         interfaceClosed.value = true;
 
         if (error.response && error.response.data instanceof Blob) {
@@ -118,12 +117,12 @@ export default {
           const errorData = JSON.parse(text);
           if (errorData.error === "二维码接口已关闭") {
             // 使用新的错误通知方法
-            showError('接口暂时关闭');
+            showError("接口暂时关闭");
           } else {
-            showError('生成失败');
+            showError("生成失败");
           }
         } else {
-          showError('生成失败');
+          showError("生成失败");
         }
       } finally {
         loading.value = false;
@@ -131,7 +130,7 @@ export default {
     };
 
     const goToLogin = () => {
-      router.push('/login');
+      router.push("/login");
     };
 
     return {
@@ -142,9 +141,9 @@ export default {
       showNotification,
       notificationMessage,
       notificationType,
-      goToLogin
+      goToLogin,
     };
-  }
+  },
 };
 </script>
 

@@ -5,12 +5,12 @@
     <div class="container mx-auto px-6 py-8 flex-1 mt-16">
       <!-- 任务列表组件 -->
       <TaskList
-          :tasks="tasks"
-          @toggle-task="toggleTask"
-          @delete-task="handleDelete"
-          @refresh-tasks="handleRefreshTasks"
-          @batch-start="handleBatchStart"
-          @batch-delete="handleBatchDelete"
+        :tasks="tasks"
+        @toggle-task="toggleTask"
+        @delete-task="handleDelete"
+        @refresh-tasks="handleRefreshTasks"
+        @batch-start="handleBatchStart"
+        @batch-delete="handleBatchDelete"
       />
 
       <!-- 任务创建表单组件 -->
@@ -21,55 +21,55 @@
 
     <!-- 通知和确认对话框组件 -->
     <PopupNotification
-        v-if="showNotification"
-        :message="notificationMessage"
-        :type="notificationType"
-        @close="showNotification = false"
+      v-if="showNotification"
+      :message="notificationMessage"
+      :type="notificationType"
+      @close="showNotification = false"
     />
 
     <ConfirmDialog
-        :show="showDialog"
-        :title="dialogTitle"
-        :message="dialogMessage"
-        :type="dialogType"
-        @confirm="handleConfirm"
-        @cancel="handleCancel"
+      :show="showDialog"
+      :title="dialogTitle"
+      :message="dialogMessage"
+      :type="dialogType"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
     />
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
-import TaskList from './TaskList.vue'
-import TaskForm from './TaskForm.vue'
-import HeaderPage from '../HeaderPage.vue'
-import FooterPage from '../FooterPage.vue'
-import PopupNotification from '../Utils/PopupNotification.vue'
-import ConfirmDialog from '../Utils/ConfirmDialog.vue'
-import { useNotification } from '../../composables/useNotification'
-import { useConfirmDialog } from '../../composables/useConfirmDialog'
-import api from '../../api/axiosInstance'
+import { ref, onMounted } from "vue";
+import TaskList from "./TaskList.vue";
+import TaskForm from "./TaskForm.vue";
+import HeaderPage from "../HeaderPage.vue";
+import FooterPage from "../FooterPage.vue";
+import PopupNotification from "../Utils/PopupNotification.vue";
+import ConfirmDialog from "../Utils/ConfirmDialog.vue";
+import { useNotification } from "../../composables/useNotification";
+import { useConfirmDialog } from "../../composables/useConfirmDialog";
+import api from "../../api/axiosInstance";
 
 export default {
-  name: 'TaskManagement',
+  name: "TaskManagement",
   components: {
     HeaderPage,
     FooterPage,
     TaskList,
     TaskForm,
     PopupNotification,
-    ConfirmDialog
+    ConfirmDialog,
   },
   setup() {
-    const tasks = ref([])
+    const tasks = ref([]);
 
     const {
       showNotification,
       notificationMessage,
       notificationType,
       showSuccess,
-      showError
-    } = useNotification()
+      showError,
+    } = useNotification();
 
     const {
       showDialog,
@@ -78,149 +78,149 @@ export default {
       dialogType,
       confirm,
       handleConfirm,
-      handleCancel
-    } = useConfirmDialog()
+      handleCancel,
+    } = useConfirmDialog();
 
     // 获取任务列表
     const fetchTasks = async () => {
       try {
-        const response = await api.get('/tasks')
-        tasks.value = response.data
+        const response = await api.get("/tasks");
+        tasks.value = response.data;
       } catch (error) {
-        showError('获取任务列表失败')
+        showError("获取任务列表失败");
       }
-    }
+    };
 
     // 创建任务
     const createTask = async (taskData) => {
       try {
-        await api.post('/tasks', taskData)
-        await fetchTasks()
-        showSuccess('已创建新任务')
+        await api.post("/tasks", taskData);
+        await fetchTasks();
+        showSuccess("已创建新任务");
       } catch (error) {
-        showError('创建任务失败')
+        showError("创建任务失败");
       }
-    }
+    };
 
     // 切换单个任务状态
     const toggleTask = async (task) => {
       try {
-        const response = await api.post('/tasks/start', {
-          taskIds: [task.id]
-        })
-        const result = response.data.result
+        const response = await api.post("/tasks/start", {
+          taskIds: [task.id],
+        });
+        const result = response.data.result;
 
-        await fetchTasks()
+        await fetchTasks();
 
         if (result.success.includes(task.id)) {
-          showSuccess('已启动任务')
+          showSuccess("已启动任务");
         } else {
-          const errorMsg = result.failed[task.id] || '启动失败'
-          showError(`启动任务失败: ${errorMsg}`)
+          const errorMsg = result.failed[task.id] || "启动失败";
+          showError(`启动任务失败: ${errorMsg}`);
         }
       } catch (error) {
-        showError('启动任务失败')
+        showError("启动任务失败");
       }
-    }
+    };
 
     // 删除单个任务
     const handleDelete = async (taskId) => {
       try {
         const confirmed = await confirm({
-          title: '确认删除',
+          title: "确认删除",
           message: `是否确认删除任务 ${taskId}？此操作不可撤销。`,
-          type: 'danger'
-        })
+          type: "danger",
+        });
 
         if (confirmed) {
-          const response = await api.delete('/tasks', {
-            data: { taskIds: [taskId] }
-          })
-          const result = response.data.result
+          const response = await api.delete("/tasks", {
+            data: { taskIds: [taskId] },
+          });
+          const result = response.data.result;
 
-          await fetchTasks()
+          await fetchTasks();
 
           if (result.success.includes(taskId)) {
-            showSuccess('已删除任务')
+            showSuccess("已删除任务");
           } else {
-            const errorMsg = result.failed[taskId] || '删除失败'
-            showError(`删除任务失败: ${errorMsg}`)
+            const errorMsg = result.failed[taskId] || "删除失败";
+            showError(`删除任务失败: ${errorMsg}`);
           }
         }
       } catch (error) {
-        showError('删除任务失败')
+        showError("删除任务失败");
       }
-    }
+    };
 
     // 批量启动任务
     const handleBatchStart = async (taskIds) => {
       try {
         const confirmed = await confirm({
-          title: '确认批量启动',
+          title: "确认批量启动",
           message: `是否确认启动选中的 ${taskIds.length} 个任务？`,
-          type: 'warning'
-        })
+          type: "warning",
+        });
 
         if (confirmed) {
-          const response = await api.post('/tasks/start', { taskIds })
-          const result = response.data.result
+          const response = await api.post("/tasks/start", { taskIds });
+          const result = response.data.result;
 
-          await fetchTasks()
+          await fetchTasks();
 
           if (result.success.length > 0) {
-            showSuccess(`成功启动 ${result.success.length} 个任务`)
+            showSuccess(`成功启动 ${result.success.length} 个任务`);
           }
 
           if (Object.keys(result.failed).length > 0) {
-            showError(`${Object.keys(result.failed).length} 个任务启动失败`)
+            showError(`${Object.keys(result.failed).length} 个任务启动失败`);
           }
         }
       } catch (error) {
-        showError('批量启动任务失败')
+        showError("批量启动任务失败");
       }
-    }
+    };
 
-// 批量删除任务
+    // 批量删除任务
     const handleBatchDelete = async (taskIds) => {
       try {
         const confirmed = await confirm({
-          title: '确认批量删除',
+          title: "确认批量删除",
           message: `是否确认删除选中的 ${taskIds.length} 个任务？此操作不可撤销。`,
-          type: 'danger'
-        })
+          type: "danger",
+        });
 
         if (confirmed) {
-          const response = await api.delete('/tasks', {
-            data: { taskIds }
-          })
-          const result = response.data.result
+          const response = await api.delete("/tasks", {
+            data: { taskIds },
+          });
+          const result = response.data.result;
 
-          await fetchTasks()
+          await fetchTasks();
 
           if (result.success.length > 0) {
-            showSuccess(`成功删除 ${result.success.length} 个任务`)
+            showSuccess(`成功删除 ${result.success.length} 个任务`);
           }
 
           if (Object.keys(result.failed).length > 0) {
-            showError(`${Object.keys(result.failed).length} 个任务删除失败`)
+            showError(`${Object.keys(result.failed).length} 个任务删除失败`);
           }
         }
       } catch (error) {
-        showError('批量删除任务失败')
+        showError("批量删除任务失败");
       }
-    }
+    };
 
     // 刷新任务列表
     const handleRefreshTasks = async () => {
       try {
-        await fetchTasks()
-        showSuccess('已刷新任务列表')
+        await fetchTasks();
+        showSuccess("已刷新任务列表");
       } catch (error) {
-        showError('刷新任务列表失败')
+        showError("刷新任务列表失败");
       }
-    }
+    };
 
-    onMounted(fetchTasks)
+    onMounted(fetchTasks);
 
     return {
       tasks,
@@ -238,8 +238,8 @@ export default {
       handleDelete,
       handleRefreshTasks,
       handleBatchStart,
-      handleBatchDelete
-    }
-  }
-}
+      handleBatchDelete,
+    };
+  },
+};
 </script>

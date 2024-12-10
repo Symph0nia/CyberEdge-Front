@@ -1,11 +1,11 @@
 <template>
   <div
-      v-if="localVisible || isExiting"
-      class="fixed top-0 right-0 h-full w-96 bg-transparent transition-all duration-300 ease-out"
-      :class="{
-        'animate-slide-in': localVisible,
-        'animate-slide-out': isExiting
-      }"
+    v-if="localVisible || isExiting"
+    class="fixed top-0 right-0 h-full w-96 bg-transparent transition-all duration-300 ease-out"
+    :class="{
+      'animate-slide-in': localVisible,
+      'animate-slide-out': isExiting,
+    }"
   >
     <!-- 半透明背景遮罩 -->
     <div class="absolute inset-0 bg-gray-900/20 backdrop-blur-2xl"></div>
@@ -14,7 +14,9 @@
     <div class="relative h-full">
       <!-- 工具内容区域 -->
       <div class="h-[70%] p-8 mx-auto my-24">
-        <div class="bg-gray-800/40 backdrop-blur-md rounded-3xl h-full shadow-2xl border border-gray-700/30">
+        <div
+          class="bg-gray-800/40 backdrop-blur-md rounded-3xl h-full shadow-2xl border border-gray-700/30"
+        >
           <HttpRequestTool />
         </div>
       </div>
@@ -23,23 +25,23 @@
 </template>
 
 <script>
-import HttpRequestTool from './Tools/HttpRequestTool.vue';
+import HttpRequestTool from "./Tools/HttpRequestTool.vue";
 
 export default {
-  name: 'RightSidebarMenu',
+  name: "RightSidebarMenu",
   components: {
-    HttpRequestTool
+    HttpRequestTool,
   },
   props: {
     isVisible: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
     return {
       localVisible: this.isVisible,
-      isExiting: false
+      isExiting: false,
     };
   },
   watch: {
@@ -53,11 +55,11 @@ export default {
           this.localVisible = false;
         }, 300);
       }
-    }
+    },
   },
   mounted() {
     this.localVisible = this.isVisible;
-  }
+  },
 };
 </script>
 
