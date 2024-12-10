@@ -212,9 +212,11 @@ export function useSubdomainScan() {
     });
   };
 
-  // HTTPX探测
   const probeHosts = async (input) => {
-    const targets = Array.isArray(input) ? input : [input];
+    // 确保 targets 只包含 ID
+    const targets = Array.isArray(input)
+        ? input.map(item => item.id || item)  // 处理可能是对象或ID的情况
+        : [input.id || input];  // 单个项可能是对象或ID
 
     if (!targets.length) {
       showWarning("请先选择子域名");
@@ -228,17 +230,14 @@ export function useSubdomainScan() {
       batchMessage: `是否对选中的 ${targets.length} 个子域名进行HTTPX探测？`,
       singleMessage: `是否对 ${targets[0].domain} 进行HTTPX探测？`,
       apiCall: async (targets) => {
-        const endpoint =
-          targets.length > 1
-            ? `/results/${route.params.id}/entries/batch/probe`
-            : `/results/${route.params.id}/entries/${targets[0].id}/probe`;
-        const data = targets.length > 1 ? { entryIds: targets } : undefined;
-        await api.put(endpoint, data);
+        await api.put(`/results/${route.params.id}/entries/probe`, {
+          entryIds: targets
+        });
         await fetchScanResult(route.params.id);
       },
       successMessage: targets.length > 1 ? "批量探测成功" : "HTTPX探测成功",
       errorMessage: targets.length > 1 ? "批量探测失败" : "HTTPX探测失败",
-      loadingRef: isProbing,
+      loadingRef: isProbing
     });
   };
 
