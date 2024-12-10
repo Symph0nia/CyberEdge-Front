@@ -246,7 +246,7 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { onMounted } from "vue";
 import { useRoute } from "vue-router";
 import HeaderPage from "../HeaderPage.vue";
@@ -255,99 +255,55 @@ import PopupNotification from "../Utils/PopupNotification.vue";
 import ConfirmDialog from "../Utils/ConfirmDialog.vue";
 import { useSubdomainScan } from "../../composables/useSubdomainScan";
 
-export default {
-  name: "SubdomainScanDetail",
-  components: {
-    HeaderPage,
-    FooterPage,
-    PopupNotification,
-    ConfirmDialog,
-  },
-  setup() {
-    const route = useRoute();
-    const tableHeaders = [
-      "子域名ID",
-      "子域名",
-      "IP地址",
-      "HTTP状态",
-      "标题",
-      "状态",
-      "操作",
-    ];
+const route = useRoute();
 
-    const {
-      // 基础数据
-      scanResult,
-      errorMessage,
-      subdomains,
-      selectedSubdomains,
-      selectAll,
-      isResolving,
+// 表头配置
+const tableHeaders = [
+  "子域名ID",
+  "子域名",
+  "IP地址",
+  "HTTP状态",
+  "标题",
+  "状态",
+  "操作",
+];
 
-      // 操作方法
-      fetchScanResult,
-      toggleSelectAll,
-      toggleReadStatus,
-      resolveIPs,
-      sendToPortScan,
+// 从组合式函数中解构所需的状态和方法
+const {
+  // 状态数据
+  scanResult,
+  errorMessage,
+  subdomains,
+  selectedSubdomains,
+  selectAll,
+  isResolving,
+  isProbing,
 
-      // 通知相关
-      showNotification,
-      notificationMessage,
-      notificationType,
+  // UI状态
+  showNotification,
+  notificationMessage,
+  notificationType,
+  showDialog,
+  dialogTitle,
+  dialogMessage,
+  dialogType,
 
-      // 确认对话框相关
-      showDialog,
-      dialogTitle,
-      dialogMessage,
-      dialogType,
-      handleConfirm,
-      handleCancel,
+  // 方法
+  fetchScanResult,
+  toggleSelectAll,
+  toggleReadStatus,
+  resolveIPs,
+  sendToPortScan,
+  probeHosts,
+  handleConfirm,
+  handleCancel,
+  getHttpStatusClass,
+} = useSubdomainScan();
 
-      isProbing,
-      probeHosts,
-      getHttpStatusClass,
-    } = useSubdomainScan();
-
-    // 页面加载时获取数据
-    onMounted(() => {
-      fetchScanResult(route.params.id);
-    });
-
-    return {
-      // 基础数据
-      scanResult,
-      errorMessage,
-      subdomains,
-      selectedSubdomains,
-      selectAll,
-      isResolving,
-      tableHeaders,
-
-      // 操作方法
-      toggleSelectAll,
-      toggleReadStatus,
-      resolveIPs,
-      sendToPortScan,
-
-      // 通知相关
-      showNotification,
-      notificationMessage,
-      notificationType,
-
-      // 确认对话框相关
-      showDialog,
-      dialogTitle,
-      dialogMessage,
-      dialogType,
-      handleConfirm,
-      handleCancel,
-      isProbing,
-      probeHosts,
-      getHttpStatusClass,
-    };
-  },
-};
+// 初始化加载
+onMounted(() => {
+  fetchScanResult(route.params.id);
+});
 </script>
 
 <style scoped>
