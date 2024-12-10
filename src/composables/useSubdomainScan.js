@@ -236,68 +236,59 @@ export function useSubdomainScan() {
     return "bg-gray-500/20 text-gray-300";
   };
 
-  // 单个HTTPX探测
-  const probeHost = async (subdomain) => {
-    try {
-      const confirmed = await confirm({
-        title: "HTTPX探测",
-        message: `是否对 ${subdomain.domain} 进行HTTPX探测？`,
-        type: "info",
-      });
+  const probeHosts = async (input) => {
+    // 转换输入为数组
+    const targets = Array.isArray(input) ? input : [input];
 
-      if (!confirmed) return;
-
-      await api.put(
-        `/results/${route.params.id}/entries/${subdomain.id}/probe`
-      );
-      await fetchScanResult(route.params.id);
-      showSuccess("HTTPX探测成功");
-    } catch (error) {
-      showError("HTTPX探测失败");
-    }
-  };
-
-  // 批量HTTPX探测
-  const probeSelectedHosts = async () => {
-    if (!selectedSubdomains.value.length) {
+    if (targets.length === 0) {
       showWarning("请先选择子域名");
       return;
     }
 
     try {
+      const isBatch = targets.length > 1;
       const confirmed = await confirm({
-        title: "批量HTTPX探测",
-        message: `是否对选中的 ${selectedSubdomains.value.length} 个子域名进行HTTPX探测？`,
+        title: isBatch ? "批量HTTPX探测" : "HTTPX探测",
+        message: isBatch
+          ? `是否对选中的 ${targets.length} 个子域名进行HTTPX探测？`
+          : `是否对 ${targets[0].domain} 进行HTTPX探测？`,
         type: "info",
       });
 
       if (!confirmed) return;
 
-      isProbing.value = true;
+      if (isBatch) isProbing.value = true;
 
-      const response = await api.put(
-        `/results/${route.params.id}/entries/batch/probe`,
-        { entryIds: selectedSubdomains.value }
-      );
+      // 构建请求
+      const endpoint = isBatch
+        ? `/results/${route.params.id}/entries/batch/probe`
+        : `/results/${route.params.id}/entries/${targets[0].id}/probe`;
 
-      const result = response.data.result;
+      const data = isBatch ? { entryIds: targets } : undefined;
+      const response = await api.put(endpoint, data);
+
       await fetchScanResult(route.params.id);
 
-      selectedSubdomains.value = [];
-      selectAll.value = false;
+      if (isBatch) {
+        const result = response.data.result;
+        selectedSubdomains.value = [];
+        selectAll.value = false;
 
-      let message = `探测完成。成功: ${result.success.length}`;
-      if (Object.keys(result.failed).length > 0) {
-        message += `, 失败: ${Object.keys(result.failed).length}`;
+        let message = `探测完成。成功: ${result.success.length}`;
+        if (Object.keys(result.failed).length > 0) {
+          message += `, 失败: ${Object.keys(result.failed).length}`;
+        }
+
+        Object.keys(result.failed).length > 0
+          ? showWarning(message)
+          : showSuccess(message);
+      } else {
+        showSuccess("HTTPX探测成功");
       }
-
-      Object.keys(result.failed).length > 0
-        ? showWarning(message)
-        : showSuccess(message);
     } catch (error) {
-      showError("批量探测失败");
+      showError(targets.length > 1 ? "批量探测失败" : "HTTPX探测失败");
     } finally {
-      isProbing.value = false;
+      if (targets.length > 1) isProbing.value = false;
     }
   };
 
@@ -331,8 +322,7 @@ export function useSubdomainScan() {
     handleCancel,
 
     isProbing,
-    probeHost,
-    probeSelectedHosts,
+    probeHosts,
     getHttpStatusClass,
   };
 }

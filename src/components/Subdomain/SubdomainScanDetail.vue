@@ -52,7 +52,7 @@
 
           <!-- 新增的批量HTTPX探测按钮 -->
           <button
-            @click="probeSelectedHosts"
+            @click="probeHosts(selectedSubdomains)"
             :disabled="selectedSubdomains.length === 0 || isProbing"
             class="action-button"
             :class="[
@@ -158,7 +158,7 @@
                   </span>
                   <button
                     v-else
-                    @click="probeHost(subdomain)"
+                    @click="probeHosts(subdomain)"
                     class="text-xs px-3 py-1.5 rounded-xl bg-purple-500/50 hover:bg-purple-600/50 text-purple-100 transition-all duration-200"
                   >
                     探测
@@ -290,7 +290,6 @@ export default {
       toggleReadStatus,
       resolveIPs,
       sendToPortScan,
-      sendSelectedToPortScan,
 
       // 通知相关
       showNotification,
@@ -306,8 +305,7 @@ export default {
       handleCancel,
 
       isProbing,
-      probeHost,
-      probeSelectedHosts,
+      probeHosts,
       getHttpStatusClass,
     } = useSubdomainScan();
 
@@ -345,8 +343,7 @@ export default {
       handleConfirm,
       handleCancel,
       isProbing,
-      probeHost,
-      probeSelectedHosts,
+      probeHosts,
       getHttpStatusClass,
     };
   },
