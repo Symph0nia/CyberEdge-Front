@@ -134,14 +134,14 @@
                     : 'bg-blue-500/50 hover:bg-blue-600/50 text-blue-100 focus:ring-blue-500/50'
                 "
               >
-                <i class="ri-play-line mr-2"></i>
+                <i class="ri-play-line"></i>
                 {{ task.status === "running" ? "运行中" : "启动" }}
               </button>
               <button
                 @click="handleDelete(task.id)"
                 class="px-3 py-1.5 rounded-xl text-xs font-medium bg-red-500/50 hover:bg-red-600/50 text-red-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50"
               >
-                <i class="ri-delete-bin-line mr-2"></i>
+                <i class="ri-delete-bin-line"></i>
                 删除
               </button>
             </div>

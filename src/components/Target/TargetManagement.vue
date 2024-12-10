@@ -141,30 +141,30 @@
             <!-- 操作按钮 -->
             <div class="flex flex-wrap gap-2">
               <button
-                @click="editTarget(target)"
-                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center"
+                  @click="editTarget(target)"
+                  class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-blue-500/50 hover:bg-blue-600/50 text-blue-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-center"
               >
                 <i class="ri-edit-line mr-2"></i> 编辑
               </button>
 
               <button
-                @click="startScan(target)"
-                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center"
+                  @click="startScan(target)"
+                  class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-green-500/50 hover:bg-green-600/50 text-green-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500/50 flex items-center justify-center"
               >
                 <i class="ri-scan-line mr-2"></i> 扫描
               </button>
 
               <button
-                @click="archiveTarget(target)"
-                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center"
+                  @click="archiveTarget(target)"
+                  class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-yellow-500/50 hover:bg-yellow-600/50 text-yellow-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 flex items-center justify-center"
               >
                 <i class="ri-archive-line mr-2"></i>
                 {{ target.status === "active" ? "归档" : "激活" }}
               </button>
 
               <button
-                @click="deleteTarget(target)"
-                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center"
+                  @click="deleteTarget(target)"
+                  class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-500/50 hover:bg-red-600/50 text-red-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50 flex items-center justify-center"
               >
                 <i class="ri-delete-bin-line mr-2"></i> 删除
               </button>
