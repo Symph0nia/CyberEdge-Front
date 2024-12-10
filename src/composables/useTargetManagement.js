@@ -116,7 +116,7 @@ export function useTargetManagement() {
         const updatedData = {
           ...target,
           status: newStatus,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         };
 
         // 发送更新请求
@@ -129,6 +129,36 @@ export function useTargetManagement() {
       }
     } catch (error) {
       showError(`${target.status === "active" ? "归档" : "激活"}目标失败`);
+    }
+  };
+
+  // 开始扫描目标
+  const startScan = async (target) => {
+    const scanType = target.type === "domain" ? "subfinder" : "nmap";
+    const scanTypeName = target.type === "domain" ? "子域名扫描" : "端口扫描";
+
+    try {
+      // 显示确认对话框
+      const confirmed = await confirm({
+        title: `开始${scanTypeName}`,
+        message: `是否对 ${target.name} (${target.target}) 进行${scanTypeName}？`,
+        type: "info",
+      });
+
+      if (!confirmed) return;
+
+      // 发送扫描请求
+      await api.post("/tasks", {
+        type: scanType,
+        payload: target.target,
+        parent_id: target.id,
+      });
+
+      // 显示成功消息
+      showSuccess(`已发送到${scanTypeName}`);
+    } catch (error) {
+      // 显示错误消息
+      showError(`发送到${scanTypeName}失败`);
     }
   };
 
@@ -190,6 +220,7 @@ export function useTargetManagement() {
     editTarget,
     deleteTarget,
     archiveTarget,
+    startScan,
     submitTargetForm,
     handleConfirm,
     handleCancel,
