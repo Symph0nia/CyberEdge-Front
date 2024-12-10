@@ -43,7 +43,7 @@
           </router-link>
 
           <!-- 目标管理 -->
-          <router-link to="/under-development" v-slot="{ navigate }">
+          <router-link to="/target-management" v-slot="{ navigate }">
             <button
               @click="navigate"
               class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"

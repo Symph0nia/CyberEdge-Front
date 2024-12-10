@@ -13,6 +13,7 @@ import SubdomainScanResults from "@/components/Subdomain/SubdomainScanResults.vu
 import SubdomainScanDetail from "@/components/Subdomain/SubdomainScanDetail.vue";
 import PathScanResults from "@/components/Path/PathScanResults.vue";
 import PathScanDetail from "@/components/Path/PathScanDetail.vue";
+import TargetManagement from "@/components/Target/TargetManagement.vue";
 import UnderDevelopment from "@/components/UnderDevelopment.vue";
 
 const routes = [
@@ -88,6 +89,11 @@ const routes = [
     path: "/task-management",
     name: "TaskManagement",
     component: TaskManagement,
+  },
+  {
+    path: "/target-management",
+    name: "TargetManagement",
+    component: TargetManagement,
   },
   {
     path: "/under-development",

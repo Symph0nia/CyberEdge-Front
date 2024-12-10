@@ -215,8 +215,8 @@ export function useSubdomainScan() {
   const probeHosts = async (input) => {
     // 确保 targets 只包含 ID
     const targets = Array.isArray(input)
-        ? input.map(item => item.id || item)  // 处理可能是对象或ID的情况
-        : [input.id || input];  // 单个项可能是对象或ID
+      ? input.map((item) => item.id || item) // 处理可能是对象或ID的情况
+      : [input.id || input]; // 单个项可能是对象或ID
 
     if (!targets.length) {
       showWarning("请先选择子域名");
@@ -231,22 +231,22 @@ export function useSubdomainScan() {
       singleMessage: `是否对 ${targets[0].domain} 进行HTTPX探测？`,
       apiCall: async (targets) => {
         await api.put(`/results/${route.params.id}/entries/probe`, {
-          entryIds: targets
+          entryIds: targets,
         });
         await fetchScanResult(route.params.id);
       },
       successMessage: targets.length > 1 ? "批量探测成功" : "HTTPX探测成功",
       errorMessage: targets.length > 1 ? "批量探测失败" : "HTTPX探测失败",
-      loadingRef: isProbing
+      loadingRef: isProbing,
     });
   };
 
   const copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      showSuccess('已复制到剪贴板');
+      showSuccess("已复制到剪贴板");
     } catch (err) {
-      showError('复制失败');
+      showError("复制失败");
     }
   };
 
