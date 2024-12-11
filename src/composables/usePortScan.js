@@ -88,7 +88,7 @@ export function usePortScan() {
     const currentStatus = getPortValue(port, "is_read");
     try {
       await api.put(`/results/${route.params.id}/entries/${portID}/read`, {
-        isRead: !currentStatus,
+        is_read: !currentStatus,
       });
       await fetchScanResult(route.params.id);
       showSuccess(`已${currentStatus ? "标记为未读" : "标记为已读"}`);

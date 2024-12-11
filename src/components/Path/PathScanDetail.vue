@@ -97,20 +97,20 @@
                   />
                 </td>
                 <td class="py-4 px-6 text-sm text-gray-200">{{ path.id }}</td>
-                <td class="py-4 px-6 text-sm text-gray-200">{{ path.Path }}</td>
+                <td class="py-4 px-6 text-sm text-gray-200">{{ path.path }}</td>
                 <td class="py-4 px-6 text-sm text-gray-200">
-                  {{ path.Status }}
+                  {{ path.status }}
                 </td>
                 <td class="py-4 px-6">
                   <span
                     class="px-2 py-1 rounded-full text-xs font-medium"
                     :class="
-                      path.IsRead
+                      path.is_read
                         ? 'bg-green-500/20 text-green-300'
                         : 'bg-yellow-500/20 text-yellow-300'
                     "
                   >
-                    {{ path.IsRead ? "已读" : "未读" }}
+                    {{ path.is_read ? "已读" : "未读" }}
                   </span>
                 </td>
                 <td class="py-4 px-6">
@@ -119,12 +119,12 @@
                       @click="toggleReadStatus(path)"
                       class="table-action-button"
                       :class="
-                        path.IsRead
+                        path.is_read
                           ? 'bg-gray-700/50 text-gray-300'
                           : 'bg-green-500/50 text-green-100'
                       "
                     >
-                      {{ path.IsRead ? "标为未读" : "标为已读" }}
+                      {{ path.is_read ? "标为未读" : "标为已读" }}
                     </button>
                     <button
                       @click="sendToPortScan(path)"

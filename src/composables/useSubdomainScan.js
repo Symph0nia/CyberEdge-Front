@@ -86,7 +86,7 @@ export function useSubdomainScan() {
     try {
       await api.put(
         `/results/${route.params.id}/entries/${subdomain.id}/read`,
-        { isRead: !subdomain.is_read }
+        { is_read: !subdomain.is_read }
       );
       await fetchScanResult(route.params.id);
       showSuccess(`已${subdomain.is_read ? "标记为未读" : "标记为已读"}`);
