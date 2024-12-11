@@ -120,7 +120,7 @@ export default {
 
     const getStatusText = (status) => {
       const statusMap = {
-        active: "激活",
+        active: "活跃",
         archived: "已归档",
       };
       return statusMap[status] || status;

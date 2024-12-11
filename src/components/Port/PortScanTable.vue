@@ -86,7 +86,7 @@
                     {{ result.is_read ? "标为未读" : "标为已读" }}
                   </button>
                   <button
-                    @click="handleDelete(result.id)"
+                    @click="handleDelete(result)"
                     class="action-button bg-red-500/50 text-red-100 flex items-center justify-center"
                   >
                     <i class="ri-delete-bin-line mr-1"></i>
