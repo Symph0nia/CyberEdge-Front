@@ -10,12 +10,14 @@
         <!-- 添加 mb-8 底部间距 -->
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-xl font-medium tracking-wide text-gray-200">
+            <i class="ri-dashboard-3-line mr-2"></i>
             系统状态
           </h2>
           <button
             @click="fetchSystemInfo"
             class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
           >
+            <i class="ri-refresh-line mr-2"></i>
             刷新信息
           </button>
         </div>
@@ -67,12 +69,14 @@
       >
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-xl font-medium tracking-wide text-gray-200">
+            <i class="ri-tools-line mr-2"></i>
             工具状态
           </h2>
           <button
             @click="fetchToolsStatus"
             class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
           >
+            <i class="ri-search-eye-line mr-2"></i>
             检查工具
           </button>
         </div>
@@ -81,7 +85,6 @@
           v-if="toolsInfo"
           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          <!-- 工具安装状态卡片 -->
           <div
             v-for="(status, tool) in toolsInfo.installedStatus"
             :key="tool"
@@ -89,16 +92,19 @@
           >
             <div class="flex flex-col space-y-2">
               <div class="flex items-center justify-between">
-                <span class="text-gray-300 font-medium">{{ tool }}</span>
+                <span class="text-gray-300 font-medium">
+                  <i class="ri-terminal-box-line mr-2"></i>
+                  {{ tool }}
+                </span>
                 <span :class="status ? 'text-green-400' : 'text-red-400'">
                   {{ status ? "已安装 ✓" : "未安装 ✗" }}
                 </span>
               </div>
-              <!-- 显示版本信息（如果有） -->
               <div
                 v-if="toolsInfo.versions && toolsInfo.versions[tool]"
                 class="text-sm text-gray-400"
               >
+                <i class="ri-code-line mr-2"></i>
                 版本: {{ toolsInfo.versions[tool] }}
               </div>
             </div>

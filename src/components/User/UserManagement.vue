@@ -8,13 +8,17 @@
         class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl mb-8 border border-gray-700/30"
       >
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-xl font-medium tracking-wide">用户管理</h2>
+          <h2 class="text-xl font-medium tracking-wide">
+            <i class="ri-user-settings-line mr-2"></i>
+            用户管理
+          </h2>
           <!-- 批量删除按钮 -->
           <button
             v-if="selectedUsers.length > 0"
             @click="handleBatchDelete"
             class="px-4 py-2 rounded-xl text-sm font-medium bg-red-500/50 hover:bg-red-600/50 text-red-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50"
           >
+            <i class="ri-delete-bin-line mr-2"></i>
             批量删除 ({{ selectedUsers.length }})
           </button>
         </div>
@@ -68,6 +72,7 @@
                   {{ user.account }}
                 </td>
                 <td class="py-3 px-4 text-sm text-gray-200">
+                  <i class="ri-login-circle-line mr-2"></i>
                   {{ user.loginCount }}
                 </td>
                 <td class="py-3 px-4">
@@ -75,6 +80,7 @@
                     @click="handleDelete(user.account)"
                     class="px-4 py-2 rounded-xl text-sm font-medium bg-red-500/50 hover:bg-red-600/50 text-red-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50"
                   >
+                    <i class="ri-delete-bin-line mr-2"></i>
                     删除
                   </button>
                 </td>
@@ -88,10 +94,15 @@
       <div
         class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-gray-700/30"
       >
-        <h2 class="text-xl font-medium tracking-wide mb-6">系统配置</h2>
+        <h2 class="text-xl font-medium tracking-wide mb-6">
+          <i class="ri-settings-3-line mr-2"></i>
+          系统配置
+        </h2>
         <div class="flex items-center justify-between">
-          <span class="text-sm text-gray-300">二维码接口状态</span>
-          <!-- 苹果风格的开关 -->
+          <span class="text-sm text-gray-300">
+            <i class="ri-qr-code-line mr-2"></i>
+            二维码接口状态
+          </span>
           <button
             @click="toggleQRCodeStatus"
             class="relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none"
