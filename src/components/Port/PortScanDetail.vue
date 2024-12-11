@@ -94,14 +94,20 @@
                   <td class="py-4 px-6 text-sm text-gray-200">
                     {{ getPortValue(port, "service") }}
                   </td>
-                  <td class="py-4 px-6 text-sm text-gray-200">
-                    {{ getPortValue(port, "banner") }}
-                  </td>
-                  <td class="py-4 px-6 text-sm text-gray-200">
-                    {{ getPortValue(port, "fingerprints") || "-" }}
-                  </td>
-                  <td class="py-4 px-6 text-sm text-gray-200">
-                    {{ getPortValue(port, "paths") || "-" }}
+                  <td class="py-4 px-6">
+                    <span
+                      class="px-2 py-1 rounded-full text-xs font-medium"
+                      :class="{
+                        'bg-green-500/20 text-green-300':
+                          getPortValue(port, 'state') === 'open',
+                        'bg-red-500/20 text-red-300':
+                          getPortValue(port, 'state') === 'closed',
+                        'bg-yellow-500/20 text-yellow-300':
+                          getPortValue(port, 'state') === 'filtered',
+                      }"
+                    >
+                      {{ getPortValue(port, "state") }}
+                    </span>
                   </td>
                   <td class="py-4 px-6">
                     <span
@@ -202,10 +208,8 @@ export default {
       "端口号",
       "协议",
       "服务",
-      "Banner",
-      "指纹",
-      "路径",
       "状态",
+      "已读状态",
       "操作",
     ];
 
