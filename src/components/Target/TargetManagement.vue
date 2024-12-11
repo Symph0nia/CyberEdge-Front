@@ -45,26 +45,34 @@
           </div>
         </div>
 
-        <!-- 搜索和筛选区 -->
-        <div class="flex flex-col md:flex-row gap-4 mb-8">
-          <div class="relative flex-grow">
+        <!-- 搜索和过滤栏 -->
+        <div class="flex items-center space-x-4 mb-6">
+          <!-- 搜索框 -->
+          <div class="flex-1 relative">
             <i class="ri-search-line absolute left-4 top-3 text-gray-400"></i>
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="搜索目标名称或域名..."
+              placeholder="搜索目标名称、地址或描述..."
               class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
             />
           </div>
 
-          <select
-            v-model="statusFilter"
-            class="px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
-          >
-            <option value="">所有状态</option>
-            <option value="active">活跃</option>
-            <option value="archived">已归档</option>
-          </select>
+          <!-- 状态过滤下拉框 -->
+          <div class="relative">
+            <i class="ri-filter-line absolute left-4 top-3 text-gray-400"></i>
+            <select
+              v-model="statusFilter"
+              class="pl-10 pr-8 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200 appearance-none"
+            >
+              <option value="">所有状态</option>
+              <option value="active">活跃</option>
+              <option value="archived">已归档</option>
+            </select>
+            <i
+              class="ri-arrow-down-s-line absolute right-4 top-3 text-gray-400 pointer-events-none"
+            ></i>
+          </div>
         </div>
 
         <!-- 目标卡片容器 -->
@@ -141,30 +149,30 @@
             <!-- 操作按钮 -->
             <div class="flex flex-wrap gap-2">
               <button
-                  @click="editTarget(target)"
-                  class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-blue-500/50 hover:bg-blue-600/50 text-blue-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-center"
+                @click="editTarget(target)"
+                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-blue-500/50 hover:bg-blue-600/50 text-blue-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-center"
               >
                 <i class="ri-edit-line mr-2"></i> 编辑
               </button>
 
               <button
-                  @click="startScan(target)"
-                  class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-green-500/50 hover:bg-green-600/50 text-green-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500/50 flex items-center justify-center"
+                @click="startScan(target)"
+                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-green-500/50 hover:bg-green-600/50 text-green-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500/50 flex items-center justify-center"
               >
                 <i class="ri-scan-line mr-2"></i> 扫描
               </button>
 
               <button
-                  @click="archiveTarget(target)"
-                  class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-yellow-500/50 hover:bg-yellow-600/50 text-yellow-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 flex items-center justify-center"
+                @click="archiveTarget(target)"
+                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-yellow-500/50 hover:bg-yellow-600/50 text-yellow-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 flex items-center justify-center"
               >
                 <i class="ri-archive-line mr-2"></i>
                 {{ target.status === "active" ? "归档" : "激活" }}
               </button>
 
               <button
-                  @click="deleteTarget(target)"
-                  class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-500/50 hover:bg-red-600/50 text-red-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50 flex items-center justify-center"
+                @click="deleteTarget(target)"
+                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-500/50 hover:bg-red-600/50 text-red-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50 flex items-center justify-center"
               >
                 <i class="ri-delete-bin-line mr-2"></i> 删除
               </button>
@@ -334,7 +342,6 @@ const {
   handleCancel,
 } = useTargetManagement();
 
-// 搜索和筛选
 const searchQuery = ref("");
 const statusFilter = ref("");
 
@@ -355,6 +362,13 @@ const filteredTargets = computed(() => {
     );
   }
 
+  // 状态过滤
+  if (statusFilter.value) {
+    filtered = filtered.filter(
+      (target) => target.status === statusFilter.value
+    );
+  }
+
   // 按创建时间排序（最新的在前）
   filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -362,12 +376,37 @@ const filteredTargets = computed(() => {
 });
 
 // 刷新目标列表
-const refreshTargets = () => {
-  fetchTargets();
+const refreshTargets = async () => {
+  try {
+    // 假设这是您的获取数据的API调用
+    const response = await fetchTargets();
+    targets.value = response.data;
+  } catch (error) {
+    console.error("Failed to fetch targets:", error);
+  }
 };
 
 // 格式化日期
 const formatDate = (date) => {
-  return new Date(date).toLocaleString();
+  return new Date(date).toLocaleString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 </script>
+
+<style scoped>
+/* 自定义下拉框样式 */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+select::-ms-expand {
+  display: none;
+}
+</style>
