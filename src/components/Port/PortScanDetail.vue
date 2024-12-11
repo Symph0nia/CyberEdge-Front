@@ -99,21 +99,21 @@
                       class="rounded border-gray-700/50 bg-gray-900/50 text-blue-500/50 focus:ring-blue-500/30"
                     />
                   </td>
-                  <td class="py-4 px-6 text-sm text-gray-200">
+                  <td class="py-2 px-4 text-sm text-gray-200 truncate w-24">
                     {{ getPortValue(port, "_id") }}
                   </td>
-                  <td class="py-4 px-6 text-sm text-gray-200">
+                  <td class="py-2 px-4 text-sm text-gray-200 truncate w-20">
                     {{ getPortValue(port, "number") }}
                   </td>
-                  <td class="py-4 px-6 text-sm text-gray-200">
+                  <td class="py-2 px-4 text-sm text-gray-200 truncate w-20">
                     {{ getPortValue(port, "protocol") }}
                   </td>
-                  <td class="py-4 px-6 text-sm text-gray-200">
+                  <td class="py-2 px-4 text-sm text-gray-200 truncate w-24">
                     {{ getPortValue(port, "service") }}
                   </td>
                   <td class="py-4 px-6">
                     <span
-                      class="px-2 py-1 rounded-full text-xs font-medium"
+                      class="px-2 py-1 rounded-full text-xs font-medium truncate"
                       :class="{
                         'bg-green-500/20 text-green-300':
                           getPortValue(port, 'state') === 'open',
@@ -148,7 +148,7 @@
                     </div>
                   </td>
                   <td
-                    class="py-4 px-6 text-sm text-gray-200 truncate w-48"
+                    class="py-2 px-4 text-sm text-gray-200 truncate w-48"
                     :title="getPortValue(port, 'http_title')"
                   >
                     {{ getPortValue(port, "http_title") || "-" }}
