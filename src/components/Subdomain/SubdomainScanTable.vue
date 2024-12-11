@@ -39,10 +39,10 @@
               </td>
               <td class="py-4 px-6 text-sm text-gray-200">{{ result.id }}</td>
               <td class="py-4 px-6 text-sm text-gray-200">
-                {{ result.Target }}
+                {{ result.target }}
               </td>
               <td class="py-4 px-6 text-sm text-gray-200">
-                {{ formatDate(result.Timestamp) }}
+                {{ formatDate(result.timestamp) }}
               </td>
               <td class="py-4 px-6 text-sm text-gray-200">
                 {{ getSubdomainCount(result) }} 个
@@ -51,12 +51,12 @@
                 <span
                   class="px-2 py-1 rounded-full text-xs font-medium"
                   :class="
-                    result.IsRead
+                    result.is_read
                       ? 'bg-green-500/20 text-green-300'
                       : 'bg-yellow-500/20 text-yellow-300'
                   "
                 >
-                  {{ result.IsRead ? "已读" : "未读" }}
+                  {{ result.is_read ? "已读" : "未读" }}
                 </span>
               </td>
               <td class="py-4 px-6">
@@ -72,18 +72,18 @@
                     @click="handleToggleRead(result)"
                     class="action-button flex items-center justify-center"
                     :class="
-                      result.IsRead
+                      result.is_read
                         ? 'bg-gray-700/50 text-gray-300'
                         : 'bg-green-500/50 text-green-100'
                     "
                   >
                     <i
                       :class="[
-                        result.IsRead ? 'ri-eye-off-line' : 'ri-eye-line',
+                        result.is_read ? 'ri-eye-off-line' : 'ri-eye-line',
                         'mr-1',
                       ]"
                     ></i>
-                    {{ result.IsRead ? "标为未读" : "标为已读" }}
+                    {{ result.is_read ? "标为未读" : "标为已读" }}
                   </button>
                   <button
                     @click="handleDelete(result.id)"
@@ -162,7 +162,7 @@ export default {
     subdomainScanResults: {
       type: Array,
       required: true,
-      default: () => [], // 添加默认值
+      default: () => [],
     },
   },
   setup(props, { emit }) {
@@ -186,7 +186,10 @@ export default {
     };
 
     const getSubdomainCount = (result) => {
-      const subdomainGroup = result.Data.find(
+      if (!result || !result.data || !Array.isArray(result.data)) {
+        return 0;
+      }
+      const subdomainGroup = result.data.find(
         (group) => group.Key === "subdomains"
       );
       return subdomainGroup?.Value?.length || 0;
@@ -205,7 +208,7 @@ export default {
     // 操作处理方法
     const handleViewDetails = (id) => emit("view-details", id);
     const handleToggleRead = (result) =>
-      emit("toggle-read-status", result.id, !result.IsRead);
+      emit("toggle-read-status", result.id, !result.is_read);
     const handleDelete = (id) => emit("delete-result", id);
     const handleBatchRead = () =>
       emit("mark-selected-read", selectedResults.value);

@@ -106,9 +106,9 @@ export function useSubdomainScan() {
 
   // 计算属性 - 子域名列表
   const subdomains = computed(() => {
-    if (!scanResult.value?.Data) return [];
+    if (!scanResult.value?.data) return [];
 
-    const subdomainGroup = scanResult.value.Data.find(
+    const subdomainGroup = scanResult.value.data.find(
       (group) => group.Key === "subdomains"
     );
     if (!subdomainGroup?.Value?.length) return [];

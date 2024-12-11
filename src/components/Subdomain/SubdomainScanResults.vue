@@ -187,9 +187,9 @@ export default {
     };
 
     // 切换已读状态
-    const handleToggleReadStatus = async (id, isRead) => {
+    const handleToggleReadStatus = async (id, is_read) => {
       try {
-        await api.put(`/results/${id}/read`, { isRead });
+        await api.put(`/results/${id}/read`, { is_read });
         await fetchSubdomainScanResults();
         showSuccess("已更新状态");
       } catch (error) {
@@ -202,7 +202,7 @@ export default {
       try {
         await Promise.all(
           selectedIds.map((id) =>
-            api.put(`/results/${id}/read`, { isRead: true })
+            api.put(`/results/${id}/read`, { is_read: true })
           )
         );
         await fetchSubdomainScanResults();
@@ -256,8 +256,8 @@ export default {
 
       // 状态过滤 - 使用严格比较
       if (statusFilter.value !== "") {
-        const isRead = statusFilter.value === "true";
-        filtered = filtered.filter((result) => result.IsRead === isRead);
+        const is_read = statusFilter.value === "true";
+        filtered = filtered.filter((result) => result.is_read === is_read);
       }
 
       // 按时间戳排序

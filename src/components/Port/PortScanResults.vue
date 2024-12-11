@@ -166,7 +166,7 @@ export default {
       // 状态过滤
       if (statusFilter.value !== "") {
         filtered = filtered.filter(
-          (result) => String(result.IsRead) === statusFilter.value
+          (result) => String(result.is_read) === statusFilter.value
         );
       }
 
@@ -214,9 +214,9 @@ export default {
     };
 
     // 切换已读状态
-    const handleToggleReadStatus = async (id, isRead) => {
+    const handleToggleReadStatus = async (id, is_read) => {
       try {
-        await api.put(`/results/${id}/read`, { isRead });
+        await api.put(`/results/${id}/read`, { is_read });
         await fetchPortScanResults();
         showSuccess("已更新状态");
       } catch (error) {
@@ -237,7 +237,7 @@ export default {
 
         await Promise.all(
           selectedIds.map((id) =>
-            api.put(`/results/${id}/read`, { isRead: true })
+            api.put(`/results/${id}/read`, { is_read: true })
           )
         );
         await fetchPortScanResults();

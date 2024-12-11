@@ -20,12 +20,12 @@
             </div>
             <div class="space-y-1">
               <p class="text-sm text-gray-400">目标地址</p>
-              <p class="text-sm text-gray-200">{{ scanResult?.Target }}</p>
+              <p class="text-sm text-gray-200">{{ scanResult?.target }}</p>
             </div>
             <div class="space-y-1">
               <p class="text-sm text-gray-400">扫描时间</p>
               <p class="text-sm text-gray-200">
-                {{ scanResult ? formatDate(scanResult.Timestamp) : "" }}
+                {{ scanResult ? formatDate(scanResult.timestamp) : "" }}
               </p>
             </div>
           </div>

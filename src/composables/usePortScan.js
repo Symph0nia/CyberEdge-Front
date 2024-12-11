@@ -54,8 +54,8 @@ export function usePortScan() {
 
   // 处理端口数据
   const filteredPorts = computed(() => {
-    if (!scanResult.value?.Data) return [];
-    const portGroup = scanResult.value.Data.find(
+    if (!scanResult.value?.data) return [];
+    const portGroup = scanResult.value.data.find(
       (group) => group.Key === "ports"
     );
     return portGroup?.Value || [];
@@ -98,7 +98,7 @@ export function usePortScan() {
 
       await api.post("/tasks", {
         type: "ffuf",
-        payload: `${scanResult.value.Target}:${portNumber}`,
+        payload: `${scanResult.value.target}:${portNumber}`,
         parent_id: scanResult.value.id,
       });
       showSuccess(`已发送端口 ${portNumber} 到路径扫描`);
@@ -136,7 +136,7 @@ export function usePortScan() {
         try {
           await api.post("/tasks", {
             type: "ffuf",
-            payload: `${scanResult.value.Target}:${getPortValue(
+            payload: `${scanResult.value.target}:${getPortValue(
               port,
               "number"
             )}`,

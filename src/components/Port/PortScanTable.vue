@@ -39,10 +39,10 @@
               </td>
               <td class="py-4 px-6 text-sm text-gray-200">{{ result.id }}</td>
               <td class="py-4 px-6 text-sm text-gray-200">
-                {{ result.Target }}
+                {{ result.target }}
               </td>
               <td class="py-4 px-6 text-sm text-gray-200">
-                {{ formatDate(result.Timestamp) }}
+                {{ formatDate(result.timestamp) }}
               </td>
               <td class="py-4 px-6 text-sm text-gray-200">
                 {{ getPortCount(result) }} 个端口
@@ -51,12 +51,12 @@
                 <span
                   class="px-2 py-1 rounded-full text-xs font-medium"
                   :class="
-                    result.IsRead
+                    result.is_read
                       ? 'bg-green-500/20 text-green-300'
                       : 'bg-yellow-500/20 text-yellow-300'
                   "
                 >
-                  {{ result.IsRead ? "已读" : "未读" }}
+                  {{ result.is_read ? "已读" : "未读" }}
                 </span>
               </td>
               <td class="py-4 px-6">
@@ -72,18 +72,18 @@
                     @click="handleToggleRead(result)"
                     class="action-button flex items-center justify-center"
                     :class="
-                      result.IsRead
+                      result.is_read
                         ? 'bg-gray-700/50 text-gray-300'
                         : 'bg-green-500/50 text-green-100'
                     "
                   >
                     <i
                       :class="[
-                        result.IsRead ? 'ri-eye-off-line' : 'ri-eye-line',
+                        result.is_read ? 'ri-eye-off-line' : 'ri-eye-line',
                         'mr-1',
                       ]"
                     ></i>
-                    {{ result.IsRead ? "标为未读" : "标为已读" }}
+                    {{ result.is_read ? "标为未读" : "标为已读" }}
                   </button>
                   <button
                     @click="handleDelete(result.id)"
@@ -209,10 +209,10 @@ export default {
 
     // 添加空值检查
     const getPortCount = (result) => {
-      if (!result?.Data) return 0;
+      if (!result?.data) return 0;
       let portCount = 0;
       try {
-        result.Data.forEach((portGroup) => {
+        result.data.forEach((portGroup) => {
           if (portGroup?.Key === "ports" && Array.isArray(portGroup.Value)) {
             portCount += portGroup.Value.length;
           }
@@ -242,7 +242,7 @@ export default {
 
     const handleToggleRead = (result) => {
       if (!result?.id) return;
-      emit("toggle-read-status", result.id, !result.IsRead);
+      emit("toggle-read-status", result.id, !result.is_read);
     };
 
     const handleBatchDelete = () => {
