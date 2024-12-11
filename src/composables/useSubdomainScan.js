@@ -20,11 +20,11 @@ export function useSubdomainScan() {
   } = useNotification();
 
   const {
+    confirm,
     showDialog,
     dialogTitle,
     dialogMessage,
     dialogType,
-    confirm,
     handleConfirm,
     handleCancel,
   } = useConfirmDialog();
@@ -42,55 +42,6 @@ export function useSubdomainScan() {
     selectAll.value =
       newVal.length === subdomains.value.length && newVal.length > 0;
   });
-
-  // 通用批量操作处理函数
-  const handleBatchOperation = async ({
-    targets,
-    batchTitle,
-    singleTitle,
-    batchMessage,
-    singleMessage,
-    apiCall,
-    successMessage,
-    errorMessage,
-    loadingRef = null,
-    resetSelection = true,
-  }) => {
-    const isBatch = targets.length > 1;
-
-    try {
-      const confirmed = await confirm({
-        title: isBatch ? batchTitle : singleTitle,
-        message: isBatch ? batchMessage : singleMessage,
-        type: "info",
-      });
-
-      if (!confirmed) return;
-
-      if (loadingRef) loadingRef.value = true;
-
-      await apiCall(targets);
-
-      if (isBatch && resetSelection) {
-        selectedSubdomains.value = [];
-        selectAll.value = false;
-      }
-
-      showSuccess(
-        typeof successMessage === "function"
-          ? successMessage(targets)
-          : successMessage
-      );
-    } catch (error) {
-      showError(
-        typeof errorMessage === "function"
-          ? errorMessage(targets)
-          : errorMessage
-      );
-    } finally {
-      if (loadingRef) loadingRef.value = false;
-    }
-  };
 
   // 获取扫描结果
   const fetchScanResult = async (id) => {
@@ -146,32 +97,38 @@ export function useSubdomainScan() {
 
   // 解析IP
   const resolveIPs = async (input) => {
-    // 确保 targets 只包含 ID
     const targets = Array.isArray(input)
-      ? input.map((item) => item.id || item) // 处理可能是对象或ID的情况
-      : [input.id || input]; // 单个项可能是对象或ID
+      ? input.map((item) => item.id || item)
+      : [input.id || input];
 
     if (!targets.length) {
       showWarning("请先选择子域名");
       return;
     }
 
-    await handleBatchOperation({
-      targets,
-      batchTitle: "批量解析IP",
-      singleTitle: "解析IP",
-      batchMessage: `是否解析选中的 ${targets.length} 个子域名的IP？`,
-      singleMessage: `是否解析 ${targets[0].domain} 的IP地址？`,
-      apiCall: async (targets) => {
-        await api.put(`/results/${route.params.id}/entries/resolve`, {
-          entryIds: targets, // 现在只发送ID数组
-        });
-        await fetchScanResult(route.params.id);
-      },
-      successMessage: targets.length > 1 ? "批量解析成功" : "IP解析成功",
-      errorMessage: targets.length > 1 ? "批量解析失败" : "IP解析失败",
-      loadingRef: isResolving,
+    const confirmed = await confirm({
+      title: targets.length > 1 ? "批量解析IP" : "解析IP",
+      message:
+        targets.length > 1
+          ? `是否解析选中的 ${targets.length} 个子域名的IP？`
+          : `是否解析 ${input.domain} 的IP地址？`,
+      type: "info",
     });
+
+    if (!confirmed) return;
+
+    try {
+      isResolving.value = true;
+      await api.put(`/results/${route.params.id}/entries/resolve`, {
+        entryIds: targets,
+      });
+      await fetchScanResult(route.params.id);
+      showSuccess(targets.length > 1 ? "批量解析成功" : "IP解析成功");
+    } catch (error) {
+      showError(targets.length > 1 ? "批量解析失败" : "IP解析失败");
+    } finally {
+      isResolving.value = false;
+    }
   };
 
   // 发送到端口扫描
@@ -189,56 +146,68 @@ export function useSubdomainScan() {
       return;
     }
 
-    await handleBatchOperation({
-      targets,
-      batchTitle: "批量发送到端口扫描",
-      singleTitle: "发送到端口扫描",
-      batchMessage: `是否将选中的 ${uniqueIPs.length} 个IP发送到端口扫描？`,
-      singleMessage: `是否将 ${targets[0].domain} (${targets[0].ip}) 发送到端口扫描？`,
-      apiCall: async () => {
-        for (const ip of uniqueIPs) {
-          await api.post("/tasks", {
-            type: "nmap",
-            payload: ip,
-            parent_id: scanResult.value.id,
-          });
-        }
-      },
-      successMessage:
+    const confirmed = await confirm({
+      title: targets.length > 1 ? "批量发送到端口扫描" : "发送到端口扫描",
+      message:
+        targets.length > 1
+          ? `是否将选中的 ${uniqueIPs.length} 个IP发送到端口扫描？`
+          : `是否将 ${targets[0].domain} (${targets[0].ip}) 发送到端口扫描？`,
+      type: "info",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      for (const ip of uniqueIPs) {
+        await api.post("/tasks", {
+          type: "nmap",
+          payload: ip,
+          parent_id: scanResult.value.id,
+        });
+      }
+      showSuccess(
         targets.length > 1
           ? `已发送 ${uniqueIPs.length} 个IP到端口扫描`
-          : "已发送到端口扫描",
-      errorMessage: targets.length > 1 ? "批量发送失败" : "发送失败",
-    });
+          : "已发送到端口扫描"
+      );
+    } catch (error) {
+      showError(targets.length > 1 ? "批量发送失败" : "发送失败");
+    }
   };
 
   const probeHosts = async (input) => {
-    // 确保 targets 只包含 ID
     const targets = Array.isArray(input)
-      ? input.map((item) => item.id || item) // 处理可能是对象或ID的情况
-      : [input.id || input]; // 单个项可能是对象或ID
+      ? input.map((item) => item.id || item)
+      : [input.id || input];
 
     if (!targets.length) {
       showWarning("请先选择子域名");
       return;
     }
 
-    await handleBatchOperation({
-      targets,
-      batchTitle: "批量HTTPX探测",
-      singleTitle: "HTTPX探测",
-      batchMessage: `是否对选中的 ${targets.length} 个子域名进行HTTPX探测？`,
-      singleMessage: `是否对 ${targets[0].domain} 进行HTTPX探测？`,
-      apiCall: async (targets) => {
-        await api.put(`/results/${route.params.id}/entries/probe`, {
-          entryIds: targets,
-        });
-        await fetchScanResult(route.params.id);
-      },
-      successMessage: targets.length > 1 ? "批量探测成功" : "HTTPX探测成功",
-      errorMessage: targets.length > 1 ? "批量探测失败" : "HTTPX探测失败",
-      loadingRef: isProbing,
+    const confirmed = await confirm({
+      title: targets.length > 1 ? "批量HTTPX探测" : "HTTPX探测",
+      message:
+        targets.length > 1
+          ? `是否对选中的 ${targets.length} 个子域名进行HTTPX探测？`
+          : `是否对 ${input.domain} 进行HTTPX探测？`,
+      type: "info",
     });
+
+    if (!confirmed) return;
+
+    try {
+      isProbing.value = true;
+      await api.put(`/results/${route.params.id}/entries/probe`, {
+        entryIds: targets,
+      });
+      await fetchScanResult(route.params.id);
+      showSuccess(targets.length > 1 ? "批量探测成功" : "HTTPX探测成功");
+    } catch (error) {
+      showError(targets.length > 1 ? "批量探测失败" : "HTTPX探测失败");
+    } finally {
+      isProbing.value = false;
+    }
   };
 
   const copyToClipboard = async (text) => {
@@ -269,6 +238,7 @@ export function useSubdomainScan() {
     probeHosts,
     getHttpStatusClass,
     copyToClipboard,
+    confirm,
 
     // UI控制 - 通知
     showNotification,

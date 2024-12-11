@@ -190,9 +190,9 @@
                   <button
                     v-else
                     @click="resolveIPs(subdomain)"
-                    class="text-xs px-3 py-1.5 rounded-xl bg-blue-500/50 hover:bg-blue-600/50 text-blue-100 transition-all duration-200 flex items-center justify-center"
+                    class="text-xs px-2 py-0.5 rounded-xl bg-blue-500/50 hover:bg-blue-600/50 text-blue-100 transition-all duration-200 flex items-center justify-center whitespace-nowrap"
                   >
-                    <i class="ri-radar-line mr-2"></i>
+                    <i class="ri-radar-line mr-1 text-xs"></i>
                     解析IP
                   </button>
                 </td>
@@ -379,13 +379,6 @@ onMounted(() => {
 
 .action-button {
   @apply px-4 py-2.5 rounded-xl text-sm font-medium
-  transition-all duration-200
-  focus:outline-none focus:ring-2 focus:ring-opacity-50
-  disabled:opacity-50 disabled:cursor-not-allowed;
-}
-
-.table-action-button {
-  @apply px-3 py-1.5 rounded-xl text-xs font-medium
   transition-all duration-200
   focus:outline-none focus:ring-2 focus:ring-opacity-50
   disabled:opacity-50 disabled:cursor-not-allowed;
