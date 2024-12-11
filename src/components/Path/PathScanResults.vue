@@ -59,7 +59,7 @@
 
         <!-- 扫描结果表格 -->
         <PathScanTable
-          :pathScanResults="pathScanResults"
+          :pathScanResults="filteredResults"
           @view-details="handleViewDetails"
           @delete-result="handleDeleteResult"
           @delete-selected="handleDeleteSelected"

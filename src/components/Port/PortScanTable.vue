@@ -100,7 +100,7 @@
       </div>
 
       <!-- 所有扫描页面统一使用这个样式 -->
-      <div class="flex space-x-3">
+      <div class="flex space-x-3 mt-6">
         <button
           @click="handleBatchRead"
           :disabled="!hasSelected"

@@ -35,7 +35,7 @@
           <div class="flex-1 relative">
             <i class="ri-search-line absolute left-4 top-3 text-gray-400"></i>
             <input
-              v-model="searchQuery"
+              v-model.trim="searchQuery"
               type="text"
               placeholder="搜索目标地址..."
               class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
@@ -61,7 +61,7 @@
 
         <!-- 扫描结果表格 -->
         <SubdomainScanTable
-          :subdomainScanResults="subdomainScanResults"
+          :subdomainScanResults="filteredResults"
           @view-details="handleViewDetails"
           @delete-result="handleDeleteResult"
           @delete-selected="handleDeleteSelected"
@@ -235,29 +235,36 @@ export default {
 
     // 过滤后的结果
     const filteredResults = computed(() => {
-      if (!subdomainScanResults.value) return [];
+      // 确保 subdomainScanResults 是数组且不为空
+      if (
+        !Array.isArray(subdomainScanResults.value) ||
+        !subdomainScanResults.value.length
+      ) {
+        return [];
+      }
 
       let filtered = [...subdomainScanResults.value];
 
-      // 搜索过滤
-      if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase();
-        filtered = filtered.filter((result) =>
-          result.Target.toLowerCase().includes(query)
-        );
-      }
-
-      // 状态过滤
-      if (statusFilter.value !== "") {
+      // 搜索过滤 - 确保 Target 属性存在
+      if (searchQuery.value.trim()) {
+        const query = searchQuery.value.toLowerCase().trim();
         filtered = filtered.filter(
-          (result) => String(result.IsRead) === statusFilter.value
+          (result) =>
+            result.Target && result.Target.toLowerCase().includes(query)
         );
       }
 
-      // 按时间戳排序（最新的在前）
-      filtered.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+      // 状态过滤 - 使用严格比较
+      if (statusFilter.value !== "") {
+        const isRead = statusFilter.value === "true";
+        filtered = filtered.filter((result) => result.IsRead === isRead);
+      }
 
-      return filtered;
+      // 按时间戳排序
+      return filtered.sort(
+        (a, b) =>
+          new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime()
+      );
     });
 
     onMounted(fetchSubdomainScanResults);

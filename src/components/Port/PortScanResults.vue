@@ -61,7 +61,7 @@
 
         <!-- 扫描结果表格 -->
         <PortScanTable
-          :portScanResults="portScanResults"
+          :portScanResults="filteredResults"
           @view-details="handleViewDetails"
           @delete-result="handleDeleteResult"
           @delete-selected="handleDeleteSelected"
