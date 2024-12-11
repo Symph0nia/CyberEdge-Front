@@ -14,6 +14,7 @@ import SubdomainScanDetail from "@/components/Subdomain/SubdomainScanDetail.vue"
 import PathScanResults from "@/components/Path/PathScanResults.vue";
 import PathScanDetail from "@/components/Path/PathScanDetail.vue";
 import TargetManagement from "@/components/Target/TargetManagement.vue";
+import TargetDetail from "@/components/Target/TargetDetail.vue";
 import UnderDevelopment from "@/components/UnderDevelopment.vue";
 
 const routes = [
@@ -94,6 +95,11 @@ const routes = [
     path: "/target-management",
     name: "TargetManagement",
     component: TargetManagement,
+  },
+  {
+    path: "/target-management/:id",
+    name: "TargetDetail",
+    component: TargetDetail,
   },
   {
     path: "/under-development",

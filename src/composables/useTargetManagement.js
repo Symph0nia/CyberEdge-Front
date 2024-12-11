@@ -1,6 +1,7 @@
 // src/composables/useTargetManagement.js
 import { ref, onMounted } from "vue";
 import api from "../api/axiosInstance";
+import router from "../router";
 import { useNotification } from "./useNotification";
 import { useConfirmDialog } from "./useConfirmDialog";
 
@@ -195,6 +196,21 @@ export function useTargetManagement() {
     }
   };
 
+  // 添加查看详情函数
+  const viewDetails = async (target) => {
+    try {
+      // 使用 router.push 跳转到详情页面，传递目标 ID
+      await router.push({
+        name: "TargetDetail",
+        params: {
+          id: target.id || target._id, // 确保兼容两种 ID 字段
+        },
+      });
+    } catch (error) {
+      showError("跳转到详情页面失败");
+    }
+  };
+
   // 在组件挂载时获取数据
   onMounted(() => {
     fetchTargets();
@@ -224,5 +240,6 @@ export function useTargetManagement() {
     submitTargetForm,
     handleConfirm,
     handleCancel,
+    viewDetails,
   };
 }

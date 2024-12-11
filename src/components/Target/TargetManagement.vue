@@ -149,6 +149,13 @@
             <!-- 操作按钮 -->
             <div class="flex flex-wrap gap-2">
               <button
+                @click="viewDetails(target)"
+                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-purple-500/50 hover:bg-purple-600/50 text-purple-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50 flex items-center justify-center"
+              >
+                <i class="ri-file-list-line mr-2"></i> 详情
+              </button>
+
+              <button
                 @click="editTarget(target)"
                 class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-blue-500/50 hover:bg-blue-600/50 text-blue-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-center"
               >
@@ -340,6 +347,7 @@ const {
   submitTargetForm,
   handleConfirm,
   handleCancel,
+  viewDetails,
 } = useTargetManagement();
 
 const searchQuery = ref("");
