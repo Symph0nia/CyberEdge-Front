@@ -62,6 +62,11 @@
             <th
               class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/30"
             >
+              目标
+            </th>
+            <th
+              class="text-left py-4 px-6 text-sm font-medium text-gray-400 border-b border-gray-700/30"
+            >
               状态
             </th>
             <th
@@ -112,6 +117,11 @@
               class="py-4 px-6 w-[140px] text-sm text-gray-200 whitespace-nowrap"
             >
               {{ formatDescription(task.type) }}
+            </td>
+            <td
+              class="py-4 px-6 w-[180px] text-sm text-gray-200 whitespace-nowrap overflow-hidden text-ellipsis"
+            >
+              {{ task.payload }}
             </td>
             <td class="py-4 px-6 w-[100px]">
               <span

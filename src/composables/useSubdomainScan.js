@@ -146,6 +146,11 @@ export function useSubdomainScan() {
       return;
     }
 
+    if (!scanResult.value?.target_id) {
+      showWarning("无法获取目标ID");
+      return;
+    }
+
     const confirmed = await confirm({
       title: targets.length > 1 ? "批量发送到端口扫描" : "发送到端口扫描",
       message:
@@ -162,7 +167,7 @@ export function useSubdomainScan() {
         await api.post("/tasks", {
           type: "nmap",
           payload: ip,
-          parent_id: scanResult.value.id,
+          target_id: scanResult.value.target_id,
         });
       }
       showSuccess(

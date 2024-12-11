@@ -148,11 +148,11 @@ export function useTargetManagement() {
 
       if (!confirmed) return;
 
-      // 发送扫描请求
+      // 发送扫描请求，使用 target_id 替代 parent_id
       await api.post("/tasks", {
         type: scanType,
         payload: target.target,
-        parent_id: target.id,
+        target_id: target.id, // 修改这里
       });
 
       // 显示成功消息

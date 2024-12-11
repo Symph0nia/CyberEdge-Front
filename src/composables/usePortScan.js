@@ -112,6 +112,11 @@ export function usePortScan() {
       return;
     }
 
+    if (!scanResult.value?.target_id) {
+      showWarning("无法获取目标ID");
+      return;
+    }
+
     const confirmed = await confirm({
       title: targets.length > 1 ? "批量发送到路径扫描" : "发送到路径扫描",
       message:
@@ -126,13 +131,14 @@ export function usePortScan() {
     try {
       for (const port of targets) {
         const portNumber = getPortValue(port, "number");
+        const host = getPortValue(port, "host");
         const protocol =
           getPortValue(port, "service") === "https" ? "https" : "http";
 
         await api.post("/tasks", {
           type: "ffuf",
-          payload: `${protocol}://${scanResult.value.target}:${portNumber}`,
-          parent_id: scanResult.value.id,
+          payload: `${protocol}://${host}:${portNumber}`,
+          target_id: scanResult.value.target_id,
         });
       }
       showSuccess(
