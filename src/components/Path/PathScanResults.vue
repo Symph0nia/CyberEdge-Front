@@ -156,7 +156,7 @@ export default {
       if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
         filtered = filtered.filter((result) =>
-          result.Target.toLowerCase().includes(query)
+          result.target.toLowerCase().includes(query)
         );
       }
 
