@@ -32,19 +32,35 @@
         </div>
 
         <!-- 批量操作按钮 -->
-        <button
-          @click="sendToPathScan(selectedPorts)"
-          :disabled="selectedPorts.length === 0"
-          class="px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          :class="[
-            selectedPorts.length === 0
-              ? 'bg-gray-700/50 text-gray-400'
-              : 'bg-purple-500/50 hover:bg-purple-600/50 text-purple-100',
-          ]"
-        >
-          <i class="ri-folders-line mr-2"></i>
-          发送到路径扫描
-        </button>
+        <div class="flex space-x-3 mb-8">
+          <button
+            @click="probePort(selectedPorts)"
+            :disabled="selectedPorts.length === 0 || isProbing"
+            class="px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            :class="[
+              selectedPorts.length === 0 || isProbing
+                ? 'bg-gray-700/50 text-gray-400'
+                : 'bg-blue-500/50 hover:bg-blue-600/50 text-blue-100',
+            ]"
+          >
+            <i class="ri-search-eye-line mr-2"></i>
+            {{ isProbing ? "正在探测..." : "HTTPX探测" }}
+          </button>
+
+          <button
+            @click="sendToPathScan(selectedPorts)"
+            :disabled="selectedPorts.length === 0"
+            class="px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            :class="[
+              selectedPorts.length === 0
+                ? 'bg-gray-700/50 text-gray-400'
+                : 'bg-purple-500/50 hover:bg-purple-600/50 text-purple-100',
+            ]"
+          >
+            <i class="ri-folders-line mr-2"></i>
+            发送到路径扫描
+          </button>
+        </div>
 
         <!-- 端口信息表格 -->
         <div class="mt-8">
