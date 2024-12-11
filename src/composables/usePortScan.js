@@ -1,21 +1,21 @@
 // usePortScan.js
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import api from "../api/axiosInstance";
 import { useNotification } from "./useNotification";
 import { useConfirmDialog } from "./useConfirmDialog";
+import { getHttpStatusClass } from "./constants";
 
 export function usePortScan() {
   const route = useRoute();
 
-  // 使用通知和确认对话框钩子
   const {
-    showSuccess,
-    showError,
-    showWarning,
     showNotification,
     notificationMessage,
     notificationType,
+    showSuccess,
+    showError,
+    showWarning,
   } = useNotification();
 
   const {
@@ -33,6 +33,13 @@ export function usePortScan() {
   const errorMessage = ref("");
   const selectedPorts = ref([]);
   const selectAll = ref(false);
+  const isProbing = ref(false);
+
+  // 监听选中状态
+  watch(selectedPorts, (newVal) => {
+    selectAll.value =
+      newVal.length === filteredPorts.value.length && newVal.length > 0;
+  });
 
   // 获取扫描结果
   const fetchScanResult = async (id) => {
@@ -46,13 +53,20 @@ export function usePortScan() {
     }
   };
 
-  // 工具方法
+  // 工具函数 - 获取端口值
   const getPortValue = (port, key) => {
-    const item = port.find((i) => i.Key === key);
-    return item ? item.Value : "-";
+    if (!port) return "";
+    if (Array.isArray(port)) {
+      const item = port.find((p) => p.Key === key);
+      return item ? item.Value : "";
+    }
+    if (typeof port === "object") {
+      return port[key] || "";
+    }
+    return "";
   };
 
-  // 处理端口数据
+  // 计算属性 - 端口列表
   const filteredPorts = computed(() => {
     if (!scanResult.value?.data) return [];
     const portGroup = scanResult.value.data.find(
@@ -60,6 +74,13 @@ export function usePortScan() {
     );
     return portGroup?.Value || [];
   });
+
+  // 切换全选
+  const toggleSelectAll = () => {
+    selectedPorts.value = selectAll.value
+      ? filteredPorts.value.map((port) => getPortValue(port, "_id"))
+      : [];
+  };
 
   // 切换已读状态
   const toggleReadStatus = async (port) => {
@@ -76,113 +97,122 @@ export function usePortScan() {
     }
   };
 
-  // 切换全选
-  const toggleSelectAll = () => {
-    selectedPorts.value = selectAll.value
-      ? filteredPorts.value.map((port) => getPortValue(port, "_id"))
-      : [];
-  };
-
   // 发送到路径扫描
-  const sendToPathScan = async (port) => {
-    const portNumber = getPortValue(port, "number");
+  const sendToPathScan = async (input) => {
+    const targets = Array.isArray(input)
+      ? input
+          .map((id) =>
+            filteredPorts.value.find((port) => getPortValue(port, "_id") === id)
+          )
+          .filter((port) => port)
+      : [input];
 
-    try {
-      const confirmed = await confirm({
-        title: "发送到路径扫描",
-        message: `是否将端口 ${portNumber} 发送到路径扫描？`,
-        type: "info",
-      });
-
-      if (!confirmed) return;
-
-      await api.post("/tasks", {
-        type: "ffuf",
-        payload: `${scanResult.value.target}:${portNumber}`,
-        parent_id: scanResult.value.id,
-      });
-      showSuccess(`已发送端口 ${portNumber} 到路径扫描`);
-    } catch (error) {
-      showError("发送失败");
-    }
-  };
-
-  // 批量发送到路径扫描
-  const sendSelectedToPathScan = async () => {
-    const selectedPortDetails = selectedPorts.value
-      .map((id) =>
-        filteredPorts.value.find((port) => getPortValue(port, "_id") === id)
-      )
-      .filter((port) => port);
-
-    if (!selectedPortDetails.length) {
+    if (!targets.length) {
       showWarning("请先选择要扫描的端口");
       return;
     }
 
+    const confirmed = await confirm({
+      title: targets.length > 1 ? "批量发送到路径扫描" : "发送到路径扫描",
+      message:
+        targets.length > 1
+          ? `是否将选中的 ${targets.length} 个端口发送到路径扫描？`
+          : `是否将端口 ${getPortValue(targets[0], "number")} 发送到路径扫描？`,
+      type: "info",
+    });
+
+    if (!confirmed) return;
+
     try {
-      const confirmed = await confirm({
-        title: "批量发送到路径扫描",
-        message: `是否将选中的 ${selectedPortDetails.length} 个端口发送到路径扫描？`,
-        type: "info",
-      });
+      for (const port of targets) {
+        const portNumber = getPortValue(port, "number");
+        const protocol =
+          getPortValue(port, "service") === "https" ? "https" : "http";
 
-      if (!confirmed) return;
-
-      let successCount = 0;
-      let failureCount = 0;
-
-      for (const port of selectedPortDetails) {
-        try {
-          await api.post("/tasks", {
-            type: "ffuf",
-            payload: `${scanResult.value.target}:${getPortValue(
-              port,
-              "number"
-            )}`,
-            parent_id: scanResult.value.id,
-          });
-          successCount++;
-        } catch {
-          failureCount++;
-        }
+        await api.post("/tasks", {
+          type: "ffuf",
+          payload: `${protocol}://${scanResult.value.target}:${portNumber}`,
+          parent_id: scanResult.value.id,
+        });
       }
-
-      let message = `发送完成。成功: ${successCount}`;
-      if (failureCount > 0) message += `, 失败: ${failureCount}`;
-
-      failureCount > 0 ? showWarning(message) : showSuccess(message);
-
-      // 清空选择
-      selectedPorts.value = [];
-      selectAll.value = false;
+      showSuccess(
+        targets.length > 1
+          ? `已发送 ${targets.length} 个端口到路径扫描`
+          : "已发送到路径扫描"
+      );
     } catch (error) {
-      showError("批量发送失败");
+      showError(targets.length > 1 ? "批量发送失败" : "发送失败");
+    }
+  };
+
+  // 探测端口HTTP服务
+  const probePort = async (input) => {
+    // 找到对应的完整端口数据
+    const portDetails = Array.isArray(input)
+      ? input.map((id) =>
+          filteredPorts.value.find((port) => getPortValue(port, "_id") === id)
+        )
+      : [input];
+
+    const targets = portDetails.map((port) => getPortValue(port, "_id"));
+
+    if (!targets.length) {
+      showWarning("请先选择端口");
+      return;
+    }
+
+    const confirmed = await confirm({
+      title: targets.length > 1 ? "批量HTTP探测" : "HTTP探测",
+      message:
+        targets.length > 1
+          ? `是否对选中的 ${targets.length} 个端口进行HTTP探测？`
+          : `是否对端口 ${getPortValue(
+              portDetails[0],
+              "number"
+            )} 进行HTTP探测？`,
+      type: "info",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      isProbing.value = true;
+      await api.put(`/results/${route.params.id}/entries/probe`, {
+        entryIds: targets, // 修改为 entryIds
+      });
+      await fetchScanResult(route.params.id);
+      showSuccess(targets.length > 1 ? "批量探测成功" : "HTTP探测成功");
+    } catch (error) {
+      showError(targets.length > 1 ? "批量探测失败" : "HTTP探测失败");
+    } finally {
+      isProbing.value = false;
     }
   };
 
   return {
-    // 状态
+    // 状态数据
     scanResult,
     errorMessage,
     selectedPorts,
     selectAll,
     filteredPorts,
+    isProbing,
 
-    // 方法
+    // 业务操作方法
     fetchScanResult,
     getPortValue,
-    toggleReadStatus,
     toggleSelectAll,
+    toggleReadStatus,
     sendToPathScan,
-    sendSelectedToPathScan,
+    probePort,
+    getHttpStatusClass,
 
-    // 通知相关
+    // UI控制 - 通知
     showNotification,
     notificationMessage,
     notificationType,
 
-    // 确认对话框相关
+    // UI控制 - 确认对话框
     showDialog,
     dialogTitle,
     dialogMessage,
