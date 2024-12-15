@@ -12,7 +12,10 @@
           class="flex flex-col sm:flex-row justify-between items-center mb-8"
         >
           <div class="flex items-center mb-4 sm:mb-0">
-            <h2 class="text-xl font-medium tracking-wide text-gray-200">
+            <h2
+              class="text-xl font-medium tracking-wide text-gray-200 flex items-center"
+            >
+              <i class="ri-focus-3-line mr-2"></i>
               目标管理
             </h2>
             <span

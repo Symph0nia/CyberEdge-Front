@@ -1,6 +1,9 @@
 <template>
   <div class="flex items-center justify-between mb-6">
-    <h2 class="text-xl font-medium tracking-wide text-gray-200">任务管理</h2>
+    <h2 class="text-xl font-medium tracking-wide text-gray-200">
+      <i class="ri-task-line mr-2"></i>
+      任务管理
+    </h2>
 
     <div class="flex space-x-4">
       <!-- 批量操作按钮 -->
