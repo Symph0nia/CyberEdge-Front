@@ -47,7 +47,6 @@
       :type="dialogType"
       @confirm="handleConfirm"
       @cancel="handleCancel"
-      class="bg-gray-800/40 backdrop-blur-xl rounded-2xl border border-gray-700/30"
     />
   </div>
 </template>
@@ -257,29 +256,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.backdrop-blur-xl {
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-}
-
-/* 自定义滚动条 */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.3);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.5);
-}
-</style>

@@ -305,7 +305,6 @@
 
     <!-- 确认对话框 -->
     <ConfirmDialog
-      v-if="showConfirmDialog"
       :show="showConfirmDialog"
       :title="dialogTitle"
       :message="dialogMessage"

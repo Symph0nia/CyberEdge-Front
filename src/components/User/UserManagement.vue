@@ -321,35 +321,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-/* 移除了之前的动画和滑块样式，使用更简洁的过渡效果 */
-.backdrop-blur-xl {
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-}
-
-/* 确保表格在小屏幕上可以滚动 */
-.overflow-x-auto {
-  -webkit-overflow-scrolling: touch;
-}
-
-/* 自定义滚动条 */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.3);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.5);
-}
-</style>
