@@ -222,78 +222,12 @@
       @close="showDialog = false"
       class="bg-gray-800/40 backdrop-blur-xl rounded-2xl border border-gray-700/30"
     >
-      <!-- 表单内容 -->
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1"
-            >目标名称</label
-          >
-          <input
-            v-model="targetForm.name"
-            type="text"
-            placeholder="请输入目标名称"
-            class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
-          />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1"
-            >目标类型</label
-          >
-          <select
-            v-model="targetForm.type"
-            class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
-          >
-            <option value="domain">域名</option>
-            <option value="ip">IP地址</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">
-            {{ targetForm.type === "domain" ? "域名" : "IP地址" }}
-          </label>
-          <input
-            v-model="targetForm.target"
-            type="text"
-            :placeholder="
-              targetForm.type === 'domain' ? '请输入域名' : '请输入IP地址'
-            "
-            class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
-          />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1"
-            >描述</label
-          >
-          <textarea
-            v-model="targetForm.description"
-            rows="3"
-            placeholder="请输入目标描述"
-            class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-100 border border-gray-600/30 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none resize-none transition-all duration-200"
-          ></textarea>
-        </div>
-      </div>
-
-      <!-- 底部按钮 -->
-      <template #footer>
-        <div class="flex justify-end space-x-4">
-          <button
-            @click="showDialog = false"
-            class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
-          >
-            取消
-          </button>
-          <button
-            @click="submitTargetForm"
-            :disabled="isSubmitting"
-            class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {{ isSubmitting ? "提交中..." : "确定" }}
-          </button>
-        </div>
-      </template>
+      <TargetFormContent
+        :initial-data="targetForm"
+        :is-submitting="isSubmitting"
+        @submit="submitTargetForm"
+        @cancel="showDialog = false"
+      />
     </DialogModal>
 
     <!-- 通知组件 -->
@@ -319,10 +253,11 @@
 import { ref, computed } from "vue";
 import { useTargetManagement } from "@/composables/useTargetManagement";
 import HeaderPage from "@/components/HeaderPage.vue";
-import DialogModal from "@/components/Utils/DialogModal.vue";
+import DialogModal from "@/components/Target/DialogModal.vue";
 import PopupNotification from "@/components/Utils/PopupNotification.vue";
 import ConfirmDialog from "@/components/Utils/ConfirmDialog.vue";
 import FooterPage from "@/components/FooterPage.vue";
+import TargetFormContent from "@/components/Target/TargetFormContent.vue";
 
 // 组合式函数
 const {

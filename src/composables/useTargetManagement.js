@@ -164,33 +164,37 @@ export function useTargetManagement() {
   };
 
   // 提交表单
-  const submitTargetForm = async () => {
+  const submitTargetForm = async (formData) => {
     if (isSubmitting.value) return;
 
     isSubmitting.value = true;
     try {
       const submitData = {
-        name: targetForm.value.name,
-        description: targetForm.value.description,
-        type: targetForm.value.type,
-        target: targetForm.value.target,
+        name: formData.name,
+        description: formData.description,
+        type: formData.type,
+        target: formData.target,
+        status: "active", // 设置默认状态
       };
 
       if (dialogMode.value === "create") {
         await api.post("/targets", submitData);
       } else {
-        // 确保我们使用正确的 ID 字段
+        // 编辑模式
         const id = targetForm.value._id || targetForm.value.id;
         await api.put(`/targets/${id}`, submitData);
       }
 
       showDialog.value = false;
-      await fetchTargets();
+      await fetchTargets(); // 刷新列表
       showSuccess(`${dialogMode.value === "create" ? "创建" : "更新"}目标成功`);
     } catch (error) {
-      console.log("Form data:", targetForm.value); // 打印表单数据
-      console.error("Error details:", error.response?.data); // 打印详细错误信息
-      showError(`${dialogMode.value === "create" ? "创建" : "更新"}目标失败`);
+      console.error("Submit error:", error.response?.data || error);
+      showError(
+        `${dialogMode.value === "create" ? "创建" : "更新"}目标失败: ${
+          error.response?.data?.message || "未知错误"
+        }`
+      );
     } finally {
       isSubmitting.value = false;
     }
