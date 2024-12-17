@@ -21,6 +21,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.11.1'
+          npm: '10.2.4'
 
       - name: Cache node modules
         uses: actions/cache@v3
@@ -31,9 +32,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: |
-          npm install -g npm@latest
-          npm ci
+        run: npm ci  # 移除全局npm升级命令
 
       - name: Build
         run: npm run build
