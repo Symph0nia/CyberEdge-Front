@@ -3,10 +3,12 @@
     <div
       class="bg-gray-800/40 backdrop-blur-xl p-10 rounded-3xl shadow-2xl w-full max-w-md border border-gray-700/30 transform transition-all duration-500 opacity-0 translate-x-full animate-fade-in-right"
     >
-      <!-- 内容保持不变 -->
       <div class="space-y-6">
         <!-- 标题 -->
-        <h2 class="text-xl font-medium tracking-wide text-gray-200">
+        <h2
+          class="text-xl font-medium tracking-wide text-gray-200 flex items-center gap-2"
+        >
+          <i class="ri-shield-keyhole-line"></i>
           设置双重认证
         </h2>
 
@@ -27,32 +29,60 @@
                 class="mx-auto w-48 h-48"
               />
             </div>
-            <p class="text-sm text-gray-400">二维码已生成</p>
+
+            <!-- 账户信息区域 -->
+            <div class="bg-gray-900/30 p-4 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-400">账户名称</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm text-gray-200">{{ accountName }}</span>
+                  <button
+                    @click="copyAccountName"
+                    class="p-1.5 hover:bg-gray-700/50 rounded-lg transition-colors"
+                    :title="copied ? '已复制' : '复制账户名'"
+                  >
+                    <i
+                      class="ri-file-copy-line text-gray-400 hover:text-gray-200"
+                    ></i>
+                  </button>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 text-xs text-gray-500">
+                <i class="ri-information-line"></i>
+                <span>请妥善保管账户名称</span>
+              </div>
+            </div>
           </div>
 
           <p v-else-if="loading" class="text-sm text-gray-400">
+            <i class="ri-loader-4-line animate-spin mr-2"></i>
             正在生成二维码...
           </p>
 
           <!-- 说明文字 -->
-          <p class="text-sm text-gray-400 leading-relaxed">
-            请使用 Google Authenticator 扫描二维码以启用双重认证
-          </p>
+          <div
+            class="flex items-start gap-2 text-sm text-gray-400 leading-relaxed"
+          >
+            <i class="ri-google-line mt-1"></i>
+            <p>请使用 Google Authenticator 扫描二维码以启用双重认证</p>
+          </div>
 
           <!-- 按钮区域 -->
           <div class="space-y-3 pt-4">
             <button
               @click="fetchQRCode"
               :disabled="loading"
-              class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
+              <i class="ri-refresh-line"></i>
               {{ qrCodeUrl ? "刷新二维码" : "生成二维码" }}
             </button>
 
             <button
               @click="goToLogin"
-              class="w-full px-4 py-2.5 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
+              class="w-full px-4 py-2.5 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center gap-2"
             >
+              <i class="ri-arrow-left-line"></i>
               返回登录
             </button>
           </div>
@@ -73,7 +103,7 @@
 <script>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { useNotification } from "../../composables/useNotification"; // 导入新的通知钩子
+import { useNotification } from "../../composables/useNotification";
 import api from "../../api/axiosInstance";
 import PopupNotification from "../Utils/PopupNotification.vue";
 
@@ -87,8 +117,9 @@ export default {
     const qrCodeUrl = ref("");
     const loading = ref(false);
     const interfaceClosed = ref(false);
+    const accountName = ref("");
+    const copied = ref(false);
 
-    // 使用新的通知钩子
     const {
       showNotification,
       notificationMessage,
@@ -97,30 +128,34 @@ export default {
       showError,
     } = useNotification();
 
+    const copyAccountName = async () => {
+      try {
+        await navigator.clipboard.writeText(accountName.value);
+        copied.value = true;
+        showSuccess("账户名已复制");
+        setTimeout(() => {
+          copied.value = false;
+        }, 2000);
+      } catch (err) {
+        showError("复制失败");
+      }
+    };
+
     const fetchQRCode = async () => {
       loading.value = true;
       try {
-        const response = await api.get("/auth/qrcode", {
-          responseType: "blob",
-        });
-        qrCodeUrl.value = URL.createObjectURL(response.data);
+        const response = await api.get("/auth/qrcode");
+        const { qrcode, account } = response.data;
+        qrCodeUrl.value = `data:image/png;base64,${qrcode}`;
+        accountName.value = account;
         interfaceClosed.value = false;
-
-        // 使用新的成功通知方法
         showSuccess("二维码已生成");
       } catch (error) {
         console.error("获取二维码失败:", error);
         interfaceClosed.value = true;
 
-        if (error.response && error.response.data instanceof Blob) {
-          const text = await error.response.data.text();
-          const errorData = JSON.parse(text);
-          if (errorData.error === "二维码接口已关闭") {
-            // 使用新的错误通知方法
-            showError("接口暂时关闭");
-          } else {
-            showError("生成失败");
-          }
+        if (error.response?.data?.error === "二维码接口已关闭") {
+          showError("接口暂时关闭");
         } else {
           showError("生成失败");
         }
@@ -137,7 +172,10 @@ export default {
       qrCodeUrl,
       loading,
       interfaceClosed,
+      accountName,
+      copied,
       fetchQRCode,
+      copyAccountName,
       showNotification,
       notificationMessage,
       notificationType,

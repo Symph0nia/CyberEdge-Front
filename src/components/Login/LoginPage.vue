@@ -1,14 +1,20 @@
 <template>
   <div class="bg-gray-900 flex items-center justify-center min-h-screen">
-    <!-- 登录表单 -->
     <div
       class="bg-gray-800/40 backdrop-blur-xl p-10 rounded-3xl shadow-2xl w-full max-w-md border border-gray-700/30 transform transition-all duration-500 opacity-0 translate-x-full animate-fade-in-right"
     >
       <div class="space-y-8">
         <!-- 标题 -->
-        <h2 class="text-xl font-medium tracking-wide text-gray-200 text-center">
-          登录账户
-        </h2>
+        <div class="text-center space-y-2">
+          <div
+            class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-700/30"
+          >
+            <i class="ri-shield-user-line text-2xl text-gray-200"></i>
+          </div>
+          <h2 class="text-xl font-medium tracking-wide text-gray-200">
+            登录账户
+          </h2>
+        </div>
 
         <!-- 表单 -->
         <form @submit.prevent="handleLogin" class="space-y-6">
@@ -18,49 +24,75 @@
               class="block text-sm font-medium text-gray-300"
               for="account"
             >
-              账户
+              <div class="flex items-center gap-2">
+                <i class="ri-user-line"></i>
+                <span>账户</span>
+              </div>
             </label>
-            <input
-              v-model="account"
-              class="w-full px-4 py-2.5 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 transition-all duration-200"
-              id="account"
-              type="text"
-              placeholder="输入账户名"
-            />
+            <div class="relative">
+              <input
+                v-model="account"
+                class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 transition-all duration-200"
+                id="account"
+                type="text"
+                placeholder="输入账户名"
+              />
+              <i
+                class="ri-account-circle-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              ></i>
+            </div>
           </div>
 
           <!-- 验证码输入 -->
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-300" for="code">
-              验证码
+              <div class="flex items-center gap-2">
+                <i class="ri-key-2-line"></i>
+                <span>验证码</span>
+              </div>
             </label>
-            <input
-              v-model="code"
-              class="w-full px-4 py-2.5 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 transition-all duration-200"
-              id="code"
-              type="text"
-              placeholder="输入验证码"
-            />
+            <div class="relative">
+              <input
+                v-model="code"
+                class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 transition-all duration-200"
+                id="code"
+                type="text"
+                placeholder="输入验证码"
+              />
+              <i
+                class="ri-lock-password-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              ></i>
+            </div>
           </div>
 
           <!-- 按钮区域 -->
           <div class="space-y-3 pt-4">
             <button
               type="submit"
-              class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
+              class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center gap-2"
             >
-              登录
+              <i class="ri-login-circle-line"></i>
+              <span>登录</span>
             </button>
 
             <button
               @click="goToSetup2FA"
               type="button"
-              class="w-full px-4 py-2.5 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50"
+              class="w-full px-4 py-2.5 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center gap-2"
             >
-              设置双重认证
+              <i class="ri-shield-keyhole-line"></i>
+              <span>设置双重认证</span>
             </button>
           </div>
         </form>
+
+        <!-- 提示信息 -->
+        <div
+          class="flex items-center gap-2 text-xs text-gray-500 justify-center"
+        >
+          <i class="ri-information-line"></i>
+          <span>请使用 Google Authenticator 生成验证码</span>
+        </div>
       </div>
     </div>
 
