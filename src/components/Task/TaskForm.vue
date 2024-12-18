@@ -59,8 +59,6 @@ export default {
 
     // 任务类型选项
     const taskTypes = {
-      ping: "Ping 检查",
-      httpx: "HTTPX 扫描",
       subfinder: "子域名扫描",
       nmap: "端口扫描",
       ffuf: "路径扫描",
