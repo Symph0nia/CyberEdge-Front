@@ -1,6 +1,8 @@
 <template>
   <div class="flex flex-col p-6 text-gray-200">
-    <h2 class="text-xl font-medium mb-6 tracking-wide">加密解密工具</h2>
+    <h2 class="text-xl font-medium mb-6 tracking-wide flex items-center">
+      <i class="ri-lock-line mr-2 text-cyan-400"></i>加密解密工具
+    </h2>
 
     <!-- 工具列表 -->
     <div class="space-y-1.5">
@@ -8,37 +10,54 @@
         v-for="tool in tools"
         :key="tool.action"
         @click="showModal(tool.action)"
-        class="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium tracking-wide transition-all duration-200 hover:bg-gray-700/50 focus:bg-gray-700/50 flex items-center space-x-3"
+        class="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium tracking-wide transition-all duration-200 hover:bg-gray-700/50 focus:bg-gray-700/50 flex items-center"
       >
-        <span class="text-lg">{{ tool.icon }}</span>
+        <i
+          :class="tool.icon"
+          class="text-lg mr-3 text-gray-400 group-hover:text-cyan-400"
+        ></i>
         <span>{{ tool.name }}</span>
       </button>
     </div>
 
-    <!-- 操作面板 - 添加固定高度和滚动 -->
+    <!-- 操作面板 -->
     <div
       v-if="isModalVisible"
       class="mt-6 rounded-2xl bg-gray-800/30 backdrop-blur-sm border border-gray-700/30 p-6 max-h-[400px] overflow-y-auto relative"
     >
+      <!-- 标题和关闭按钮 -->
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-base font-medium">{{ currentToolName }}</h3>
+        <button
+          @click="closeModal"
+          class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-700/30 transition-all duration-200"
+        >
+          <i class="ri-close-line text-lg"></i>
+        </button>
+      </div>
+
       <!-- 输入区域 -->
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium mb-2 text-gray-300"
-            >输入文本</label
+          <label
+            class="block text-sm font-medium mb-2 text-gray-300 flex items-center"
           >
-          <input
+            <i class="ri-text-line mr-2 text-gray-400"></i>输入文本
+          </label>
+          <textarea
             v-model="inputText"
-            type="text"
-            class="w-full px-4 py-2.5 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 text-sm focus:outline-none focus:ring-2 focus:ring-gray-600/50 transition-all duration-200"
+            class="w-full px-4 py-2.5 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 text-sm focus:outline-none focus:ring-2 focus:ring-gray-600/50 transition-all duration-200 min-h-[80px]"
             placeholder="请输入需要处理的文本"
-          />
+          ></textarea>
         </div>
 
         <!-- AES加密解密的密钥输入 -->
         <div v-if="['aesEncrypt', 'aesDecrypt'].includes(currentAction)">
-          <label class="block text-sm font-medium mb-2 text-gray-300"
-            >密钥</label
+          <label
+            class="block text-sm font-medium mb-2 text-gray-300 flex items-center"
           >
+            <i class="ri-key-2-line mr-2 text-gray-400"></i>密钥
+          </label>
           <input
             v-model="key"
             type="text"
@@ -51,33 +70,36 @@
         <div class="flex space-x-3">
           <button
             @click="handleAction"
-            class="flex-1 px-4 py-2.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 text-sm font-medium transition-all duration-200"
+            class="flex-1 px-4 py-2.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 text-sm font-medium transition-all duration-200 flex items-center justify-center"
           >
-            执行
+            <i class="ri-play-line mr-2"></i>执行
           </button>
           <button
-            @click="closeModal"
-            class="flex-1 px-4 py-2.5 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 text-sm font-medium transition-all duration-200"
+            @click="clearInputs"
+            class="flex-1 px-4 py-2.5 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 text-sm font-medium transition-all duration-200 flex items-center justify-center"
           >
-            取消
+            <i class="ri-delete-bin-line mr-2"></i>清空
           </button>
         </div>
 
         <!-- 结果显示 -->
-        <div v-if="outputText" class="space-y-3">
+        <div v-if="outputText" class="space-y-3 mt-2">
           <div
             class="p-4 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 break-words"
           >
-            <p class="text-sm text-gray-400 mb-2">处理结果：</p>
+            <p class="text-sm text-gray-400 mb-2 flex items-center">
+              <i class="ri-file-list-line mr-2"></i>处理结果：
+            </p>
             <div class="max-h-[200px] overflow-y-auto overflow-x-auto">
-              <p class="text-sm p-0.5">{{ outputText }}</p>
+              <p class="text-sm p-1">{{ outputText }}</p>
             </div>
           </div>
 
           <button
             @click="copyToClipboard"
-            class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2"
+            class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 text-sm font-medium transition-all duration-200 flex items-center justify-center"
           >
+            <i class="ri-clipboard-line mr-2"></i>
             <span>{{ copyButtonText }}</span>
           </button>
         </div>
@@ -87,142 +109,211 @@
     <!-- 复制成功提示 -->
     <div
       v-if="showCopySuccess"
-      class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800/90 backdrop-blur-sm text-white text-sm px-4 py-2 rounded-full shadow-lg border border-gray-700/30 transition-all duration-300"
-      :class="{ 'opacity-0': !showCopySuccess }"
+      class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800/90 backdrop-blur-sm text-white text-sm px-4 py-2 rounded-full shadow-lg border border-gray-700/30 transition-all duration-300 flex items-center"
     >
-      已复制到剪贴板
+      <i class="ri-check-line mr-2 text-green-400"></i>已复制到剪贴板
     </div>
   </div>
 </template>
 
 <script>
+import { ref, computed } from "vue";
 import CryptoJS from "crypto-js";
 
 export default {
   name: "CryptoTools",
-  data() {
-    return {
-      isModalVisible: false,
-      inputText: "",
-      outputText: "",
-      currentAction: "",
-      key: "",
-      showCopySuccess: false,
-      copyButtonText: "复制结果",
-      tools: [
-        { name: "Base64 加密", action: "base64Encode", icon: "🔒" },
-        { name: "Base64 解密", action: "base64Decode", icon: "🔓" },
-        { name: "AES 加密", action: "aesEncrypt", icon: "🔐" },
-        { name: "AES 解密", action: "aesDecrypt", icon: "🗝️" },
-        { name: "MD5 加密", action: "md5Hash", icon: "🔏" },
-        { name: "SHA-256 加密", action: "sha256Hash", icon: "🔒" },
-        { name: "URL 编码", action: "urlEncode", icon: "🌐" },
-        { name: "URL 解码", action: "urlDecode", icon: "🔍" },
-        { name: "Hex 编码", action: "hexEncode", icon: "📝" },
-        { name: "Hex 解码", action: "hexDecode", icon: "📄" },
-      ],
+  setup() {
+    const isModalVisible = ref(false);
+    const inputText = ref("");
+    const outputText = ref("");
+    const currentAction = ref("");
+    const key = ref("");
+    const showCopySuccess = ref(false);
+    const copyButtonText = ref("复制结果");
+
+    const tools = [
+      {
+        name: "Base64 加密",
+        action: "base64Encode",
+        icon: "ri-lock-password-line",
+      },
+      {
+        name: "Base64 解密",
+        action: "base64Decode",
+        icon: "ri-lock-unlock-line",
+      },
+      { name: "AES 加密", action: "aesEncrypt", icon: "ri-lock-2-line" },
+      { name: "AES 解密", action: "aesDecrypt", icon: "ri-key-line" },
+      { name: "MD5 加密", action: "md5Hash", icon: "ri-fingerprint-line" },
+      {
+        name: "SHA-256 加密",
+        action: "sha256Hash",
+        icon: "ri-shield-keyhole-line",
+      },
+      { name: "URL 编码", action: "urlEncode", icon: "ri-global-line" },
+      { name: "URL 解码", action: "urlDecode", icon: "ri-search-line" },
+      { name: "Hex 编码", action: "hexEncode", icon: "ri-code-box-line" },
+      { name: "Hex 解码", action: "hexDecode", icon: "ri-braces-line" },
+    ];
+
+    // 获取当前工具名称
+    const currentToolName = computed(() => {
+      const tool = tools.find((t) => t.action === currentAction.value);
+      return tool ? tool.name : "";
+    });
+
+    // 显示模态框
+    const showModal = (action) => {
+      currentAction.value = action;
+      isModalVisible.value = true;
+      inputText.value = "";
+      outputText.value = "";
+      key.value = "";
     };
-  },
-  methods: {
-    // 保持原有的方法实现不变
-    showModal(action) {
-      this.currentAction = action;
-      this.isModalVisible = true;
-      this.inputText = "";
-      this.outputText = "";
-      this.key = "";
-    },
-    closeModal() {
-      this.isModalVisible = false;
-      this.inputText = "";
-      this.outputText = "";
-      this.key = "";
-    },
-    handleAction() {
-      switch (this.currentAction) {
+
+    // 关闭模态框
+    const closeModal = () => {
+      isModalVisible.value = false;
+    };
+
+    // 清空输入
+    const clearInputs = () => {
+      inputText.value = "";
+      outputText.value = "";
+      key.value = "";
+    };
+
+    // 处理加密解密操作
+    const handleAction = () => {
+      if (!inputText.value) return;
+
+      switch (currentAction.value) {
         case "base64Encode":
-          this.outputText = btoa(this.inputText);
+          outputText.value = btoa(inputText.value);
           break;
         case "base64Decode":
           try {
-            this.outputText = atob(this.inputText);
+            outputText.value = atob(inputText.value);
           } catch (e) {
-            this.outputText = "无效的 Base64 输入";
+            outputText.value = "无效的 Base64 输入";
           }
           break;
         case "aesEncrypt":
-          if (this.inputText && this.key) {
-            this.outputText = CryptoJS.AES.encrypt(
-              this.inputText,
-              this.key
+          if (inputText.value && key.value) {
+            outputText.value = CryptoJS.AES.encrypt(
+              inputText.value,
+              key.value
             ).toString();
+          } else {
+            outputText.value = "请输入文本和密钥";
           }
           break;
         case "aesDecrypt":
-          if (this.inputText && this.key) {
-            const decrypted = CryptoJS.AES.decrypt(
-              this.inputText,
-              this.key
-            ).toString(CryptoJS.enc.Utf8);
-            this.outputText = decrypted || "无效的 AES 输入";
+          if (inputText.value && key.value) {
+            try {
+              const decrypted = CryptoJS.AES.decrypt(
+                inputText.value,
+                key.value
+              ).toString(CryptoJS.enc.Utf8);
+              outputText.value = decrypted || "解密失败，可能是密钥错误";
+            } catch (e) {
+              outputText.value = "无效的 AES 输入或密钥错误";
+            }
+          } else {
+            outputText.value = "请输入密文和密钥";
           }
           break;
         case "md5Hash":
-          this.outputText = CryptoJS.MD5(this.inputText).toString();
+          outputText.value = CryptoJS.MD5(inputText.value).toString();
           break;
         case "sha256Hash":
-          this.outputText = CryptoJS.SHA256(this.inputText).toString();
+          outputText.value = CryptoJS.SHA256(inputText.value).toString();
           break;
         case "urlEncode":
-          this.outputText = encodeURIComponent(this.inputText);
+          outputText.value = encodeURIComponent(inputText.value);
           break;
         case "urlDecode":
-          this.outputText = decodeURIComponent(this.inputText);
+          try {
+            outputText.value = decodeURIComponent(inputText.value);
+          } catch (e) {
+            outputText.value = "无效的 URL 编码";
+          }
           break;
         case "hexEncode":
-          this.outputText = this.textToHex(this.inputText);
+          outputText.value = textToHex(inputText.value);
           break;
         case "hexDecode":
-          this.outputText = this.hexToText(this.inputText);
+          try {
+            outputText.value = hexToText(inputText.value);
+          } catch (e) {
+            outputText.value = "无效的 Hex 编码";
+          }
           break;
         default:
-          this.outputText = "";
+          outputText.value = "";
       }
-    },
-    textToHex(text) {
+    };
+
+    // 文本转 Hex
+    const textToHex = (text) => {
       return text
         .split("")
-        .map((char) => char.charCodeAt(0).toString(16))
+        .map((char) => char.charCodeAt(0).toString(16).padStart(2, "0"))
         .join("");
-    },
-    hexToText(hex) {
+    };
+
+    // Hex 转文本
+    const hexToText = (hex) => {
+      if (!/^[0-9a-fA-F]+$/.test(hex)) {
+        throw new Error("Invalid hex string");
+      }
+
       return hex
         .match(/.{1,2}/g)
         .map((byte) => String.fromCharCode(parseInt(byte, 16)))
         .join("");
-    },
-    copyToClipboard() {
+    };
+
+    // 复制到剪贴板
+    const copyToClipboard = () => {
       navigator.clipboard
-        .writeText(this.outputText)
+        .writeText(outputText.value)
         .then(() => {
           // 更改按钮文字
-          this.copyButtonText = "已复制 ✓";
+          copyButtonText.value = "已复制";
           // 显示提示
-          this.showCopySuccess = true;
+          showCopySuccess.value = true;
 
           // 2秒后恢复按钮文字
           setTimeout(() => {
-            this.copyButtonText = "复制结果";
-            this.showCopySuccess = false;
+            copyButtonText.value = "复制结果";
+            showCopySuccess.value = false;
           }, 2000);
         })
         .catch(() => {
-          this.copyButtonText = "复制失败 ✗";
+          copyButtonText.value = "复制失败";
           setTimeout(() => {
-            this.copyButtonText = "复制结果";
+            copyButtonText.value = "复制结果";
           }, 2000);
         });
-    },
+    };
+
+    return {
+      isModalVisible,
+      inputText,
+      outputText,
+      currentAction,
+      currentToolName,
+      key,
+      showCopySuccess,
+      copyButtonText,
+      tools,
+      showModal,
+      closeModal,
+      clearInputs,
+      handleAction,
+      copyToClipboard,
+    };
   },
 };
 </script>
@@ -230,8 +321,8 @@ export default {
 <style scoped>
 /* 自定义滚动条 */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -240,7 +331,7 @@ export default {
 
 ::-webkit-scrollbar-thumb {
   background: rgba(156, 163, 175, 0.3);
-  border-radius: 3px;
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -259,8 +350,13 @@ export default {
   scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
 }
 
-/* 确保内容有合适的间距 */
-.p-0.5 {
-  padding: 0.125rem;
+/* 按钮按下效果 */
+button:active {
+  transform: scale(0.98);
+}
+
+/* 工具列表项悬停效果 */
+button:hover i {
+  color: #22d3ee; /* 青色 */
 }
 </style>
