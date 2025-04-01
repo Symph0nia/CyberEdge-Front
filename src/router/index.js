@@ -16,6 +16,7 @@ import PathScanDetail from "@/components/Path/PathScanDetail.vue";
 import TargetManagement from "@/components/Target/TargetManagement.vue";
 import TargetDetail from "@/components/Target/TargetDetail.vue";
 import UnderDevelopment from "@/components/UnderDevelopment.vue";
+import ToolConfiguration from "@/components/Config/ToolConfiguration.vue";
 
 const routes = [
   {
@@ -32,6 +33,11 @@ const routes = [
     path: "/system-configuration",
     name: "SystemConfiguration",
     component: SystemConfiguration,
+  },
+  {
+    path: "/tool-configuration",
+    name: "ToolConfiguration",
+    component: ToolConfiguration,
   },
   {
     path: "/user-management",

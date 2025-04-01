@@ -170,16 +170,39 @@
             </button>
           </router-link>
 
-          <!-- 系统配置 -->
-          <router-link to="/system-configuration" v-slot="{ navigate }">
+          <!-- 系统配置下拉菜单 -->
+          <div class="relative group inline-block">
             <button
-              @click="navigate"
-              class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300"
+              @click="toggleDropdown('configuration')"
+              class="text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 flex items-center"
             >
               <i class="ri-settings-3-line mr-1"></i>
               系统配置
             </button>
-          </router-link>
+            <div
+              v-show="dropdowns.configuration"
+              class="absolute left-0 bg-gray-800/90 backdrop-blur-md text-white rounded-lg shadow-xl mt-2 transition-all duration-200"
+            >
+              <router-link to="/system-configuration" v-slot="{ navigate }">
+                <button
+                  @click="navigate"
+                  class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-t-lg transition-colors duration-200"
+                >
+                  <i class="ri-settings-3-line mr-1"></i>
+                  系统配置
+                </button>
+              </router-link>
+              <router-link to="/tool-configuration" v-slot="{ navigate }">
+                <button
+                  @click="navigate"
+                  class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700/50 rounded-b-lg transition-colors duration-200"
+                >
+                  <i class="ri-tools-line mr-1"></i>
+                  工具配置
+                </button>
+              </router-link>
+            </div>
+          </div>
 
           <!-- 用户管理 -->
           <router-link to="/user-management" v-slot="{ navigate }">
