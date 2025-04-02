@@ -1,25 +1,29 @@
 <template>
-  <div class="bg-gray-900 flex items-center justify-center min-h-screen">
+  <div class="bg-gray-900 flex items-center justify-center min-h-screen p-4">
+    <!-- 登录卡片 -->
     <div
-      class="bg-gray-800/40 backdrop-blur-xl p-10 rounded-3xl shadow-2xl w-full max-w-md border border-gray-700/30 transform transition-all duration-500 opacity-0 translate-x-full animate-fade-in-right"
+      class="bg-gray-800/40 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md border border-gray-700/30 login-card"
     >
-      <div class="space-y-8">
-        <!-- 标题 -->
-        <div class="text-center space-y-2">
+      <div class="space-y-7">
+        <!-- 标题区域 -->
+        <div class="text-center space-y-3">
           <div
-            class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-700/30"
+            class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-700/30 shadow-inner"
           >
-            <i class="ri-shield-user-line text-2xl text-gray-200"></i>
+            <i class="ri-shield-user-line text-2xl text-blue-300"></i>
           </div>
           <h2 class="text-xl font-medium tracking-wide text-gray-200">
             登录账户
           </h2>
+          <p class="text-gray-500 text-sm max-w-xs mx-auto">
+            登录您的账户以访问完整功能
+          </p>
         </div>
 
         <!-- 表单 -->
-        <form @submit.prevent="handleLogin" class="space-y-6">
+        <form @submit.prevent="handleLogin" class="space-y-5">
           <!-- 账户输入 -->
-          <div class="space-y-2">
+          <div class="space-y-1.5">
             <label
               class="block text-sm font-medium text-gray-300"
               for="account"
@@ -32,10 +36,12 @@
             <div class="relative">
               <input
                 v-model="account"
-                class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 transition-all duration-200"
+                class="input-field"
                 id="account"
                 type="text"
                 placeholder="输入账户名"
+                autocomplete="username"
+                required
               />
               <i
                 class="ri-account-circle-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -44,7 +50,7 @@
           </div>
 
           <!-- 验证码输入 -->
-          <div class="space-y-2">
+          <div class="space-y-1.5">
             <label class="block text-sm font-medium text-gray-300" for="code">
               <div class="flex items-center gap-2">
                 <i class="ri-key-2-line"></i>
@@ -54,10 +60,12 @@
             <div class="relative">
               <input
                 v-model="code"
-                class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 transition-all duration-200"
+                class="input-field"
                 id="code"
                 type="text"
                 placeholder="输入验证码"
+                autocomplete="one-time-code"
+                required
               />
               <i
                 class="ri-lock-password-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -69,29 +77,31 @@
           <div class="space-y-3 pt-4">
             <button
               type="submit"
-              class="w-full px-4 py-2.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center gap-2"
+              class="primary-button"
+              :disabled="isLoggingIn"
             >
               <i class="ri-login-circle-line"></i>
-              <span>登录</span>
+              <span>{{ isLoggingIn ? "登录中..." : "登录" }}</span>
+              <span v-if="isLoggingIn" class="loading-dots"></span>
             </button>
 
             <button
-              @click="goToSetup2FA"
+              @click="goToRegister"
               type="button"
-              class="w-full px-4 py-2.5 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center gap-2"
+              class="secondary-button"
             >
-              <i class="ri-shield-keyhole-line"></i>
-              <span>设置双重认证</span>
+              <i class="ri-user-add-line"></i>
+              <span>注册账户</span>
             </button>
           </div>
         </form>
 
         <!-- 提示信息 -->
         <div
-          class="flex items-center gap-2 text-xs text-gray-500 justify-center"
+          class="flex items-center gap-2 text-xs text-gray-500 justify-center p-3 bg-gray-800/30 rounded-xl"
         >
-          <i class="ri-information-line"></i>
-          <span>请使用 Google Authenticator 生成验证码</span>
+          <i class="ri-information-line text-gray-400"></i>
+          <span>使用 Google Authenticator 或其他2FA应用生成验证码</span>
         </div>
       </div>
     </div>
@@ -110,7 +120,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
-import { useNotification } from "../../composables/useNotification"; // 导入新的通知钩子
+import { useNotification } from "../../composables/useNotification";
 import PopupNotification from "../Utils/PopupNotification.vue";
 
 export default {
@@ -121,10 +131,11 @@ export default {
   setup() {
     const account = ref("");
     const code = ref("");
+    const isLoggingIn = ref(false);
     const router = useRouter();
     const store = useStore();
 
-    // 使用新的通知钩子
+    // 使用通知钩子
     const {
       showNotification,
       notificationMessage,
@@ -134,13 +145,20 @@ export default {
     } = useNotification();
 
     const handleLogin = async () => {
+      if (!account.value || !code.value) {
+        showError("请填写账户和验证码");
+        return;
+      }
+
       try {
+        isLoggingIn.value = true;
         const success = await store.dispatch("login", {
           account: account.value,
           code: code.value,
         });
+
         if (success) {
-          showSuccess("登录成功");
+          showSuccess("登录成功，正在跳转...");
           setTimeout(() => {
             router.push({ name: "Home" });
           }, 1500);
@@ -148,19 +166,22 @@ export default {
           throw new Error("登录失败");
         }
       } catch (error) {
-        showError("登录失败，请检查输入");
+        showError("登录失败，请检查账户名和验证码");
+      } finally {
+        isLoggingIn.value = false;
       }
     };
 
-    const goToSetup2FA = () => {
+    const goToRegister = () => {
       router.push("/setup-2fa");
     };
 
     return {
       account,
       code,
+      isLoggingIn,
       handleLogin,
-      goToSetup2FA,
+      goToRegister,
       // 返回通知相关的状态
       showNotification,
       notificationMessage,
@@ -171,28 +192,76 @@ export default {
 </script>
 
 <style scoped>
-@keyframes fade-in-right {
+/* 登录卡片动画 */
+.login-card {
+  animation: card-appear 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+@keyframes card-appear {
   0% {
     opacity: 0;
-    transform: translateX(100%);
+    transform: translateY(20px);
   }
   100% {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
-.animate-fade-in-right {
-  animation: fade-in-right 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+/* 输入框样式 */
+.input-field {
+  @apply w-full pl-10 pr-4 py-3 rounded-xl bg-gray-900/60 backdrop-blur-sm border border-gray-700/30 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-500/50 transition-all duration-200;
 }
 
+/* 主要按钮样式 */
+.primary-button {
+  @apply w-full px-4 py-3 rounded-xl bg-blue-600/80 hover:bg-blue-500/80 text-sm font-medium text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-600/50 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-blue-900/20;
+}
+
+/* 次要按钮样式 */
+.secondary-button {
+  @apply w-full px-4 py-3 rounded-xl bg-gray-800/70 hover:bg-gray-700/70 text-sm font-medium text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center justify-center gap-2 border border-gray-700/30;
+}
+
+/* 加载动画 */
+.loading-dots {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  margin-left: 8px;
+}
+
+.loading-dots::after {
+  content: "...";
+  position: absolute;
+  animation: dots 1.5s infinite;
+  opacity: 0.7;
+}
+
+@keyframes dots {
+  0%,
+  20% {
+    content: ".";
+  }
+  40% {
+    content: "..";
+  }
+  60%,
+  100% {
+    content: "...";
+  }
+}
+
+/* 毛玻璃效果 */
 .backdrop-blur-xl {
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
 }
 
 /* 优化按钮点击效果 */
-button:active {
+button:not(:disabled):active {
   transform: scale(0.98);
 }
 
