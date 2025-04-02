@@ -1,23 +1,30 @@
 <template>
   <div class="space-y-6">
-    <!-- 表格 -->
+    <!-- 结果表格 -->
     <div v-if="portScanResults?.length > 0">
-      <div class="relative overflow-x-auto rounded-xl">
+      <div
+        class="relative overflow-x-auto rounded-xl border border-gray-700/30 bg-gray-800/30"
+      >
         <table class="w-full">
           <thead>
-            <tr class="border-b border-gray-700/50">
-              <th class="py-4 px-6 text-left">
+            <tr class="bg-gray-800/60 border-b border-gray-700/50">
+              <th class="py-3 px-4 text-left w-10">
                 <input
                   type="checkbox"
                   @change="toggleSelectAll"
                   :checked="isAllSelected"
-                  class="rounded border-gray-700/50 bg-gray-900/50 text-blue-500/50 focus:ring-blue-500/30"
+                  class="checkbox-input"
+                  id="select-all-header"
+                  title="全选/取消全选"
                 />
+                <label for="select-all-header" class="sr-only"
+                  >全选/取消全选</label
+                >
               </th>
               <th
                 v-for="header in tableHeaders"
                 :key="header"
-                class="py-4 px-6 text-left text-sm font-medium text-gray-400"
+                class="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"
               >
                 {{ header }}
               </th>
@@ -25,71 +32,93 @@
           </thead>
           <tbody>
             <tr
-              v-for="result in portScanResults"
+              v-for="(result, index) in portScanResults"
               :key="result.id"
-              class="border-b border-gray-700/30 hover:bg-gray-700/20 transition-colors duration-200"
+              class="border-b border-gray-700/30 transition-all duration-200 hover:bg-gray-700/40"
+              :class="index % 2 === 0 ? 'bg-gray-800/20' : ''"
             >
-              <td class="py-4 px-6">
+              <td class="py-3 px-4">
                 <input
                   type="checkbox"
                   v-model="selectedResults"
                   :value="result.id"
-                  class="rounded border-gray-700/50 bg-gray-900/50 text-blue-500/50 focus:ring-blue-500/30"
+                  class="checkbox-input"
+                  :id="`select-result-${result.id}`"
                 />
+                <label :for="`select-result-${result.id}`" class="sr-only"
+                  >选择此结果</label
+                >
               </td>
-              <td class="py-4 px-6 text-sm text-gray-200">{{ result.id }}</td>
-              <td class="py-4 px-6 text-sm text-gray-200">
-                {{ result.target }}
+              <td class="py-3 px-4 text-sm font-mono text-gray-300">
+                {{ result.id }}
               </td>
-              <td class="py-4 px-6 text-sm text-gray-200">
-                {{ formatDate(result.timestamp) }}
+              <td class="py-3 px-4 text-sm text-gray-200">
+                <span class="flex items-center">
+                  <i class="ri-global-line mr-2 text-blue-400"></i>
+                  {{ result.target }}
+                </span>
               </td>
-              <td class="py-4 px-6 text-sm text-gray-200">
-                {{ getPortCount(result) }} 个端口
+              <td class="py-3 px-4 text-sm text-gray-300">
+                <span class="flex items-center">
+                  <i class="ri-time-line mr-2 text-gray-500"></i>
+                  {{ formatDate(result.timestamp) }}
+                </span>
               </td>
-              <td class="py-4 px-6">
+              <td class="py-3 px-4 text-sm text-gray-200">
                 <span
-                  class="px-2 py-1 rounded-full text-xs font-medium"
+                  class="px-2 py-1 rounded-md bg-blue-500/10 text-blue-300 border border-blue-500/20 inline-flex items-center"
+                >
+                  <i class="ri-scan-2-line mr-1.5"></i>
+                  {{ getPortCount(result) }} 个
+                </span>
+              </td>
+              <td class="py-3 px-4">
+                <span
+                  class="px-2 py-1 rounded-md text-xs font-medium inline-flex items-center"
                   :class="
                     result.is_read
-                      ? 'bg-green-500/20 text-green-300'
-                      : 'bg-yellow-500/20 text-yellow-300'
+                      ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                      : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
                   "
                 >
+                  <i
+                    :class="result.is_read ? 'ri-eye-line' : 'ri-eye-off-line'"
+                    class="mr-1.5"
+                  ></i>
                   {{ result.is_read ? "已读" : "未读" }}
                 </span>
               </td>
-              <td class="py-4 px-6">
-                <div class="flex space-x-2">
+              <td class="py-3 px-4">
+                <div class="flex gap-2 flex-wrap">
                   <button
                     @click="handleViewDetails(result.id)"
-                    class="action-button bg-blue-500/50 text-blue-100 flex items-center justify-center"
+                    class="action-button bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30"
                   >
-                    <i class="ri-eye-line mr-1"></i>
+                    <i class="ri-eye-line mr-1.5"></i>
                     查看
                   </button>
                   <button
                     @click="handleToggleRead(result)"
-                    class="action-button flex items-center justify-center"
+                    class="action-button"
                     :class="
                       result.is_read
-                        ? 'bg-gray-700/50 text-gray-300'
-                        : 'bg-green-500/50 text-green-100'
+                        ? 'bg-gray-700/50 text-gray-300 border border-gray-600/30'
+                        : 'bg-green-500/20 text-green-300 border border-green-500/30 hover:bg-green-500/30'
                     "
                   >
                     <i
                       :class="[
                         result.is_read ? 'ri-eye-off-line' : 'ri-eye-line',
-                        'mr-1',
+                        'mr-1.5',
                       ]"
                     ></i>
                     {{ result.is_read ? "标为未读" : "标为已读" }}
                   </button>
                   <button
-                    @click="handleDelete(result)"
-                    class="action-button bg-red-500/50 text-red-100 flex items-center justify-center"
+                    @click="handleDelete(result.id)"
+                    class="action-button bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30"
                   >
-                    <i class="ri-delete-bin-line mr-1"></i>
+                    <i class="ri-delete-bin-line mr-1.5"></i>
                     删除
                   </button>
                 </div>
@@ -99,57 +128,54 @@
         </table>
       </div>
 
-      <!-- 所有扫描页面统一使用这个样式 -->
-      <div class="flex space-x-3 mt-6">
-        <button
-          @click="handleBatchRead"
-          :disabled="!hasSelected"
-          class="batch-button flex items-center justify-center"
-          :class="[
-            !hasSelected
-              ? 'bg-gray-700/50 text-gray-400'
-              : 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200',
-          ]"
-        >
-          <i class="ri-eye-line mr-2"></i>
-          标记选中项为已读
-        </button>
-        <button
-          @click="handleBatchDelete"
-          :disabled="!hasSelected"
-          class="batch-button flex items-center justify-center"
-          :class="[
-            !hasSelected
-              ? 'bg-gray-700/50 text-gray-400'
-              : 'bg-red-500/50 hover:bg-red-600/50 text-red-100',
-          ]"
-        >
-          <i class="ri-delete-bin-line mr-2"></i>
-          删除选中项
-        </button>
-      </div>
-    </div>
+      <!-- 批量操作工具栏 -->
+      <div
+        class="flex items-center justify-between flex-wrap gap-4 p-4 rounded-xl border border-gray-700/30 bg-gray-800/30 mt-6"
+      >
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-gray-400">
+            <template v-if="hasSelected">
+              已选择
+              <span class="text-white font-medium">{{
+                selectedResults.length
+              }}</span>
+              项
+            </template>
+            <template v-else> 请选择要操作的项目 </template>
+          </span>
+        </div>
 
-    <!-- 空状态占位符 -->
-    <div
-      v-else
-      class="flex flex-col items-center justify-center py-24 my-8 bg-gray-800/40 backdrop-blur-xl rounded-2xl border border-gray-700/30"
-    >
-      <div class="text-gray-600 text-6xl mb-6">
-        <i class="ri-search-2-line"></i>
+        <div class="flex flex-wrap gap-3">
+          <button
+            @click="handleBatchRead"
+            :disabled="!hasSelected"
+            class="batch-button"
+            :class="[
+              !hasSelected
+                ? 'bg-gray-700/50 text-gray-400 border-gray-600/30 cursor-not-allowed'
+                : 'bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/30',
+            ]"
+          >
+            <i class="ri-eye-line mr-2"></i>
+            标记已读
+            <span v-if="hasSelected">({{ selectedResults.length }})</span>
+          </button>
+          <button
+            @click="handleBatchDelete"
+            :disabled="!hasSelected"
+            class="batch-button"
+            :class="[
+              !hasSelected
+                ? 'bg-gray-700/50 text-gray-400 border-gray-600/30 cursor-not-allowed'
+                : 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30',
+            ]"
+          >
+            <i class="ri-delete-bin-line mr-2"></i>
+            批量删除
+            <span v-if="hasSelected">({{ selectedResults.length }})</span>
+          </button>
+        </div>
       </div>
-      <span class="text-xl text-gray-400 mb-4">暂无扫描结果</span>
-      <p class="text-gray-500 mb-6 text-center max-w-md">
-        当前还没有端口扫描结果，请在目标管理中创建扫描任务
-      </p>
-      <router-link to="/target-management">
-        <button
-          class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center"
-        >
-          <i class="ri-add-line mr-2"></i>
-          前往创建扫描任务
-        </button>
-      </router-link>
     </div>
   </div>
 </template>
@@ -163,7 +189,7 @@ export default {
     portScanResults: {
       type: Array,
       required: true,
-      default: () => [], // 添加默认值
+      default: () => [], // 设置默认值为空数组
     },
   },
   emits: [
@@ -174,24 +200,29 @@ export default {
     "mark-selected-read",
   ],
   setup(props, { emit }) {
+    // 表格头部配置
     const tableHeaders = [
-      "扫描ID",
+      "ID",
       "目标地址",
-      "时间戳",
+      "扫描时间",
       "端口数量",
       "状态",
       "操作",
     ];
 
+    // 选中的结果ID列表
     const selectedResults = ref([]);
 
-    // 添加空值检查
-    const hasSelected = computed(() => selectedResults.value?.length > 0);
+    // 计算属性：是否有选中项
+    const hasSelected = computed(() => selectedResults.value.length > 0);
+
+    // 计算属性：是否全选
     const isAllSelected = computed(() => {
       if (!props.portScanResults?.length) return false;
       return selectedResults.value.length === props.portScanResults.length;
     });
 
+    // 格式化日期时间
     const formatDate = (timestamp) => {
       if (!timestamp) return "-";
       try {
@@ -202,62 +233,60 @@ export default {
           hour: "2-digit",
           minute: "2-digit",
         });
-      } catch {
-        return "-";
+      } catch (e) {
+        return timestamp || "未知时间";
       }
     };
 
-    // 添加空值检查
+    // 获取端口数量
     const getPortCount = (result) => {
-      if (!result?.data) return 0;
-      let portCount = 0;
-      try {
-        result.data.forEach((portGroup) => {
-          if (portGroup?.Key === "ports" && Array.isArray(portGroup.Value)) {
-            portCount += portGroup.Value.length;
-          }
-        });
-      } catch {
+      if (!result || !result.data || !Array.isArray(result.data)) {
         return 0;
       }
-      return portCount;
+      const portGroup = result.data.find((group) => group.Key === "ports");
+      return portGroup?.Value?.length || 0;
     };
 
+    // 全选/取消全选
     const toggleSelectAll = () => {
-      if (!props.portScanResults?.length) return;
-      selectedResults.value = isAllSelected.value
-        ? []
-        : props.portScanResults.map((result) => result?.id).filter(Boolean);
+      if (isAllSelected.value) {
+        // 如果当前是全选状态，则取消全选
+        selectedResults.value = [];
+      } else {
+        // 如果当前不是全选状态，则全选
+        selectedResults.value = props.portScanResults.map(
+          (result) => result.id
+        );
+      }
     };
 
-    const handleViewDetails = (id) => {
-      if (!id) return;
-      emit("view-details", id);
-    };
+    // 查看详情处理函数
+    const handleViewDetails = (id) => emit("view-details", id);
 
-    const handleDelete = (result) => {
-      if (!result?.id) return;
-      emit("delete-result", result.id);
-    };
+    // 删除单个结果处理函数
+    const handleDelete = (id) => emit("delete-result", id);
 
-    const handleToggleRead = (result) => {
-      if (!result?.id) return;
+    // 切换已读状态处理函数
+    const handleToggleRead = (result) =>
       emit("toggle-read-status", result.id, !result.is_read);
-    };
 
+    // 批量删除处理函数
     const handleBatchDelete = () => {
-      if (!selectedResults.value?.length) return;
+      if (selectedResults.value.length === 0) return;
       emit("delete-selected", selectedResults.value);
+      // 操作后清空选择
       selectedResults.value = [];
     };
 
+    // 批量标记已读处理函数
     const handleBatchRead = () => {
-      if (!selectedResults.value?.length) return;
+      if (selectedResults.value.length === 0) return;
       emit("mark-selected-read", selectedResults.value);
+      // 操作后清空选择
       selectedResults.value = [];
     };
 
-    // 监听 props 变化，重置选中状态
+    // 监听结果变化，重置选择状态
     watch(
       () => props.portScanResults,
       () => {
@@ -284,46 +313,55 @@ export default {
 </script>
 
 <style scoped>
+/* 操作按钮样式 */
 .action-button {
-  @apply px-3 py-1.5 rounded-xl text-xs font-medium
-  transition-all duration-200
-  focus:outline-none focus:ring-2 focus:ring-opacity-50
+  @apply px-3 py-1.5 rounded-md text-xs font-medium
+  transition-all duration-200 flex items-center
+  focus:outline-none focus:ring-1 focus:ring-opacity-50
   disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
+/* 批量操作按钮样式 */
 .batch-button {
-  @apply px-4 py-2.5 rounded-xl text-sm font-medium
-  transition-all duration-200
-  focus:outline-none focus:ring-2 focus:ring-opacity-50
+  @apply px-4 py-2 rounded-lg text-sm font-medium
+  transition-all duration-200 flex items-center border
+  focus:outline-none focus:ring-1 focus:ring-opacity-50
   disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
 /* 优化按钮点击效果 */
-.batch-button:active:not(:disabled) {
+.batch-button:active:not(:disabled),
+.action-button:active:not(:disabled) {
   transform: scale(0.98);
 }
 
+/* 自定义复选框样式 */
+.checkbox-input {
+  @apply rounded-md border-gray-700/50 bg-gray-800/50
+  text-blue-500 focus:ring-blue-500/30 h-4 w-4 cursor-pointer;
+}
+
 /* 自定义滚动条 */
-.overflow-x-auto {
+.custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
 }
 
-::-webkit-scrollbar {
+.custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.3);
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.3);
   border-radius: 3px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.5);
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(107, 114, 128, 0.5);
 }
 </style>

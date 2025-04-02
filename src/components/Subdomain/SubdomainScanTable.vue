@@ -1,160 +1,196 @@
 <template>
   <div class="space-y-6">
-    <!-- 表格 -->
-    <div v-if="subdomainScanResults?.length > 0">
-      <div class="relative overflow-x-auto rounded-xl">
-        <table class="w-full">
-          <thead>
-            <tr class="border-b border-gray-700/50">
-              <th class="py-4 px-6 text-left">
-                <input
-                  type="checkbox"
-                  @change="toggleSelectAll"
-                  v-model="selectAll"
-                  class="rounded border-gray-700/50 bg-gray-900/50 text-blue-500/50 focus:ring-blue-500/30"
-                />
-              </th>
-              <th
-                v-for="header in tableHeaders"
-                :key="header"
-                class="py-4 px-6 text-left text-sm font-medium text-gray-400"
-              >
-                {{ header }}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="result in subdomainScanResults"
-              :key="result.id"
-              class="border-b border-gray-700/30 hover:bg-gray-700/20 transition-colors duration-200"
-            >
-              <td class="py-4 px-6">
-                <input
-                  type="checkbox"
-                  v-model="selectedResults"
-                  :value="result.id"
-                  class="rounded border-gray-700/50 bg-gray-900/50 text-blue-500/50 focus:ring-blue-500/30"
-                />
-              </td>
-              <td class="py-4 px-6 text-sm text-gray-200">{{ result.id }}</td>
-              <td class="py-4 px-6 text-sm text-gray-200">
-                {{ result.target }}
-              </td>
-              <td class="py-4 px-6 text-sm text-gray-200">
-                {{ formatDate(result.timestamp) }}
-              </td>
-              <td class="py-4 px-6 text-sm text-gray-200">
-                {{ getSubdomainCount(result) }} 个
-              </td>
-              <td class="py-4 px-6">
-                <span
-                  class="px-2 py-1 rounded-full text-xs font-medium"
-                  :class="
-                    result.is_read
-                      ? 'bg-green-500/20 text-green-300'
-                      : 'bg-yellow-500/20 text-yellow-300'
-                  "
-                >
-                  {{ result.is_read ? "已读" : "未读" }}
-                </span>
-              </td>
-              <td class="py-4 px-6">
-                <div class="flex space-x-2">
-                  <button
-                    @click="handleViewDetails(result.id)"
-                    class="action-button bg-blue-500/50 text-blue-100 flex items-center justify-center"
+    <!-- 结果表格 -->
+    <div v-if="subdomainScanResults?.length > 0" class="flex flex-col gap-6">
+      <!-- 数据表格 -->
+      <div
+        class="relative overflow-hidden rounded-xl border border-gray-700/30 bg-gray-800/30"
+      >
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-gray-800/60 border-b border-gray-700/50">
+                <th class="py-3 px-4 text-left w-10">
+                  <input
+                    type="checkbox"
+                    @change="toggleSelectAll"
+                    v-model="selectAll"
+                    class="checkbox-input"
+                    :disabled="subdomainScanResults.length === 0"
+                    id="select-all-header"
+                    title="全选/取消全选"
+                  />
+                  <label for="select-all-header" class="sr-only"
+                    >全选/取消全选</label
                   >
-                    <i class="ri-eye-line mr-1"></i>
-                    查看
-                  </button>
-                  <button
-                    @click="handleToggleRead(result)"
-                    class="action-button flex items-center justify-center"
+                </th>
+                <th
+                  v-for="header in tableHeaders"
+                  :key="header.key"
+                  :class="[
+                    'py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider',
+                    header.width,
+                  ]"
+                >
+                  {{ header.label }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(result, index) in subdomainScanResults"
+                :key="result.id"
+                class="border-b border-gray-700/30 transition-all duration-200 hover:bg-gray-700/40"
+                :class="index % 2 === 0 ? 'bg-gray-800/20' : ''"
+              >
+                <td class="py-3 px-4">
+                  <input
+                    type="checkbox"
+                    v-model="selectedResults"
+                    :value="result.id"
+                    class="checkbox-input"
+                    :id="`select-result-${result.id}`"
+                  />
+                  <label :for="`select-result-${result.id}`" class="sr-only"
+                    >选择此结果</label
+                  >
+                </td>
+                <td class="py-3 px-4 text-sm font-mono text-gray-300">
+                  {{ result.id }}
+                </td>
+                <td class="py-3 px-4 text-sm text-gray-200">
+                  <span class="flex items-center">
+                    <i class="ri-global-line mr-2 text-blue-400"></i>
+                    {{ result.target }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-sm text-gray-300">
+                  <span class="flex items-center">
+                    <i class="ri-time-line mr-2 text-gray-500"></i>
+                    {{ formatDate(result.timestamp) }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-sm text-gray-200">
+                  <span
+                    class="px-2 py-1 rounded-md bg-blue-500/10 text-blue-300 border border-blue-500/20 inline-flex items-center"
+                  >
+                    <i class="ri-radar-line mr-1.5"></i>
+                    {{ getSubdomainCount(result) }} 个
+                  </span>
+                </td>
+                <td class="py-3 px-4">
+                  <span
+                    class="px-2 py-1 rounded-md text-xs font-medium inline-flex items-center"
                     :class="
                       result.is_read
-                        ? 'bg-gray-700/50 text-gray-300'
-                        : 'bg-green-500/50 text-green-100'
+                        ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                        : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
                     "
                   >
                     <i
-                      :class="[
-                        result.is_read ? 'ri-eye-off-line' : 'ri-eye-line',
-                        'mr-1',
-                      ]"
+                      :class="
+                        result.is_read ? 'ri-eye-line' : 'ri-eye-off-line'
+                      "
+                      class="mr-1.5"
                     ></i>
-                    {{ result.is_read ? "标为未读" : "标为已读" }}
-                  </button>
-                  <button
-                    @click="handleDelete(result.id)"
-                    class="action-button bg-red-500/50 text-red-100 flex items-center justify-center"
-                  >
-                    <i class="ri-delete-bin-line mr-1"></i>
-                    删除
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                    {{ result.is_read ? "已读" : "未读" }}
+                  </span>
+                </td>
+                <td class="py-3 px-4">
+                  <div class="flex gap-2 flex-wrap">
+                    <button
+                      @click="handleViewDetails(result.id)"
+                      class="action-button bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30"
+                    >
+                      <i class="ri-eye-line mr-1.5"></i>
+                      查看
+                    </button>
+                    <button
+                      @click="handleToggleRead(result)"
+                      class="action-button"
+                      :class="
+                        result.is_read
+                          ? 'bg-gray-700/50 text-gray-300 border border-gray-600/30'
+                          : 'bg-green-500/20 text-green-300 border border-green-500/30 hover:bg-green-500/30'
+                      "
+                    >
+                      <i
+                        :class="[
+                          result.is_read ? 'ri-eye-off-line' : 'ri-eye-line',
+                          'mr-1.5',
+                        ]"
+                      ></i>
+                      {{ result.is_read ? "标为未读" : "标为已读" }}
+                    </button>
+                    <button
+                      @click="handleDelete(result.id)"
+                      class="action-button bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30"
+                    >
+                      <i class="ri-delete-bin-line mr-1.5"></i>
+                      删除
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <!-- 所有扫描页面统一使用这个样式 -->
-      <div class="flex space-x-3 mt-6">
-        <button
-          @click="handleBatchRead"
-          :disabled="!hasSelected"
-          class="batch-button flex items-center justify-center"
-          :class="[
-            !hasSelected
-              ? 'bg-gray-700/50 text-gray-400'
-              : 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200',
-          ]"
-        >
-          <i class="ri-eye-line mr-2"></i>
-          标记选中项为已读
-        </button>
-        <button
-          @click="handleBatchDelete"
-          :disabled="!hasSelected"
-          class="batch-button flex items-center justify-center"
-          :class="[
-            !hasSelected
-              ? 'bg-gray-700/50 text-gray-400'
-              : 'bg-red-500/50 hover:bg-red-600/50 text-red-100',
-          ]"
-        >
-          <i class="ri-delete-bin-line mr-2"></i>
-          删除选中项
-        </button>
-      </div>
-    </div>
+      <!-- 批量操作工具栏 -->
+      <div
+        class="flex items-center justify-between flex-wrap gap-4 p-4 rounded-xl border border-gray-700/30 bg-gray-800/30"
+      >
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-gray-400">
+            <template v-if="hasSelected">
+              已选择
+              <span class="text-white font-medium">{{
+                selectedResults.length
+              }}</span>
+              项
+            </template>
+            <template v-else> 请选择要操作的项目 </template>
+          </span>
+        </div>
 
-    <div
-      v-else
-      class="flex flex-col items-center justify-center py-24 my-8 bg-gray-800/40 backdrop-blur-xl rounded-2xl border border-gray-700/30"
-    >
-      <div class="text-gray-600 text-6xl mb-6">
-        <i class="ri-search-2-line"></i>
+        <div class="flex flex-wrap gap-3">
+          <button
+            @click="handleBatchRead"
+            :disabled="!hasSelected"
+            class="batch-button"
+            :class="[
+              !hasSelected
+                ? 'bg-gray-700/50 text-gray-400 border-gray-600/30 cursor-not-allowed'
+                : 'bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/30',
+            ]"
+          >
+            <i class="ri-eye-line mr-2"></i>
+            标记已读
+            <span v-if="hasSelected">({{ selectedResults.length }})</span>
+          </button>
+          <button
+            @click="handleBatchDelete"
+            :disabled="!hasSelected"
+            class="batch-button"
+            :class="[
+              !hasSelected
+                ? 'bg-gray-700/50 text-gray-400 border-gray-600/30 cursor-not-allowed'
+                : 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30',
+            ]"
+          >
+            <i class="ri-delete-bin-line mr-2"></i>
+            批量删除
+            <span v-if="hasSelected">({{ selectedResults.length }})</span>
+          </button>
+        </div>
       </div>
-      <span class="text-xl text-gray-400 mb-4">暂无扫描结果</span>
-      <p class="text-gray-500 mb-6 text-center max-w-md">
-        当前还没有子域名扫描结果，请在目标管理中创建扫描任务
-      </p>
-      <router-link to="/target-management">
-        <button
-          class="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600/50 flex items-center"
-        >
-          <i class="ri-add-line mr-2"></i>
-          前往创建扫描任务
-        </button>
-      </router-link>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 
 export default {
   name: "SubdomainScanTable",
@@ -164,27 +200,69 @@ export default {
       required: true,
       default: () => [],
     },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props, { emit }) {
     const selectedResults = ref([]);
     const selectAll = ref(false);
     const tableHeaders = [
-      "扫描ID",
-      "目标地址",
-      "时间戳",
-      "子域名数量",
-      "状态",
-      "操作",
+      { key: "id", label: "ID", width: "w-24" },
+      { key: "target", label: "目标地址", width: "w-48" },
+      { key: "timestamp", label: "扫描时间", width: "w-44" },
+      { key: "count", label: "子域名数量", width: "w-32" },
+      { key: "status", label: "状态", width: "w-24" },
+      { key: "actions", label: "操作", width: "w-52" },
     ];
 
+    // 计算是否有选中的项目
     const hasSelected = computed(() => selectedResults.value.length > 0);
 
+    // 监听结果变化，重置选择状态
+    watch(
+      () => props.subdomainScanResults,
+      () => {
+        selectedResults.value = [];
+        selectAll.value = false;
+      }
+    );
+
+    // 监听全选状态变化
+    watch(
+      () => selectAll.value,
+      (newVal) => {
+        if (newVal) {
+          // 全选时，将所有结果ID添加到选中数组
+          selectedResults.value = props.subdomainScanResults.map(
+            (result) => result.id
+          );
+        } else {
+          // 取消全选时，清空选中数组
+          selectedResults.value = [];
+        }
+      }
+    );
+
+    // 监听选中结果变化，自动更新全选状态
+    watch(
+      () => selectedResults.value,
+      (newVal) => {
+        if (props.subdomainScanResults.length > 0) {
+          // 当选择的数量等于总数时，设置全选状态为true
+          selectAll.value = newVal.length === props.subdomainScanResults.length;
+        }
+      }
+    );
+
+    // 切换全选状态
     const toggleSelectAll = () => {
-      selectedResults.value = selectAll.value
-        ? props.subdomainScanResults.map((result) => result.id)
-        : [];
+      // 由watch处理具体逻辑
+      selectAll.value = !selectAll.value;
     };
 
+    // 获取子域名数量
     const getSubdomainCount = (result) => {
       if (!result || !result.data || !Array.isArray(result.data)) {
         return 0;
@@ -195,25 +273,42 @@ export default {
       return subdomainGroup?.Value?.length || 0;
     };
 
+    // 格式化日期
     const formatDate = (timestamp) => {
-      return new Date(timestamp).toLocaleString("zh-CN", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      try {
+        return new Date(timestamp).toLocaleString("zh-CN", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch (e) {
+        return timestamp || "未知时间";
+      }
     };
 
-    // 操作处理方法
+    // 查看详情
     const handleViewDetails = (id) => emit("view-details", id);
+
+    // 切换已读/未读状态
     const handleToggleRead = (result) =>
       emit("toggle-read-status", result.id, !result.is_read);
+
+    // 删除单个记录
     const handleDelete = (id) => emit("delete-result", id);
-    const handleBatchRead = () =>
+
+    // 批量标记为已读
+    const handleBatchRead = () => {
+      if (selectedResults.value.length === 0) return;
       emit("mark-selected-read", selectedResults.value);
-    const handleBatchDelete = () =>
+    };
+
+    // 批量删除
+    const handleBatchDelete = () => {
+      if (selectedResults.value.length === 0) return;
       emit("delete-selected", selectedResults.value);
+    };
 
     return {
       selectedResults,
@@ -234,27 +329,55 @@ export default {
 </script>
 
 <style scoped>
+/* 操作按钮样式 */
 .action-button {
-  @apply px-3 py-1.5 rounded-xl text-xs font-medium
-  transition-all duration-200
-  focus:outline-none focus:ring-2 focus:ring-opacity-50
+  @apply px-3 py-1.5 rounded-md text-xs font-medium
+  transition-all duration-200 flex items-center
+  focus:outline-none focus:ring-1 focus:ring-opacity-50
   disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
+/* 批量操作按钮样式 */
 .batch-button {
-  @apply px-4 py-2.5 rounded-xl text-sm font-medium
-  transition-all duration-200
-  focus:outline-none focus:ring-2 focus:ring-opacity-50
+  @apply px-4 py-2 rounded-lg text-sm font-medium
+  transition-all duration-200 flex items-center border
+  focus:outline-none focus:ring-1 focus:ring-opacity-50
   disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
 /* 优化按钮点击效果 */
-.batch-button:active:not(:disabled) {
+.batch-button:active:not(:disabled),
+.action-button:active:not(:disabled) {
   transform: scale(0.98);
 }
 
 /* 自定义复选框样式 */
-input[type="checkbox"] {
-  @apply rounded-md border-gray-700/50 bg-gray-900/50;
+.checkbox-input {
+  @apply rounded-md border-gray-700/50 bg-gray-800/50
+  text-blue-500 focus:ring-blue-500/30 h-4 w-4 cursor-pointer;
+}
+
+/* 自定义滚动条 */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(107, 114, 128, 0.5);
 }
 </style>
