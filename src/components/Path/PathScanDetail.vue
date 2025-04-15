@@ -111,7 +111,7 @@
           >
             <span class="text-sm text-gray-400 mb-1">可访问路径</span>
             <span class="text-2xl font-medium text-green-300">
-              {{ paths.filter((p) => p.status === "200").length }}
+              {{ paths.filter((p) => p.status && String(p.status) === "200").length }}
             </span>
           </div>
 
@@ -121,7 +121,7 @@
             <span class="text-sm text-gray-400 mb-1">重定向路径</span>
             <span class="text-2xl font-medium text-blue-300">
               {{
-                paths.filter((p) => p.status && p.status.startsWith("3")).length
+                paths.filter((p) => p.status && String(p.status).startsWith("3")).length
               }}
             </span>
           </div>
@@ -367,7 +367,6 @@ import FooterPage from "../FooterPage.vue";
 import PopupNotification from "../Utils/PopupNotification.vue";
 import ConfirmDialog from "../Utils/ConfirmDialog.vue";
 import { usePathScan } from "../../composables/usePathScan";
-
 const route = useRoute();
 
 // 表头配置
@@ -429,6 +428,8 @@ const formatDate = (timestamp) => {
 const getStatusClass = (status) => {
   if (!status) return "bg-gray-500/20 text-gray-300 border-gray-500/30";
 
+  status = String(status);
+  
   if (status === "200") {
     return "bg-green-500/20 text-green-300 border-green-500/30";
   } else if (status.startsWith("3")) {
@@ -438,7 +439,6 @@ const getStatusClass = (status) => {
   } else if (status.startsWith("5")) {
     return "bg-red-500/20 text-red-300 border-red-500/30";
   }
-
   return "bg-gray-500/20 text-gray-300 border-gray-500/30";
 };
 

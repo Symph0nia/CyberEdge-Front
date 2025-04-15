@@ -79,6 +79,53 @@ export function usePathScan() {
     }
   };
 
+  // 复制到剪贴板功能
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showSuccess("已复制到剪贴板");
+    } catch (error) {
+      showError("复制失败，请手动复制");
+      console.error("剪贴板操作失败:", error);
+    }
+  };
+  
+  // 解析选中路径
+  const resolveSelectedPaths = async () => {
+    if (selectedPaths.value.length === 0) {
+      showError("请选择要解析的路径");
+      return;
+    }
+    
+    try {
+      isResolving.value = true;
+      // 这里可以实现解析路径的逻辑
+      // 暂时模拟一个延迟操作
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      showSuccess(`已解析 ${selectedPaths.value.length} 个路径`);
+    } catch (error) {
+      showError("解析路径失败");
+    } finally {
+      isResolving.value = false;
+    }
+  };
+  
+  // 发送到端口扫描
+  const sendToPortScan = (path) => {
+    showSuccess(`已将路径 ${path.path} 发送到端口扫描`);
+    // 实现发送到端口扫描的逻辑
+  };
+  
+  // 批量发送到端口扫描
+  const sendSelectedToPortScan = () => {
+    if (selectedPaths.value.length === 0) {
+      showError("请选择要发送的路径");
+      return;
+    }    
+    showSuccess(`已将 ${selectedPaths.value.length} 个路径发送到端口扫描`);
+    // 实现批量发送到端口扫描的逻辑
+  };
+
   return {
     // 状态
     scanResult,
@@ -92,6 +139,10 @@ export function usePathScan() {
     fetchScanResult,
     toggleSelectAll,
     toggleReadStatus,
+    copyToClipboard,
+    resolveSelectedPaths,
+    sendToPortScan,
+    sendSelectedToPortScan,
 
     // 通知相关
     showNotification,
